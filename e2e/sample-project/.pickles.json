@@ -9,8 +9,14 @@
     "protocol": "http"
   },
   "rules": {
-    "archunit": true,
-    "eslint": true,
+    "archunit": {
+      "enabled": true,
+      "command": ""
+    },
+    "eslint": {
+      "enabled": true,
+      "command": ""
+    },
     "scripts": []
   },
   "problemBoard": {

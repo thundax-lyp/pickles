@@ -46,7 +46,7 @@ Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 |---|---|
 | Problem Board | 聚合后的语义与架构问题看板 |
 | Governance Server | 规则执行与问题聚合运行时 |
-| Incremental Semantic Graph | 基于 Agent Hook 上报的增量文件变动，更新工程语义关系与治理问题 |
+| Incremental Workspace Index | 基于 Agent Hook 上报的增量文件变动，更新 workspace 级工程索引与治理问题 |
 | Agent Hooks | 部署在 Codex Runtime 内的生命周期触发点 |
 | Plugin Notify Protocol | Hook 向 IntelliJ Plugin 发送通知的本地协议，MVP 默认使用 Plugin 启动的本地 HTTP 服务 |
 | Project Configuration | 目标工程根目录 `.pickles.json`，作为被治理项目的配置真相源 |
@@ -64,7 +64,7 @@ Pickles IntelliJ IDEA Plugin
     ↓
 Pickles Governance Server
     ↓
-Incremental Semantic Graph
+Incremental Workspace Index
     ↓
 Problem Board
 ```
@@ -91,8 +91,8 @@ Plugin 不修改业务代码、测试代码或工程实现代码。
 
 负责：
 
-- 维护 Incremental Semantic Graph
-- 基于 Hook 变动集增量更新语义关系
+- 维护 Incremental Workspace Index
+- 基于 Hook 变动集增量更新 workspace 级工程索引
 - 执行 ArchUnit 与 ESLint 规则检测
 - 聚合问题
 - 提供 Repair-Oriented Summary
@@ -132,7 +132,13 @@ Hook 知道 Codex task 生命周期。MVP 按 workspace 聚合问题，不按单
 
 MVP 检测用户项目，也就是 Agent 工作目录下的项目。
 
-规则属于 Pickles。Plugin 配置界面可以提供规则配置，也可以引入 script 指令。
+规则属于 Pickles，但检测命令来自用户项目。
+
+IntelliJ Plugin 通过 IDEA 获取用户项目使用的 ArchUnit 与 ESLint 命令，并同步到目标工程 `.pickles.json`。
+
+Governance Server 直接调用 `.pickles.json` 中配置的用户工程命令执行检测。
+
+Plugin 配置界面可以提供规则配置，也可以引入 script 指令。
 
 ## Problem Severity
 
@@ -169,8 +175,14 @@ MVP 最小配置：
     "protocol": "http"
   },
   "rules": {
-    "archunit": true,
-    "eslint": true,
+    "archunit": {
+      "enabled": true,
+      "command": ""
+    },
+    "eslint": {
+      "enabled": true,
+      "command": ""
+    },
     "scripts": []
   },
   "problemBoard": {
@@ -194,7 +206,7 @@ Codex Hook 捕获文件变动
     ↓
 Hook 提交变动集
     ↓
-Governance Server 增量更新语义关系
+Governance Server 增量更新 workspace index
     ↓
 规则执行
     ↓
@@ -239,7 +251,7 @@ Before finalizing a task:
 | Agent | Codex |
 | Hook Runtime | Codex Runtime |
 | Hook Notify Protocol | Local HTTP |
-| Semantic Input | Codex Hook 增量文件变动 |
+| Workspace Input | Codex Hook 增量文件变动 |
 | Rule Detection | ArchUnit + ESLint |
 
 ---
@@ -254,6 +266,8 @@ MVP 只支持两类规则检测工具：
 MVP 不接入其他规则检测工具或规则语言。
 
 MVP 规则检测对象固定为用户项目，即 Agent 工作目录下的项目。
+
+ArchUnit 与 ESLint 的执行命令固定从目标工程 `.pickles.json` 读取。
 
 ## Problem Board UI
 
@@ -295,6 +309,8 @@ MVP 只显示以下字段：
 - 全量语义持久化
 - MCP 或 WebSocket 作为 Hook 通知协议
 - 除 ArchUnit 与 ESLint 之外的规则检测工具
+- Hook HTTP API 细节
+- AGENTS.md 注入块格式、marker 和幂等更新细节
 
 ---
 
