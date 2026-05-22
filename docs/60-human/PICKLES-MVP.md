@@ -47,7 +47,7 @@ Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 | Governance Server | 规则执行与问题聚合运行时 |
 | Incremental Semantic Graph | 基于 Agent Hook 上报的增量文件变动，更新工程语义关系与治理问题 |
 | Agent Hooks | 部署在 Codex Runtime 内的生命周期触发点 |
-| Plugin Notify Protocol | Hook 向 IntelliJ Plugin 发送通知的本地协议，MVP 可使用 MCP、HTTP 或 WebSocket |
+| Plugin Notify Protocol | Hook 向 IntelliJ Plugin 发送通知的本地协议，MVP 默认使用 Plugin 启动的本地 HTTP 服务 |
 
 ---
 
@@ -57,7 +57,7 @@ Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 Codex Runtime
     ↓
 Agent Hooks
-    ↓  MCP / HTTP / WebSocket
+    ↓  Local HTTP
 Pickles IntelliJ IDEA Plugin
     ↓
 Pickles Governance Server
@@ -91,7 +91,7 @@ Plugin 不修改业务代码、测试代码或工程实现代码。
 
 - 维护 Incremental Semantic Graph
 - 基于 Hook 变动集增量更新语义关系
-- 执行 ArchUnit 与 lint 规则检测
+- 执行 ArchUnit 与 ESLint 规则检测
 - 聚合问题
 - 提供 Repair-Oriented Summary
 
@@ -105,20 +105,41 @@ Plugin 不修改业务代码、测试代码或工程实现代码。
 
 - Task 生命周期检查点
 - 收集任务期间的增量文件变动
-- 在检查点向 IntelliJ Plugin 发送变动通知
+- 在检查点向 IntelliJ Plugin 发送变动通知，通知内容包含文件名、before 内容和 after 内容
 - 在任务完成前请求治理反馈
 
 ---
 
 ## Hook Notify Protocol
 
-Hook 到 Plugin 的通知协议在 MVP 阶段固定为本地协议候选集合：
-
-- MCP
-- Plugin 启动的本地 HTTP 服务
-- Plugin 启动的本地 WebSocket 服务
+Hook 到 Plugin 的通知协议在 MVP 阶段默认使用 Plugin 启动的本地 HTTP 服务。
 
 协议选择不得改变职责边界：Hook 负责通知与拉取反馈，Plugin / Governance Server 负责聚合、分析和展示。
+
+## Hook Event Payload
+
+Hook 向 Plugin 上报的最小变动单元包含：
+
+- 文件名
+- before 内容
+- after 内容
+
+Hook 知道 Codex task 生命周期。MVP 按 workspace 聚合问题，不按单个 task 单独保存 Problem Board。
+
+## Rule Source
+
+MVP 检测用户项目，也就是 Agent 工作目录下的项目。
+
+规则属于 Pickles。Plugin 配置界面可以提供规则配置，也可以引入 script 指令。
+
+## Problem Severity
+
+Problem severity 固定使用规则工具返回的级别：
+
+- ERROR
+- WARN
+
+Pickles 不在 MVP 中新增独立 severity 体系。
 
 ---
 
@@ -139,7 +160,7 @@ Problem Board 更新
     ↓
 Agent Task 完成
     ↓
-Hook 通过本地协议请求治理反馈
+Hook 通过本地 HTTP 请求治理反馈
     ↓
 Agent 修复或汇报问题
 ```
@@ -150,13 +171,18 @@ Agent 修复或汇报问题
 
 Pickles 会向工程 AGENTS.md 注入治理约束。
 
+Pickles 先检测当前工程是否已经绑定治理约束：
+
+- 未绑定时，Plugin 显示绑定按钮。
+- 已绑定时，Plugin 显示解除绑定按钮。
+
 示例：
 
 ```md
 Before finalizing a task:
 
 1. Call get_problem_board
-2. Fix BLOCKER issues
+2. Fix ERROR issues
 3. Review WARN issues
 4. Do not finalize tasks with unresolved architecture violations
 ```
@@ -170,9 +196,9 @@ Before finalizing a task:
 | IDE | IntelliJ IDEA |
 | Agent | Codex |
 | Hook Runtime | Codex Runtime |
-| Hook Notify Protocol | MCP / HTTP / WebSocket |
+| Hook Notify Protocol | Local HTTP |
 | Semantic Input | Codex Hook 增量文件变动 |
-| Rule Detection | ArchUnit + lint |
+| Rule Detection | ArchUnit + ESLint |
 
 ---
 
@@ -181,9 +207,23 @@ Before finalizing a task:
 MVP 只支持两类规则检测工具：
 
 - ArchUnit
-- lint
+- ESLint
 
 MVP 不接入其他规则检测工具或规则语言。
+
+MVP 规则检测对象固定为用户项目，即 Agent 工作目录下的项目。
+
+## Problem Board UI
+
+Problem Board 是嵌入 IntelliJ IDEA 的工具窗口。
+
+MVP 只显示以下字段：
+
+- title
+- type
+- message
+
+每个问题项提供删除按钮。点击问题项时，跳转到对应文件位置。
 
 ---
 
@@ -197,8 +237,8 @@ MVP 不接入其他规则检测工具或规则语言。
 - Problem Board UI
 - AGENTS.md Bind
 - Codex Hook
-- Hook 到 Plugin 的本地通知协议
-- 基于 ArchUnit 与 lint 的规则检测系统
+- Hook 到 Plugin 的本地 HTTP 通知协议
+- 基于 ArchUnit 与 ESLint 的规则检测系统
 
 ---
 
@@ -210,7 +250,8 @@ MVP 不接入其他规则检测工具或规则语言。
 - Distributed Execution
 - 自定义 ACP 实现
 - 全量语义持久化
-- 除 ArchUnit 与 lint 之外的规则检测工具
+- MCP 或 WebSocket 作为 Hook 通知协议
+- 除 ArchUnit 与 ESLint 之外的规则检测工具
 
 ---
 
