@@ -90,6 +90,8 @@ AGENTS.md 注入块格式、marker 和幂等更新细节在 MVP 暂不定义。
 
 Plugin 启动本地 HTTP 服务接收 Codex Hook 通知。
 
+Plugin 将本地 HTTP 服务端口写入目标工程 `<repo>/.pickles/server.json`。
+
 HTTP endpoint 细节在 MVP 暂不定义。
 
 ## 8. Key Flows
@@ -112,11 +114,11 @@ HTTP endpoint 细节在 MVP 暂不定义。
 
 - Plugin UI 操作不得阻塞 IDEA UI 线程。
 - 本地 HTTP 服务生命周期跟随目标工程。
+- 本地 HTTP 服务端口固定写入目标工程 `<repo>/.pickles/server.json`。
 - 文件跳转失败时必须展示可理解错误。
 
 ## 10. Open Items
 
 - Plugin 实现语言。
 - Tool Window 具体布局。
-- 本地 HTTP 服务端口发现机制。
 - AGENTS.md 注入块格式、marker 和幂等更新细节。

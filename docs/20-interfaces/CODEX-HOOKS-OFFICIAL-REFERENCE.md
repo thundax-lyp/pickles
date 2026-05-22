@@ -436,6 +436,8 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 
 - Pickles repo-local hook 脚本应从 git root 定位，避免 Codex 从子目录启动导致路径失效。
 - Pickles MVP 固定使用目标工程 `<repo>/.codex/hooks.json` 配置 Hook。
+- Pickles Hook 通过当前 git root 定位目标工程，并读取 `<repo>/.pickles/server.json` 发现本地 HTTP 端口。
+- Pickles Hook 使用 `http://127.0.0.1:<port>` 调用本地 Plugin HTTP 服务。
 - Pickles Hook 脚本固定使用 Node.js ESM `.mjs`。
 - Pickles Hook 脚本固定放在目标工程 `<repo>/.codex/hooks/`。
 - Pickles Hook MVP 不依赖 npm install，只使用 Node.js built-in modules。

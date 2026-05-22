@@ -103,6 +103,10 @@ Bind / Unbind 的具体注入块格式、marker 和幂等更新细节在 MVP 暂
 
 本地 HTTP 服务生命周期必须跟随目标工程。
 
+插件必须把本地 HTTP 服务端口写入目标工程 `<repo>/.pickles/server.json`。
+
+`server.json` 是运行时状态文件，不写入 `.pickles.json`。
+
 HTTP endpoint 细节在 MVP 暂不定义。
 
 ## 8. Key Flows
@@ -129,10 +133,10 @@ HTTP endpoint 细节在 MVP 暂不定义。
 - 文件跳转失败时必须展示可理解错误。
 - 配置读取失败时必须展示可理解错误。
 - 本地 HTTP 端口不得写入 `.pickles.json`。
+- 本地 HTTP 端口固定写入目标工程 `<repo>/.pickles/server.json`。
 
 ## 10. Open Items
 
 - 插件实现语言。
 - Tool Window 具体布局。
-- 本地 HTTP 服务端口发现机制。
 - AGENTS.md 注入块格式、marker 和幂等更新细节。

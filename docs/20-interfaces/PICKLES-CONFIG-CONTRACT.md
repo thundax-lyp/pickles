@@ -18,7 +18,7 @@
 不在范围内：
 
 - 不定义 Plugin UI 的具体交互控件
-- 不定义运行时端口发现机制
+- 不定义 `.pickles/server.json` 的完整 schema
 - 不定义 AGENTS.md 注入块格式
 
 ## 3. Bounded Context
@@ -164,6 +164,7 @@ Pickles 配置与 Bind 状态不得读取、写入或依赖用户全局 `~/.code
 
 - 配置文件必须可提交到用户工程仓库。
 - 配置文件不得包含本机端口、绝对临时路径、进程号或 token。
+- 本地 HTTP 端口固定写入目标工程 `<repo>/.pickles/server.json`，不得写入 `.pickles.json`。
 - 配置读取失败时，Plugin 必须在 Problem Board 或配置界面展示可理解错误。
 
 ## 10. Open Items

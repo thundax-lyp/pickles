@@ -196,6 +196,10 @@ MVP 最小配置：
 
 运行时端口、进程号和 server URL 不写入 `.pickles.json`。
 
+本地 HTTP 端口写入目标工程 `<repo>/.pickles/server.json`。
+
+Codex Hook 通过当前 git root 定位目标工程根目录，读取 `.pickles/server.json`，并调用 `http://127.0.0.1:<port>`。
+
 Pickles 插件仓库根目录不放置 `.pickles.json`；只有被治理的目标工程根目录放置该文件。
 
 ---
