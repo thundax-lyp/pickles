@@ -44,7 +44,7 @@
 - `pickles-rules/` -> rules, policies, and shared specifications.
 - `pickles-runtime/` -> runtime implementation.
 
-When a module gains its own `AGENT.md`, read that file after this router and before editing that module.
+When a module gains its own `AGENTS.md`, read that file after this router and before editing that module.
 
 ## Load Limits
 

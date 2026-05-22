@@ -2,7 +2,7 @@
 
 ## Read Order
 
-- Read `docs/AGENT.md` first.
+- Read `docs/AGENTS.md` first.
 - For implementation work, read `docs/00-governance/ARCHITECTURE.md`.
 - Do not treat root `README.md` as implementation authority.
 

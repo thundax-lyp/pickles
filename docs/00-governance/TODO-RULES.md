@@ -203,7 +203,7 @@
 - 模块需求变化：检查 `10-requirements/`。
 - 治理规则或固定做法变化：检查 `docs/00-governance/*.md`。
 - 接口、协议或契约变化：检查 `20-interfaces/`。
-- AI 默认读取入口或任务路由变化：检查 `docs/AGENT.md`。
+- AI 默认读取入口或任务路由变化：检查 `docs/AGENTS.md`。
 
 判断原则：
 
