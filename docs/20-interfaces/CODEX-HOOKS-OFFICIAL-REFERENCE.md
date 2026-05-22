@@ -284,7 +284,7 @@ Pickles MVP 固定使用 `SessionStart` 执行 session 初始化、本地 Plugin
 - 使用 `hookSpecificOutput.additionalContext` 添加 model-visible context。
 - 对 Bash 和 `apply_patch`，可以在 `permissionDecision: "allow"` 中返回 `updatedInput.command` 重写输入。
 
-Pickles MVP 固定使用 `PreToolUse` 观察 `apply_patch` 或 shell 操作，并记录 before 内容或变动线索，但不能把它当作最终文件变动通知边界。
+Pickles MVP 固定使用 `PreToolUse` 观察 `apply_patch` 或 shell 操作，提取候选文件并读取 before 内容，但不能把它当作最终文件变动通知边界。
 
 ### 13.3 PermissionRequest
 
@@ -364,6 +364,25 @@ OpenAI Codex pull request `18391` 显示，`apply_patch` hook 会把 raw patch b
 
 Pickles 最终上报的文件列表必须通过 Pickles 自己的 before / after 快照或 workspace diff 确认。`tool_name` 与 `tool_input` 只用于缩小候选范围和选择解析策略。
 
+#### 13.4.2 Stable Before / After Computation
+
+Pickles 稳定计算 before / after 内容的规则：
+
+1. `PreToolUse` 根据 `tool_name` 与 `tool_input` 提取候选文件。
+2. `PreToolUse` 在 tool 执行前读取候选文件内容作为 before。
+3. `PostToolUse` 根据 `tool_name`、`tool_input` 与 `tool_response` 再次提取候选文件。
+4. `PostToolUse` 使用 workspace diff 或文件状态扫描确认实际变动文件。
+5. `PostToolUse` 读取实际变动文件内容作为 after。
+6. `Stop` 对未上报的 pending workspace diff 执行 flush。
+
+新增文件的 before 固定为 `null`。
+
+删除文件的 after 固定为 `null`。
+
+文件 rename / move 必须表达为旧路径删除与新路径新增，除非后续 HTTP schema 明确定义 rename 结构。
+
+该流程关闭 Pickles before / after 稳定计算问题。后续实现只能细化 diff 算法，不改变 `tool_name` / `tool_input` 不是最终真相源的约束。
+
 ### 13.5 UserPromptSubmit
 
 `matcher` 当前不使用。
@@ -407,7 +426,7 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 |---|---|---|
 | Session 初始化 | `SessionStart` | 用于读取 `.pickles.json`、检查本地 Plugin 可用性并向 Codex 暴露启动上下文。 |
 | 捕获 Codex task 生命周期 | `SessionStart`、`PreToolUse`、`PostToolUse`、`Stop`、turn-scoped `turn_id`、公共 `session_id` | `SessionStart` 用于启动初始化；`PreToolUse` / `PostToolUse` 用于变动捕获；`Stop` 用于任务完成前治理反馈。 |
-| 捕获文件变动线索 | `PreToolUse` before `apply_patch` / `Bash`; `PostToolUse` after `apply_patch` / `Bash` | `PreToolUse` 记录 before 内容或变动线索；`PostToolUse` 根据 `tool_name` / `tool_input` 选择解析策略，并触发向 Plugin 上报。 |
+| 捕获文件变动线索 | `PreToolUse` before `apply_patch` / `Bash`; `PostToolUse` after `apply_patch` / `Bash` | `PreToolUse` 提取候选文件并读取 before 内容；`PostToolUse` 根据 `tool_name` / `tool_input` 选择解析策略，并触发向 Plugin 上报。 |
 | 在完成前阻止或继续 | `Stop` 的 `decision: "block"` 会创建 continuation prompt | ERROR 存在时，Stop hook 可要求 Codex 继续修复。 |
 | 向 Codex 增加上下文 | `additionalContext` / `systemMessage` | WARN 或诊断信息可作为上下文返回。 |
 | 处理 approval | `PermissionRequest` | MVP 不依赖。 |
@@ -430,9 +449,10 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 - `apply_patch` 可以从 `tool_input.command` 解析 patch 文件路径。
 - `Bash` 的 `tool_input.command` 只能作为文件候选线索，最终文件列表必须用 before / after 快照或 workspace diff 确认。
 - `PreToolUse` 适合记录 pending tool input、before 内容或变动线索，不承担最终通知。
+- Pickles 通过 `PreToolUse` 快照 before、`PostToolUse` 确认 after、`Stop` flush pending diff 稳定计算文件变动。
 - `SessionStart` 适合做初始化和可用性检查，不承担文件变动捕获。
 - `Stop` hook 的 continuation 语义适合 Pickles 在 ERROR 存在时要求 Codex 继续修复。
 
 ## 16. Open Items
 
-- Pickles 如何稳定计算 file before / after 内容。
+无

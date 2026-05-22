@@ -64,15 +64,16 @@ MVP 最小闭环固定为：
 1. Plugin 打开目标工程。
 2. Plugin 读取目标工程 `.pickles.json`。
 3. Codex Hook 在 `SessionStart` 检查本地 Plugin 可用性。
-4. Codex Hook 在 `PreToolUse` 记录 before 内容或变动线索。
-5. Codex Hook 在 `PostToolUse` 捕获文件名、before 内容和 after 内容。
-6. Hook 通过本地 HTTP 通知 Plugin。
-7. Plugin 将变动集交给 Governance Server。
-8. Governance Server 更新 Incremental Workspace Index。
-9. Governance Server 调用 `.pickles.json` 中的 ArchUnit / ESLint 命令。
-10. Governance Server 聚合 Problem。
-11. Problem Board 展示 `title`、`type`、`message`。
-12. Hook 在 `Stop` 请求治理反馈。
+4. Codex Hook 在 `PreToolUse` 提取候选文件并读取 before 内容。
+5. Codex Hook 在 `PostToolUse` 通过 workspace diff 或文件状态扫描确认实际变动文件。
+6. Codex Hook 读取实际变动文件 after 内容。
+7. Hook 通过本地 HTTP 通知 Plugin。
+8. Plugin 将变动集交给 Governance Server。
+9. Governance Server 更新 Incremental Workspace Index。
+10. Governance Server 调用 `.pickles.json` 中的 ArchUnit / ESLint 命令。
+11. Governance Server 聚合 Problem。
+12. Problem Board 展示 `title`、`type`、`message`。
+13. Hook 在 `Stop` flush pending diff 并请求治理反馈。
 
 ### 7.2 Implementation Order
 
@@ -102,12 +103,13 @@ MVP 暂不实现：
 
 ### 8.1 Workspace Problem Flow
 
-1. Hook 在 `PreToolUse` 记录 before 内容或变动线索。
-2. Hook 在 `PostToolUse` 提交文件变动。
-3. Runtime 更新 workspace index。
-4. Runtime 执行规则命令。
-5. Runtime 聚合 Problem。
-6. Plugin 刷新 Problem Board。
+1. Hook 在 `PreToolUse` 提取候选文件并读取 before 内容。
+2. Hook 在 `PostToolUse` 确认实际变动文件并读取 after 内容。
+3. Hook 提交包含 before / after 的文件变动。
+4. Runtime 更新 workspace index。
+5. Runtime 执行规则命令。
+6. Runtime 聚合 Problem。
+7. Plugin 刷新 Problem Board。
 
 ### 8.2 Bind Flow
 

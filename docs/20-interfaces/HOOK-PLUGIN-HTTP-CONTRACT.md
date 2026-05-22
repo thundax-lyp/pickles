@@ -70,11 +70,17 @@ MVP 固定包含：
 
 ### 7.1 File Change Notify
 
-Codex Hook 在 `PreToolUse` 记录 before 内容或变动线索。
+Codex Hook 在 `PreToolUse` 根据 `tool_name` 与 `tool_input` 提取候选文件，并读取候选文件 before 内容。
 
-Codex Hook 在 `PostToolUse` 向 IntelliJ Plugin 发送变动通知。
+Codex Hook 在 `PostToolUse` 使用 workspace diff 或文件状态扫描确认实际变动文件，读取 after 内容，并向 IntelliJ Plugin 发送变动通知。
 
 通知内容固定表达任务期间的增量文件变动。
+
+`tool_name` 与 `tool_input` 只用于候选提取与解析策略选择，不作为最终文件列表真相源。
+
+新增文件的 before 固定为 `null`。
+
+删除文件的 after 固定为 `null`。
 
 ### 7.2 Feedback Request
 
@@ -97,19 +103,22 @@ Governance Server 基于变动集增量更新 Incremental Workspace Index。
 ### 8.1 Change Notify Flow
 
 1. Codex task 触发 `PreToolUse`。
-2. Codex Hook 记录 before 内容或变动线索。
-3. Codex task 触发 `PostToolUse`。
-4. Codex Hook 捕获文件名、before 内容和 after 内容。
-5. Hook 通过本地 HTTP 通知 IntelliJ Plugin。
-6. Plugin 将变动集交给 Governance Server。
-7. Governance Server 更新 workspace index 并执行规则检测。
+2. Codex Hook 根据 `tool_name` 与 `tool_input` 提取候选文件。
+3. Codex Hook 读取候选文件 before 内容。
+4. Codex task 触发 `PostToolUse`。
+5. Codex Hook 通过 workspace diff 或文件状态扫描确认实际变动文件。
+6. Codex Hook 读取实际变动文件 after 内容。
+7. Hook 通过本地 HTTP 通知 IntelliJ Plugin。
+8. Plugin 将变动集交给 Governance Server。
+9. Governance Server 更新 workspace index 并执行规则检测。
 
 ### 8.2 Feedback Flow
 
 1. Codex task 进入 `Stop` 检查点。
-2. Hook 通过本地 HTTP 请求治理反馈。
-3. Plugin / Governance Server 返回当前 workspace Problem Board。
-4. Codex 修复或汇报问题。
+2. Hook flush 未上报的 pending workspace diff。
+3. Hook 通过本地 HTTP 请求治理反馈。
+4. Plugin / Governance Server 返回当前 workspace Problem Board。
+5. Codex 修复或汇报问题。
 
 ### 8.3 Session Start Flow
 
