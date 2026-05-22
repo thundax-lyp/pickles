@@ -49,7 +49,7 @@ Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 | Incremental Semantic Graph | 基于 Agent Hook 上报的增量文件变动，更新工程语义关系与治理问题 |
 | Agent Hooks | 部署在 Codex Runtime 内的生命周期触发点 |
 | Plugin Notify Protocol | Hook 向 IntelliJ Plugin 发送通知的本地协议，MVP 默认使用 Plugin 启动的本地 HTTP 服务 |
-| Project Configuration | 项目根目录 `.pickles.json`，作为 Pickles 项目级配置真相源 |
+| Project Configuration | 目标工程根目录 `.pickles.json`，作为被治理项目的配置真相源 |
 
 ---
 
@@ -147,9 +147,11 @@ Pickles 不在 MVP 中新增独立 severity 体系。
 
 # Project Configuration
 
-Pickles 使用项目根目录 `.pickles.json` 作为项目级配置文件。
+Pickles 使用目标工程根目录 `.pickles.json` 作为项目级配置文件。
 
-`.pickles.json` 是配置真相源。IntelliJ Plugin、Codex Hook 和 Governance Server 都读取该文件。
+目标工程指 IntelliJ IDEA 当前打开、且 Codex Agent 正在工作的用户项目。对 Pickles 仓库自身的 e2e 场景，示例目标工程固定为 `e2e/sample-project/`。
+
+`.pickles.json` 是被治理项目的配置真相源。IntelliJ Plugin、Codex Hook 和 Governance Server 都读取该文件。
 
 Plugin 配置界面只负责展示和修改 `.pickles.json`，不拥有独立配置真相。
 
@@ -178,6 +180,8 @@ MVP 最小配置：
 ```
 
 运行时端口、进程号和 server URL 不写入 `.pickles.json`。
+
+Pickles 插件仓库根目录不放置 `.pickles.json`；只有被治理的目标工程根目录放置该文件。
 
 ---
 
