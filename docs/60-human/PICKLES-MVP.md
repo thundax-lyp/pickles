@@ -107,6 +107,7 @@ Plugin 不修改业务代码、测试代码或工程实现代码。
 
 - Task 生命周期检查点
 - 固定挂载 `SessionStart`、`PreToolUse`、`PostToolUse` 和 `Stop`
+- 使用 Codex `session_id` 与 `turn_id` 作为 Hook event 幂等标识
 - 在 `SessionStart` 读取目标工程配置并检查本地 Plugin 可用性
 - 在 `PreToolUse` 提取候选文件并读取 before 内容
 - 收集任务期间的增量文件变动

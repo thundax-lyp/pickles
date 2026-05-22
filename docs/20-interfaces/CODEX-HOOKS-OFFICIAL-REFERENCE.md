@@ -208,6 +208,8 @@ JSON 示例结构：
 
 Turn-scoped hooks 会包含 `turn_id`。
 
+Pickles 必须使用 `session_id` 与 `turn_id` 作为 Hook event identity。`SessionStart` 没有 `turn_id` 时，Pickles 使用 `session_id` 作为 session 级幂等边界。
+
 `SessionStart`、`PreToolUse`、`PermissionRequest`、`PostToolUse`、`UserPromptSubmit` 和 `Stop` 还包含 `permission_mode`。值包括：
 
 - `default`
@@ -438,6 +440,7 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 - Pickles MVP 固定使用目标工程 `<repo>/.codex/hooks.json` 配置 Hook。
 - Pickles Hook 通过当前 git root 定位目标工程，并读取 `<repo>/.pickles/server.json` 发现本地 HTTP 端口。
 - Pickles Hook 使用 `http://127.0.0.1:<port>` 调用本地 Plugin HTTP 服务。
+- Pickles Hook event 幂等固定绑定 Codex `session_id` 与 `turn_id`，不新增独立 task id。
 - Pickles Hook 脚本固定使用 Node.js ESM `.mjs`。
 - Pickles Hook 脚本固定放在目标工程 `<repo>/.codex/hooks/`。
 - Pickles Hook MVP 不依赖 npm install，只使用 Node.js built-in modules。

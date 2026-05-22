@@ -44,8 +44,24 @@ Hook event 表达一次 Codex task 生命周期检查点通知。
 
 MVP 固定包含：
 
+- `sessionId`
+- `turnId`
+- `hookEventName`
 - `workspace`
 - `files`
+
+`sessionId` 来源于 Codex hook input `session_id`。
+
+`turnId` 来源于 Codex hook input `turn_id`。`SessionStart` 没有 `turn_id` 时，`turnId` 固定为 `null`。
+
+Pickles 幂等键固定基于：
+
+- `sessionId`
+- `turnId`
+- `hookEventName`
+- changed file `fileName`
+
+没有 changed file 的事件固定使用 `sessionId`、`turnId` 和 `hookEventName` 作为幂等键。
 
 ### 5.2 ChangedFile
 
@@ -69,6 +85,7 @@ MVP 固定包含：
 
 - Hook 通知协议在 MVP 固定为本地 HTTP。
 - 本地 HTTP 端口发现固定使用目标工程 `<repo>/.pickles/server.json`。
+- Hook event identity 固定使用 Codex `session_id` 与 `turn_id`。
 - Hook 知道 Codex task 生命周期。
 - Hook 事件固定为 `SessionStart`、`PreToolUse`、`PostToolUse` 和 `Stop`。
 - Problem Board 按 workspace 聚合，不按单个 task 单独保存。
@@ -165,10 +182,10 @@ Governance Server 基于变动集增量更新 Incremental Workspace Index。
 - 本地 HTTP 服务只服务当前目标工程。
 - Hook 失败不得修改用户业务代码。
 - 通信失败必须能被 Codex 看到，并允许 Codex 汇报失败原因。
+- Plugin / Governance Server 必须按 Hook event 幂等键处理重复通知。
 
 ## 10. Open Items
 
 - HTTP endpoint 路径。
 - request / response JSON schema。
 - 是否需要请求鉴权。
-- Hook event 是否需要 task id。
