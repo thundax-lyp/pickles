@@ -52,6 +52,8 @@ Hook 负责通知与拉取反馈。IntelliJ Plugin / Governance Engine 负责聚
 - Hook 不执行 ArchUnit 或 ESLint 命令。
 - Hook 不修改用户工程文件。
 - Hook 不负责 Problem Board UI。
+- Pickles Hook 配置固定使用目标工程 `<repo>/.codex/hooks.json`。
+- Pickles Hook 不读取、修改或依赖用户全局 `~/.codex`。
 
 ## 7. Functional Requirements
 

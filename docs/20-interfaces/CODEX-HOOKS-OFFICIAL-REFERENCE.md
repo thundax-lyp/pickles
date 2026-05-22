@@ -390,6 +390,8 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 ## 15. Implementation Notes For Pickles
 
 - Pickles repo-local hook 脚本应从 git root 定位，避免 Codex 从子目录启动导致路径失效。
+- Pickles MVP 固定使用目标工程 `<repo>/.codex/hooks.json` 配置 Hook。
+- Pickles Bind 不读取、不修改、不依赖用户全局 `~/.codex`。
 - Pickles MVP 不使用 plugin-bundled hooks，因为当前 Hooks 页显示 plugin-bundled hooks 需要 `[features].plugin_hooks = true` 才会被发现。
 - Project-local hooks 需要项目 `.codex/` layer 被 trust。
 - Hook command 的工作目录是 Codex session `cwd`，这与 Pickles 的目标工程根目录定位有关。
@@ -398,8 +400,6 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 
 ## 16. Open Items
 
-- Pickles MVP 使用 `hooks.json` 还是 inline `[hooks]`。
 - Pickles Hook 脚本语言。
 - Pickles 如何稳定计算 file before / after 内容。
 - Pickles 是否需要同时配置 `PostToolUse` 和 `Stop`。
-- Pickles 是否需要支持 user-level hooks，还是只支持 project-local hooks。

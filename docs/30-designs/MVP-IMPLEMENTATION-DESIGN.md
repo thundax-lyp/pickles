@@ -108,9 +108,11 @@ MVP 暂不实现：
 ### 8.2 Bind Flow
 
 1. Plugin 检测目标工程是否已绑定 Pickles。
-2. 未绑定时显示绑定按钮。
-3. 已绑定时显示解除绑定按钮。
-4. 具体注入块格式在 MVP 暂不定义。
+2. Plugin 同时检查目标工程 `<repo>/.codex/hooks.json`。
+3. Plugin 不检查、不写入用户全局 `~/.codex`。
+4. 未绑定时显示绑定按钮。
+5. 已绑定时显示解除绑定按钮。
+6. 具体注入块格式在 MVP 暂不定义。
 
 ## 9. Non-Functional Requirements
 

@@ -140,6 +140,10 @@ Governance Server 直接调用 `.pickles.json` 中配置的用户工程命令执
 
 `bind.enabled` 表达当前工程是否已经绑定 Pickles 治理约束。
 
+Bind 状态检测必须同时检查目标工程 `<repo>/.codex/hooks.json`。
+
+Pickles 配置与 Bind 状态不得读取、写入或依赖用户全局 `~/.codex`。
+
 ## 8. Key Flows
 
 ### 8.1 Config Read Flow

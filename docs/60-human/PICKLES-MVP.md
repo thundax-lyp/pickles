@@ -227,6 +227,8 @@ Pickles 会向工程 AGENTS.md 注入治理约束。
 
 Pickles 先检测当前工程是否已经绑定治理约束：
 
+- 同时检查目标工程 `<repo>/.codex/hooks.json`。
+- 不读取、不修改、不依赖用户全局 `~/.codex`。
 - 未绑定时，Plugin 显示绑定按钮。
 - 已绑定时，Plugin 显示解除绑定按钮。
 

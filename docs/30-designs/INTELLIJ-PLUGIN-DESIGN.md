@@ -77,6 +77,10 @@ Problem Board 固定显示 workspace 当前问题。
 
 Plugin 检测当前目标工程是否已经绑定 Pickles 治理约束。
 
+Bind 检测同时覆盖目标工程 `<repo>/.codex/hooks.json`。
+
+Plugin 不读取、不修改、不依赖用户全局 `~/.codex` 目录。
+
 - 未绑定时显示绑定按钮。
 - 已绑定时显示解除绑定按钮。
 
