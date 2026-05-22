@@ -61,6 +61,7 @@ MVP 固定包含：
 
 - Hook 通知协议在 MVP 固定为本地 HTTP。
 - Hook 知道 Codex task 生命周期。
+- Hook 事件固定为 `SessionStart`、`PostToolUse` 和 `Stop`。
 - Problem Board 按 workspace 聚合，不按单个 task 单独保存。
 - Hook payload 固定至少包含文件名、before 内容和 after 内容。
 - HTTP API 细节在 MVP 暂不定义。
@@ -69,17 +70,21 @@ MVP 固定包含：
 
 ### 7.1 File Change Notify
 
-Codex Hook 在检查点向 IntelliJ Plugin 发送变动通知。
+Codex Hook 在 `PostToolUse` 向 IntelliJ Plugin 发送变动通知。
 
 通知内容固定表达任务期间的增量文件变动。
 
 ### 7.2 Feedback Request
 
-Codex Hook 在任务完成前通过本地 HTTP 请求治理反馈。
+Codex Hook 在 `Stop` 通过本地 HTTP 请求治理反馈。
 
 返回内容应能让 Codex 判断是否存在 ERROR / WARN 问题。
 
-### 7.3 Runtime Dispatch
+### 7.3 Session Start Notify
+
+Codex Hook 在 `SessionStart` 读取目标工程 `.pickles.json` 并检查本地 Plugin HTTP 服务是否可用。
+
+### 7.4 Runtime Dispatch
 
 IntelliJ Plugin 收到 Hook 通知后，将变动集交给 Governance Server。
 
@@ -89,7 +94,7 @@ Governance Server 基于变动集增量更新 Incremental Workspace Index。
 
 ### 8.1 Change Notify Flow
 
-1. Codex 修改目标工程文件。
+1. Codex task 触发 `PostToolUse`。
 2. Codex Hook 捕获文件名、before 内容和 after 内容。
 3. Hook 通过本地 HTTP 通知 IntelliJ Plugin。
 4. Plugin 将变动集交给 Governance Server。
@@ -97,10 +102,17 @@ Governance Server 基于变动集增量更新 Incremental Workspace Index。
 
 ### 8.2 Feedback Flow
 
-1. Codex task 进入完成前检查点。
+1. Codex task 进入 `Stop` 检查点。
 2. Hook 通过本地 HTTP 请求治理反馈。
 3. Plugin / Governance Server 返回当前 workspace Problem Board。
 4. Codex 修复或汇报问题。
+
+### 8.3 Session Start Flow
+
+1. Codex session 触发 `SessionStart`。
+2. Hook 读取目标工程 `.pickles.json`。
+3. Hook 检查本地 Plugin HTTP 服务是否可用。
+4. Hook 将初始化结果暴露给 Codex。
 
 ## 9. Non-Functional Requirements
 
