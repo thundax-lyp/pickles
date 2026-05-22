@@ -140,11 +140,15 @@ MVP 检测用户项目，也就是 Agent 工作目录下的项目。
 
 规则属于 Pickles，但检测命令来自用户项目。
 
-IntelliJ Plugin 通过 IDEA 获取用户项目使用的 ArchUnit 与 ESLint 命令，并同步到目标工程 `.pickles/config.json`。
+ArchUnit 与 ESLint 命令固定由目标工程 `.pickles/config.json` 显式配置。
+
+IntelliJ Plugin 不通过 IDEA 自动识别 ArchUnit 或 ESLint 命令。
+
+Plugin 配置界面只负责展示和写回 `.pickles/config.json` 中的规则命令。
 
 Governance Server 直接调用 `.pickles/config.json` 中配置的用户工程命令执行检测。
 
-Plugin 配置界面可以提供规则配置，也可以引入 script 指令。
+Plugin 配置界面可以提供规则配置。
 
 ## Problem Severity
 

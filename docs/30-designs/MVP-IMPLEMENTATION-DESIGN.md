@@ -136,5 +136,3 @@ MVP 暂不实现：
 
 - HTTP API 细节。
 - AGENTS.md 注入块格式、marker 和幂等更新细节。
-- ArchUnit 命令识别策略。
-- ESLint 命令识别策略。

@@ -130,9 +130,13 @@ MVP 最小配置固定为：
 }
 ```
 
-### 7.2 Rule Command Sync
+### 7.2 Rule Command Config
 
-IntelliJ Plugin 通过 IDEA 获取用户工程使用的 ArchUnit 与 ESLint 命令，并同步到目标工程 `.pickles/config.json`。
+ArchUnit 与 ESLint 命令固定由目标工程 `.pickles/config.json` 显式配置。
+
+IntelliJ Plugin 不通过 IDEA 自动识别 ArchUnit 或 ESLint 命令。
+
+IntelliJ Plugin 只负责展示和写回 `.pickles/config.json` 中的规则命令。
 
 Governance Server 直接调用 `.pickles/config.json` 中配置的用户工程命令执行检测。
 
@@ -171,6 +175,4 @@ Pickles 配置与 Bind 状态不得读取、写入或依赖用户全局 `~/.code
 
 ## 10. Open Items
 
-- Plugin 如何通过 IDEA 精确识别 ArchUnit 命令。
-- Plugin 如何通过 IDEA 精确识别 ESLint 命令。
 - `scripts` 指令结构。

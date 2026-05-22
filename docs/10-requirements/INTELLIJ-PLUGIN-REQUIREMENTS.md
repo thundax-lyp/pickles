@@ -84,7 +84,9 @@ MVP 只显示以下字段：
 
 插件配置界面必须能写回 `.pickles/config.json`。
 
-插件必须能把 IDEA 识别到的 ArchUnit 与 ESLint 命令同步到 `.pickles/config.json`。
+插件不通过 IDEA 自动识别 ArchUnit 或 ESLint 命令。
+
+插件配置界面必须能展示和写回 `.pickles/config.json` 中的 ArchUnit 与 ESLint 命令。
 
 ### 7.3 Bind / Unbind
 
