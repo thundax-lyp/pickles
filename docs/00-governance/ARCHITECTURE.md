@@ -4,29 +4,31 @@
 
 ## Project Baseline
 
-- project: multi-area repository
+- project: IntelliJ IDEA plugin project
+- primary product: Pickles IntelliJ IDEA plugin
 - root docs: `docs/`
 - implementation areas:
-  - `pickles-hooks/`
   - `pickles-intellij-plugin/`
-  - `pickles-mcp/`
-  - `pickles-rules/`
   - `pickles-runtime/`
+  - `pickles-mcp/`
+  - `pickles-hooks/`
+  - `pickles-rules/`
 
 ## Architecture Shape
 
-- 规则定义、运行时执行、工具集成和 IDE 集成保持边界清晰。
+- IntelliJ IDEA Plugin 是主要产品入口。
+- 规则定义、运行时执行、Agent 工具集成和 IDE 集成保持边界清晰。
 - 模块之间优先通过稳定契约交互，不通过临时内部实现互相耦合。
 - 新增共享能力前，先确认它被至少两个模块真实需要。
 - 不为了未来可能的扩展提前新增抽象层。
 
 ## Module Boundaries
 
-- `pickles-rules/`: 规则、策略、规范和可复用声明。
-- `pickles-runtime/`: 规则加载、解析、执行和运行时能力。
-- `pickles-hooks/`: 与 hook 生命周期相关的入口、脚本或适配。
-- `pickles-mcp/`: MCP server、tool、resource 和外部协议适配。
-- `pickles-intellij-plugin/`: IntelliJ 平台集成、编辑器体验和 IDE 侧交互。
+- `pickles-intellij-plugin/`: IntelliJ 平台集成、编辑器体验、Problem Board UI 和 IDE 侧编排。
+- `pickles-runtime/`: 规则加载、解析、执行和本地治理运行时能力。
+- `pickles-mcp/`: MCP server、tool、resource 和 Agent 协议适配。
+- `pickles-hooks/`: 与 Agent task 生命周期和 hook 触发相关的入口、脚本或适配。
+- `pickles-rules/`: 规则、策略、规范和可复用治理声明。
 - `docs/`: AI 读取路由、治理规则、设计文档和人工材料。
 
 ## Cross-Module Rule
