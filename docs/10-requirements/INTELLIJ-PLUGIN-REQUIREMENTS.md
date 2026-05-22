@@ -30,6 +30,8 @@ IntelliJ Plugin 是 Pickles MVP 的主要产品入口。
 
 插件运行在 IntelliJ IDEA 中，目标工程是 IntelliJ IDEA 当前打开、且 Codex Agent 正在工作的用户项目。
 
+插件实现语言固定为 Kotlin。
+
 插件不修改业务代码、测试代码或工程实现代码。插件可以管理治理文件，例如 `.pickles/config.json` 和 `AGENTS.md`。
 
 ## 4. Module Mapping
@@ -137,6 +139,5 @@ HTTP endpoint 细节在 MVP 暂不定义。
 
 ## 10. Open Items
 
-- 插件实现语言。
 - Tool Window 具体布局。
 - AGENTS.md 注入块格式、marker 和幂等更新细节。

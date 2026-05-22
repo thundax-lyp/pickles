@@ -26,6 +26,8 @@
 
 Plugin 运行在 IntelliJ IDEA 中。Plugin 负责接收 Codex Hook 通知、调用 Governance Server、展示 Problem Board，并管理治理绑定。
 
+Plugin 实现语言固定为 Kotlin。
+
 Plugin 不修改业务代码、测试代码或工程实现代码。Plugin 可以管理治理文件。
 
 ## 4. Module Mapping
@@ -119,6 +121,5 @@ HTTP endpoint 细节在 MVP 暂不定义。
 
 ## 10. Open Items
 
-- Plugin 实现语言。
 - Tool Window 具体布局。
 - AGENTS.md 注入块格式、marker 和幂等更新细节。

@@ -75,6 +75,8 @@ Problem Board
 
 ## IDEA Plugin
 
+实现语言固定为 Kotlin。
+
 负责：
 
 - 接收 Codex Hook 的增量文件变动通知
