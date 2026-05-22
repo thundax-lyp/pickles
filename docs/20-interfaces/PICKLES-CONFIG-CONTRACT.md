@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-本文档定义目标工程根目录 `.pickles.json` 的 MVP 配置契约。
+本文档定义目标工程 `.pickles/config.json` 的 MVP 配置契约。
 
 目标是让 IntelliJ Plugin、Codex Hook 和 Governance Server 使用同一个项目级配置真相源。
 
@@ -10,7 +10,7 @@
 
 当前范围：
 
-- `.pickles.json` 文件位置
+- `.pickles/config.json` 文件位置
 - MVP 固定字段
 - 字段读写归属
 - 运行时信息边界
@@ -23,18 +23,20 @@
 
 ## 3. Bounded Context
 
-`.pickles.json` 固定放在被治理的目标工程根目录。
+`.pickles/config.json` 固定放在被治理的目标工程 `.pickles/` 目录。
 
-目标工程指 IntelliJ IDEA 当前打开、且 Codex Agent 正在工作的用户项目。Pickles 插件仓库根目录不放置 `.pickles.json`。Pickles 仓库的 e2e 示例目标工程固定为 `e2e/sample-project/`。
+目标工程指 IntelliJ IDEA 当前打开、且 Codex Agent 正在工作的用户项目。Pickles 插件仓库根目录不放置 `.pickles/config.json`。Pickles 仓库的 e2e 示例目标工程固定为 `e2e/sample-project/`。
 
-`.pickles.json` 是配置真相源。IntelliJ Plugin、Codex Hook 和 Governance Server 都读取该文件。Plugin 配置界面只展示和修改该文件，不拥有独立配置真相。
+目标工程 `.pickles/` 目录固定承载 Pickles 项目文件。`config.json` 是可提交配置文件，`server.json` 是本地运行时状态文件。
+
+`.pickles/config.json` 是配置真相源。IntelliJ Plugin、Codex Hook 和 Governance Server 都读取该文件。Plugin 配置界面只展示和修改该文件，不拥有独立配置真相。
 
 ## 4. Module Mapping
 
-- `pickles-intellij-plugin/`: 读取、展示、更新 `.pickles.json`。
+- `pickles-intellij-plugin/`: 读取、展示、更新 `.pickles/config.json`。
 - `pickles-hooks/`: 读取 `hook.protocol` 和目标工程配置。
 - `pickles-runtime/`: 读取 `rules` 和 `problemBoard` 配置并执行检测。
-- `e2e/sample-project/`: 保存示例 `.pickles.json`。
+- `e2e/sample-project/`: 保存示例 `.pickles/config.json`。
 
 ## 5. Core Objects
 
@@ -85,13 +87,13 @@
 
 ## 6. Global Constraints
 
-- `.pickles.json` 必须是合法 JSON。
+- `.pickles/config.json` 必须是合法 JSON。
 - `version` 固定为 `1`。
 - `agent` 固定为 `codex`。
 - `hook.protocol` 在 MVP 固定为 `http`。
 - `problemBoard.aggregation` 在 MVP 固定为 `workspace`。
-- 运行时端口、进程号和 server URL 不写入 `.pickles.json`。
-- ArchUnit 与 ESLint 的执行命令固定从 `.pickles.json` 读取。
+- 运行时端口、进程号和 server URL 不写入 `.pickles/config.json`。
+- ArchUnit 与 ESLint 的执行命令固定从 `.pickles/config.json` 读取。
 - 命令为空字符串表示尚未配置，不表示禁用。
 
 ## 7. Functional Requirements
@@ -130,9 +132,9 @@ MVP 最小配置固定为：
 
 ### 7.2 Rule Command Sync
 
-IntelliJ Plugin 通过 IDEA 获取用户工程使用的 ArchUnit 与 ESLint 命令，并同步到目标工程 `.pickles.json`。
+IntelliJ Plugin 通过 IDEA 获取用户工程使用的 ArchUnit 与 ESLint 命令，并同步到目标工程 `.pickles/config.json`。
 
-Governance Server 直接调用 `.pickles.json` 中配置的用户工程命令执行检测。
+Governance Server 直接调用 `.pickles/config.json` 中配置的用户工程命令执行检测。
 
 ### 7.3 Bind Config
 
@@ -149,22 +151,22 @@ Pickles 配置与 Bind 状态不得读取、写入或依赖用户全局 `~/.code
 ### 8.1 Config Read Flow
 
 1. IntelliJ Plugin 定位目标工程根目录。
-2. IntelliJ Plugin 读取 `.pickles.json`。
-3. Governance Server 读取同一份 `.pickles.json`。
-4. Codex Hook 读取同一份 `.pickles.json`。
+2. IntelliJ Plugin 读取 `.pickles/config.json`。
+3. Governance Server 读取同一份 `.pickles/config.json`。
+4. Codex Hook 读取同一份 `.pickles/config.json`。
 
 ### 8.2 Config Update Flow
 
-1. Plugin 配置界面展示当前 `.pickles.json`。
+1. Plugin 配置界面展示当前 `.pickles/config.json`。
 2. 用户修改配置。
-3. Plugin 写回 `.pickles.json`。
+3. Plugin 写回 `.pickles/config.json`。
 4. Runtime 后续检测使用更新后的配置。
 
 ## 9. Non-Functional Requirements
 
 - 配置文件必须可提交到用户工程仓库。
 - 配置文件不得包含本机端口、绝对临时路径、进程号或 token。
-- 本地 HTTP 端口固定写入目标工程 `<repo>/.pickles/server.json`，不得写入 `.pickles.json`。
+- 本地 HTTP 端口固定写入目标工程 `<repo>/.pickles/server.json`，不得写入 `.pickles/config.json`。
 - 配置读取失败时，Plugin 必须在 Problem Board 或配置界面展示可理解错误。
 
 ## 10. Open Items

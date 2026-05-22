@@ -424,7 +424,7 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 
 | Pickles 需要 | Codex Hooks 对应能力 | 采用方式 |
 |---|---|---|
-| Session 初始化 | `SessionStart` | 用于读取 `.pickles.json`、检查本地 Plugin 可用性并向 Codex 暴露启动上下文。 |
+| Session 初始化 | `SessionStart` | 用于读取 `.pickles/config.json`、检查本地 Plugin 可用性并向 Codex 暴露启动上下文。 |
 | 捕获 Codex task 生命周期 | `SessionStart`、`PreToolUse`、`PostToolUse`、`Stop`、turn-scoped `turn_id`、公共 `session_id` | `SessionStart` 用于启动初始化；`PreToolUse` / `PostToolUse` 用于变动捕获；`Stop` 用于任务完成前治理反馈。 |
 | 捕获文件变动线索 | `PreToolUse` before `apply_patch` / `Bash`; `PostToolUse` after `apply_patch` / `Bash` | `PreToolUse` 提取候选文件并读取 before 内容；`PostToolUse` 根据 `tool_name` / `tool_input` 选择解析策略，并触发向 Plugin 上报。 |
 | 在完成前阻止或继续 | `Stop` 的 `decision: "block"` 会创建 continuation prompt | ERROR 存在时，Stop hook 可要求 Codex 继续修复。 |

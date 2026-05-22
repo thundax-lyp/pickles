@@ -11,7 +11,7 @@
 当前范围：
 
 - Problem Board Tool Window
-- `.pickles.json` 配置展示和修改
+- `.pickles/config.json` 配置展示和修改
 - AGENTS.md Bind / Unbind
 - 本地 HTTP 服务管理
 - 文件跳转
@@ -48,7 +48,7 @@ Plugin 不修改业务代码、测试代码或工程实现代码。Plugin 可以
 - MVP UI 只显示 `title`、`type`、`message`。
 - 每个问题项提供删除按钮。
 - 点击问题项跳转到对应文件位置。
-- Plugin 配置界面只展示和修改 `.pickles.json`。
+- Plugin 配置界面只展示和修改 `.pickles/config.json`。
 - Plugin 不拥有独立配置真相。
 
 ## 7. Functional Requirements
@@ -106,9 +106,9 @@ HTTP endpoint 细节在 MVP 暂不定义。
 ### 8.2 Config Flow
 
 1. Plugin 定位目标工程根目录。
-2. Plugin 读取 `.pickles.json`。
+2. Plugin 读取 `.pickles/config.json`。
 3. 用户在配置界面修改配置。
-4. Plugin 写回 `.pickles.json`。
+4. Plugin 写回 `.pickles/config.json`。
 
 ## 9. Non-Functional Requirements
 

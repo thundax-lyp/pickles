@@ -101,7 +101,7 @@ Codex Hook 在 `Stop` 通过本地 HTTP 请求治理反馈。
 
 Codex Hook 在 `SessionStart` 通过当前 git root 定位目标工程根目录。
 
-Codex Hook 读取目标工程 `.pickles.json`。
+Codex Hook 读取目标工程 `.pickles/config.json`。
 
 Codex Hook 读取目标工程 `.pickles/server.json`。
 
@@ -155,7 +155,7 @@ Governance Server 基于变动集增量更新 Incremental Workspace Index。
 
 1. Codex session 触发 `SessionStart`。
 2. Hook 通过当前 git root 定位目标工程根目录。
-3. Hook 读取目标工程 `.pickles.json`。
+3. Hook 读取目标工程 `.pickles/config.json`。
 4. Hook 读取目标工程 `.pickles/server.json`。
 5. Hook 使用 `http://127.0.0.1:<port>` 检查本地 Plugin HTTP 服务是否可用。
 6. Hook 将初始化结果暴露给 Codex。

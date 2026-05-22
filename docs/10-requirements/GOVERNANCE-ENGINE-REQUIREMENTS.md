@@ -10,7 +10,7 @@
 
 当前范围：
 
-- `.pickles.json` 读取和校验
+- `.pickles/config.json` 读取和校验
 - Incremental Workspace Index
 - ArchUnit 命令执行
 - ESLint 命令执行
@@ -51,8 +51,8 @@ IntelliJ Plugin 负责 UI、IDE 集成和本地 HTTP 入口。Governance Engine 
 
 - Engine 不拥有 UI。
 - Engine 不修改业务代码、测试代码或工程实现代码。
-- Engine 读取目标工程根目录 `.pickles.json`。
-- Engine 直接调用 `.pickles.json` 中配置的用户工程命令。
+- Engine 读取目标工程 `.pickles/config.json`。
+- Engine 直接调用 `.pickles/config.json` 中配置的用户工程命令。
 - MVP 只支持 ArchUnit 与 ESLint。
 - MVP 只使用规则工具返回的 `ERROR` / `WARN`。
 
@@ -60,9 +60,9 @@ IntelliJ Plugin 负责 UI、IDE 集成和本地 HTTP 入口。Governance Engine 
 
 ### 7.1 Config Loading
 
-Engine 必须从目标工程根目录读取 `.pickles.json`。
+Engine 必须从目标工程 `.pickles/config.json` 读取配置。
 
-Engine 必须校验 `.pickles.json` 是否是合法 JSON。
+Engine 必须校验 `.pickles/config.json` 是否是合法 JSON。
 
 配置读取失败时，Engine 必须返回可展示错误。
 
@@ -76,7 +76,7 @@ MVP index 只服务 workspace 级问题聚合。
 
 ### 7.3 Rule Execution
 
-Engine 必须根据 `.pickles.json` 执行启用的规则命令：
+Engine 必须根据 `.pickles/config.json` 执行启用的规则命令：
 
 - `rules.archunit.command`
 - `rules.eslint.command`
@@ -101,7 +101,7 @@ MVP 不定义完整 Repair-Oriented Summary 结构。
 
 1. Engine 接收变动集。
 2. Engine 更新 Incremental Workspace Index。
-3. Engine 读取 `.pickles.json`。
+3. Engine 读取 `.pickles/config.json`。
 4. Engine 执行启用的规则命令。
 5. Engine 聚合 Problem。
 6. Engine 返回 Problem Board 数据。
@@ -110,7 +110,7 @@ MVP 不定义完整 Repair-Oriented Summary 结构。
 
 - 命令执行必须带有超时。
 - 命令失败必须转换为可展示 Problem 或可展示错误。
-- Engine 不写 `.pickles.json`。
+- Engine 不写 `.pickles/config.json`。
 - Engine 不保存全量语义持久化数据。
 
 ## 10. Open Items

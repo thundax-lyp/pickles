@@ -12,7 +12,7 @@
 
 - IntelliJ IDEA 插件入口
 - Problem Board Tool Window
-- `.pickles.json` 配置展示和修改
+- `.pickles/config.json` 配置展示和修改
 - AGENTS.md Bind / Unbind
 - 本地 HTTP 服务管理
 - 文件跳转
@@ -30,7 +30,7 @@ IntelliJ Plugin 是 Pickles MVP 的主要产品入口。
 
 插件运行在 IntelliJ IDEA 中，目标工程是 IntelliJ IDEA 当前打开、且 Codex Agent 正在工作的用户项目。
 
-插件不修改业务代码、测试代码或工程实现代码。插件可以管理治理文件，例如 `.pickles.json` 和 `AGENTS.md`。
+插件不修改业务代码、测试代码或工程实现代码。插件可以管理治理文件，例如 `.pickles/config.json` 和 `AGENTS.md`。
 
 ## 4. Module Mapping
 
@@ -51,8 +51,8 @@ IntelliJ Plugin 是 Pickles MVP 的主要产品入口。
 ## 6. Global Constraints
 
 - 插件固定运行在 IntelliJ IDEA。
-- 插件必须读取目标工程根目录 `.pickles.json`。
-- 插件配置界面只展示和修改 `.pickles.json`，不拥有独立配置真相。
+- 插件必须读取目标工程 `.pickles/config.json`。
+- 插件配置界面只展示和修改 `.pickles/config.json`，不拥有独立配置真相。
 - 插件负责启动本地 HTTP 服务。
 - 插件负责接收 Codex Hook 的增量文件变动通知。
 - 插件负责调用 Governance Engine。
@@ -76,13 +76,13 @@ MVP 只显示以下字段：
 
 ### 7.2 Project Configuration
 
-插件必须读取目标工程根目录 `.pickles.json`。
+插件必须读取目标工程 `.pickles/config.json`。
 
-插件配置界面必须能展示 `.pickles.json` 当前配置。
+插件配置界面必须能展示 `.pickles/config.json` 当前配置。
 
-插件配置界面必须能写回 `.pickles.json`。
+插件配置界面必须能写回 `.pickles/config.json`。
 
-插件必须能把 IDEA 识别到的 ArchUnit 与 ESLint 命令同步到 `.pickles.json`。
+插件必须能把 IDEA 识别到的 ArchUnit 与 ESLint 命令同步到 `.pickles/config.json`。
 
 ### 7.3 Bind / Unbind
 
@@ -105,7 +105,7 @@ Bind / Unbind 的具体注入块格式、marker 和幂等更新细节在 MVP 暂
 
 插件必须把本地 HTTP 服务端口写入目标工程 `<repo>/.pickles/server.json`。
 
-`server.json` 是运行时状态文件，不写入 `.pickles.json`。
+`server.json` 是运行时状态文件，不写入 `.pickles/config.json`。
 
 HTTP endpoint 细节在 MVP 暂不定义。
 
@@ -125,14 +125,14 @@ HTTP endpoint 细节在 MVP 暂不定义。
 3. 用户点击绑定按钮。
 4. 插件检查并管理目标工程内的治理文件。
 5. 插件检查并管理目标工程 `<repo>/.codex/hooks.json`。
-6. 插件更新 `.pickles.json` 绑定状态。
+6. 插件更新 `.pickles/config.json` 绑定状态。
 
 ## 9. Non-Functional Requirements
 
 - 插件 UI 操作不得阻塞 IDEA UI 线程。
 - 文件跳转失败时必须展示可理解错误。
 - 配置读取失败时必须展示可理解错误。
-- 本地 HTTP 端口不得写入 `.pickles.json`。
+- 本地 HTTP 端口不得写入 `.pickles/config.json`。
 - 本地 HTTP 端口固定写入目标工程 `<repo>/.pickles/server.json`。
 
 ## 10. Open Items
