@@ -31,6 +31,7 @@
 - OpenAI Developers Codex Hooks: [developers.openai.com/codex/hooks](https://developers.openai.com/codex/hooks)
 - OpenAI Developers Codex Changelog: [developers.openai.com/codex/changelog](https://developers.openai.com/codex/changelog)
 - OpenAI Developers Codex Feature Maturity: [developers.openai.com/codex/feature-maturity](https://developers.openai.com/codex/feature-maturity)
+- OpenAI Codex pull request `18391`: [github.com/openai/codex/pull/18391](https://github.com/openai/codex/pull/18391)
 
 检索日期：2026-05-22。
 
@@ -339,6 +340,30 @@ Bash 非零退出也会触发。
 
 Pickles MVP 固定使用 `PostToolUse`，用于在 `apply_patch` 或 Bash 后通知本地 Plugin。
 
+#### 13.4.1 File Name Extraction Notes
+
+官方 Hooks 文档没有为 `PostToolUse` 定义统一的 `fileName` 字段。
+
+Pickles 在 `PostToolUse` 中必须读取：
+
+- `tool_name`
+- `tool_input`
+- `tool_response`
+
+Pickles 使用以下规则提取文件名：
+
+| tool_name | 文件名来源 | Pickles 处理规则 |
+|---|---|---|
+| `apply_patch` | `tool_input.command` 中的 raw patch body | 解析 patch header，提取 add / update / delete / move 涉及的文件路径。 |
+| `Bash` | `tool_input.command` 中的 shell command | 只能作为候选线索，不得作为最终变动文件列表。 |
+| `mcp__*` | 具体 MCP tool 的参数 schema | 按 tool-specific adapter 提取；没有 adapter 时只能作为候选线索。 |
+
+OpenAI Codex pull request `18391` 显示，`apply_patch` hook 会把 raw patch body 放入 `tool_input.command`，并且 hook stdin 使用 canonical `tool_name` `apply_patch`。Pickles 以此作为 `apply_patch` 文件路径解析依据。
+
+`Bash` 命令可能包含重定向、脚本、子进程、通配符、工具链副作用或间接文件写入。Pickles 不得仅依赖 shell command 文本确定最终变动文件。
+
+Pickles 最终上报的文件列表必须通过 Pickles 自己的 before / after 快照或 workspace diff 确认。`tool_name` 与 `tool_input` 只用于缩小候选范围和选择解析策略。
+
 ### 13.5 UserPromptSubmit
 
 `matcher` 当前不使用。
@@ -382,7 +407,7 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 |---|---|---|
 | Session 初始化 | `SessionStart` | 用于读取 `.pickles.json`、检查本地 Plugin 可用性并向 Codex 暴露启动上下文。 |
 | 捕获 Codex task 生命周期 | `SessionStart`、`PreToolUse`、`PostToolUse`、`Stop`、turn-scoped `turn_id`、公共 `session_id` | `SessionStart` 用于启动初始化；`PreToolUse` / `PostToolUse` 用于变动捕获；`Stop` 用于任务完成前治理反馈。 |
-| 捕获文件变动线索 | `PreToolUse` before `apply_patch` / `Bash`; `PostToolUse` after `apply_patch` / `Bash` | `PreToolUse` 记录 before 内容或变动线索；`PostToolUse` 触发向 Plugin 上报。 |
+| 捕获文件变动线索 | `PreToolUse` before `apply_patch` / `Bash`; `PostToolUse` after `apply_patch` / `Bash` | `PreToolUse` 记录 before 内容或变动线索；`PostToolUse` 根据 `tool_name` / `tool_input` 选择解析策略，并触发向 Plugin 上报。 |
 | 在完成前阻止或继续 | `Stop` 的 `decision: "block"` 会创建 continuation prompt | ERROR 存在时，Stop hook 可要求 Codex 继续修复。 |
 | 向 Codex 增加上下文 | `additionalContext` / `systemMessage` | WARN 或诊断信息可作为上下文返回。 |
 | 处理 approval | `PermissionRequest` | MVP 不依赖。 |
@@ -401,6 +426,9 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 - Project-local hooks 需要项目 `.codex/` layer 被 trust。
 - Hook command 的工作目录是 Codex session `cwd`，这与 Pickles 的目标工程根目录定位有关。
 - `PostToolUse` 无法撤销副作用，因此 Pickles 必须把它视为通知/反馈点，而不是防护边界。
+- `PostToolUse` 没有统一 `fileName` 字段；Pickles 必须根据 `tool_name` 与 `tool_input` 选择解析策略。
+- `apply_patch` 可以从 `tool_input.command` 解析 patch 文件路径。
+- `Bash` 的 `tool_input.command` 只能作为文件候选线索，最终文件列表必须用 before / after 快照或 workspace diff 确认。
 - `PreToolUse` 适合记录 pending tool input、before 内容或变动线索，不承担最终通知。
 - `SessionStart` 适合做初始化和可用性检查，不承担文件变动捕获。
 - `Stop` hook 的 continuation 语义适合 Pickles 在 ERROR 存在时要求 Codex 继续修复。
