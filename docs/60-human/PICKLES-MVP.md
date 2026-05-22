@@ -10,19 +10,22 @@
 
 Pickles 是一个面向 Coding Agent 的语义治理 Sidecar。
 
-它持续观察工程变化，增量收集结构性问题，并在任务完成前向 Agent 提供治理反馈。
+MVP 固定运行在 IntelliJ IDEA + Codex 环境中。
 
-Pickles 不修改代码。  
-Agent 始终是唯一写入者。
+它通过部署在 Codex Runtime 中的 Agent Hook 捕获增量文件变动，收集结构性问题，并在任务完成前向 Codex 提供治理反馈。
+
+Pickles 不修改业务代码、测试代码或工程实现代码。  
+Pickles 可以管理治理文件，例如注入或更新 `AGENTS.md` 中的治理约束。  
+Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 
 ---
 
 # 目标
 
-- 防止 Agent 开发过程中的架构漂移
-- 提供增量语义反馈
-- 将治理能力独立于 IDE 与 Agent 厂商
-- 复用现有协议，而不是重新发明协议
+- 在 IntelliJ IDEA + Codex 环境中防止 Agent 开发过程中的架构漂移
+- 基于 Codex Hook 捕获的增量文件变动提供治理反馈
+- 在任务完成前向 Codex 暴露 Problem Board 与修复建议
+- 通过 Pickles 管理 `AGENTS.md` 中的治理约束
 
 ---
 
@@ -42,26 +45,26 @@ Agent 始终是唯一写入者。
 |---|---|
 | Problem Board | 聚合后的语义与架构问题看板 |
 | Governance Server | 规则执行与问题聚合运行时 |
-| Incremental Semantic Graph | 基于工程变化增量更新的语义关系图 |
-| Agent Hooks | Agent Runtime 内的生命周期触发点 |
-| MCP Server | Agent 拉取治理反馈的标准接口 |
+| Incremental Semantic Graph | 基于 Agent Hook 上报的增量文件变动，更新工程语义关系与治理问题 |
+| Agent Hooks | 部署在 Codex Runtime 内的生命周期触发点 |
+| Plugin Notify Protocol | Hook 向 IntelliJ Plugin 发送通知的本地协议，MVP 可使用 MCP、HTTP 或 WebSocket |
 
 ---
 
 # 架构
 
 ```text
-Agent Runtime
+Codex Runtime
     ↓
 Agent Hooks
-    ↓
-MCP Pull
+    ↓  MCP / HTTP / WebSocket
+Pickles IntelliJ IDEA Plugin
     ↓
 Pickles Governance Server
-    ↑
+    ↓
 Incremental Semantic Graph
-    ↑
-IDEA Plugin（VFS / PSI Observer）
+    ↓
+Problem Board
 ```
 
 ---
@@ -72,14 +75,13 @@ IDEA Plugin（VFS / PSI Observer）
 
 负责：
 
-- 监听 Workspace 变化
-- 跟踪 PSI/VFS 更新
-- 触发增量分析
+- 接收 Codex Hook 的增量文件变动通知
 - 展示 Problem Board
 - 管理本地 Governance Server
 - 执行 Agent Bind
+- 提供 Hook 通知入口
 
-Plugin 永远不修改代码。
+Plugin 不修改业务代码、测试代码或工程实现代码。
 
 ---
 
@@ -88,37 +90,35 @@ Plugin 永远不修改代码。
 负责：
 
 - 维护 Incremental Semantic Graph
-- 执行规则与脚本
+- 基于 Hook 变动集增量更新语义关系
+- 执行 ArchUnit 与 lint 规则检测
 - 聚合问题
-- 暴露 MCP Tools
 - 提供 Repair-Oriented Summary
 
 ---
 
 ## Agent Hooks
 
-安装于 Agent Runtime 环境中。
+安装于 Codex Runtime 环境中。
 
 负责：
 
 - Task 生命周期检查点
-- 触发 MCP 拉取
+- 收集任务期间的增量文件变动
+- 在检查点向 IntelliJ Plugin 发送变动通知
 - 在任务完成前请求治理反馈
 
 ---
 
-## MCP Interface
+## Hook Notify Protocol
 
-示例 Tools：
+Hook 到 Plugin 的通知协议在 MVP 阶段固定为本地协议候选集合：
 
-```text
-get_problem_board
-get_architecture_violations
-get_problems_since
-get_repair_suggestions
-```
+- MCP
+- Plugin 启动的本地 HTTP 服务
+- Plugin 启动的本地 WebSocket 服务
 
-Agent 主动 Pull 问题，而不是被 Push。
+协议选择不得改变职责边界：Hook 负责通知与拉取反馈，Plugin / Governance Server 负责聚合、分析和展示。
 
 ---
 
@@ -127,9 +127,11 @@ Agent 主动 Pull 问题，而不是被 Push。
 ```text
 Agent 修改工程
     ↓
-IDEA 感知变化
+Codex Hook 捕获文件变动
     ↓
-语义图增量更新
+Hook 提交变动集
+    ↓
+Governance Server 增量更新语义关系
     ↓
 规则执行
     ↓
@@ -137,7 +139,7 @@ Problem Board 更新
     ↓
 Agent Task 完成
     ↓
-Hook 调用 MCP
+Hook 通过本地协议请求治理反馈
     ↓
 Agent 修复或汇报问题
 ```
@@ -161,15 +163,27 @@ Before finalizing a task:
 
 ---
 
-# 第一阶段技术栈
+# MVP 技术栈
 
 | 层级 | 技术 |
 |---|---|
 | IDE | IntelliJ IDEA |
 | Agent | Codex |
-| Protocol | MCP |
-| Semantic Engine | IntelliJ PSI/VFS |
-| Rules | ArchUnit + Custom Scripts |
+| Hook Runtime | Codex Runtime |
+| Hook Notify Protocol | MCP / HTTP / WebSocket |
+| Semantic Input | Codex Hook 增量文件变动 |
+| Rule Detection | ArchUnit + lint |
+
+---
+
+# 规则检测范围
+
+MVP 只支持两类规则检测工具：
+
+- ArchUnit
+- lint
+
+MVP 不接入其他规则检测工具或规则语言。
 
 ---
 
@@ -181,9 +195,10 @@ Before finalizing a task:
 - 本地 Governance Server
 - 增量依赖跟踪
 - Problem Board UI
-- MCP Server
 - AGENTS.md Bind
-- 基于 ArchUnit 的规则系统
+- Codex Hook
+- Hook 到 Plugin 的本地通知协议
+- 基于 ArchUnit 与 lint 的规则检测系统
 
 ---
 
@@ -195,6 +210,7 @@ Before finalizing a task:
 - Distributed Execution
 - 自定义 ACP 实现
 - 全量语义持久化
+- 除 ArchUnit 与 lint 之外的规则检测工具
 
 ---
 
@@ -203,9 +219,8 @@ Before finalizing a task:
 - Single Writer Model
 - Runtime First
 - Incremental over Batch
-- Pull over Push
+- Change Notify, Feedback Pull
 - Governance over Generation
-- Vendor Neutral
 
 ---
 
