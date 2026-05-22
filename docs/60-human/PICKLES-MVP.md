@@ -26,6 +26,7 @@ Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 - 基于 Codex Hook 捕获的增量文件变动提供治理反馈
 - 在任务完成前向 Codex 暴露 Problem Board 与修复建议
 - 通过 Pickles 管理 `AGENTS.md` 中的治理约束
+- 使用 `.pickles.json` 承载项目级治理配置
 
 ---
 
@@ -48,6 +49,7 @@ Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 | Incremental Semantic Graph | 基于 Agent Hook 上报的增量文件变动，更新工程语义关系与治理问题 |
 | Agent Hooks | 部署在 Codex Runtime 内的生命周期触发点 |
 | Plugin Notify Protocol | Hook 向 IntelliJ Plugin 发送通知的本地协议，MVP 默认使用 Plugin 启动的本地 HTTP 服务 |
+| Project Configuration | 项目根目录 `.pickles.json`，作为 Pickles 项目级配置真相源 |
 
 ---
 
@@ -140,6 +142,42 @@ Problem severity 固定使用规则工具返回的级别：
 - WARN
 
 Pickles 不在 MVP 中新增独立 severity 体系。
+
+---
+
+# Project Configuration
+
+Pickles 使用项目根目录 `.pickles.json` 作为项目级配置文件。
+
+`.pickles.json` 是配置真相源。IntelliJ Plugin、Codex Hook 和 Governance Server 都读取该文件。
+
+Plugin 配置界面只负责展示和修改 `.pickles.json`，不拥有独立配置真相。
+
+MVP 最小配置：
+
+```json
+{
+  "version": 1,
+  "agent": "codex",
+  "bind": {
+    "agentsFile": "AGENTS.md",
+    "enabled": false
+  },
+  "hook": {
+    "protocol": "http"
+  },
+  "rules": {
+    "archunit": true,
+    "eslint": true,
+    "scripts": []
+  },
+  "problemBoard": {
+    "aggregation": "workspace"
+  }
+}
+```
+
+运行时端口、进程号和 server URL 不写入 `.pickles.json`。
 
 ---
 
@@ -236,6 +274,7 @@ MVP 只显示以下字段：
 - 增量依赖跟踪
 - Problem Board UI
 - AGENTS.md Bind
+- `.pickles.json` 项目配置
 - Codex Hook
 - Hook 到 Plugin 的本地 HTTP 通知协议
 - 基于 ArchUnit 与 ESLint 的规则检测系统

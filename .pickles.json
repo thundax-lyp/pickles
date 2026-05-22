@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "agent": "codex",
+  "bind": {
+    "agentsFile": "AGENTS.md",
+    "enabled": false
+  },
+  "hook": {
+    "protocol": "http"
+  },
+  "rules": {
+    "archunit": true,
+    "eslint": true,
+    "scripts": []
+  },
+  "problemBoard": {
+    "aggregation": "workspace"
+  }
+}
