@@ -20,7 +20,21 @@
 ## Task Router
 
 - 纯实现、修 bug、重构模块逻辑：
-  读 `ARCHITECTURE.md`，再读对应模块文档。
+  读 `ARCHITECTURE.md`，再读对应 `10-requirements/*-REQUIREMENTS.md`。
+- IntelliJ Plugin 实现、修复、重构：
+  读 `10-requirements/INTELLIJ-PLUGIN-REQUIREMENTS.md`
+  再按需读 `30-designs/INTELLIJ-PLUGIN-DESIGN.md`。
+- Governance Engine / Runtime 实现、修复、重构：
+  读 `10-requirements/GOVERNANCE-ENGINE-REQUIREMENTS.md`
+  再按需读 `30-designs/GOVERNANCE-ENGINE-DESIGN.md`。
+- Codex Hook 实现、修复、重构：
+  读 `10-requirements/CODEX-HOOKS-REQUIREMENTS.md`
+  再读 `20-interfaces/CODEX-HOOKS-OFFICIAL-REFERENCE.md`
+  再按需读 `20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`。
+- `.pickles/config.json` 配置读写或 schema 变化：
+  读 `20-interfaces/PICKLES-CONFIG-CONTRACT.md`。
+- Problem model 或 Problem Board 数据变化：
+  读 `20-interfaces/PROBLEM-MODEL-CONTRACT.md`。
 - 新增目录、改目录、判断文件归属：
   再读 `00-governance/NAMING-AND-PLACEMENT-RULES.md`。
 - 改文档：
@@ -44,7 +58,7 @@
 - `pickles-rules/` -> rules, policies, and shared specifications.
 - `pickles-runtime/` -> runtime implementation.
 
-When a module gains its own `AGENT.md`, read that file after this router and before editing that module.
+When a module gains its own `AGENTS.md`, read that file after this router and before editing that module.
 
 ## Load Limits
 

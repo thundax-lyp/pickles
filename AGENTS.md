@@ -2,7 +2,7 @@
 
 ## Read Order
 
-- Read `docs/AGENT.md` first.
+- Read `docs/AGENTS.md` first.
 - For implementation work, read `docs/00-governance/ARCHITECTURE.md`.
 - Do not treat root `README.md` as implementation authority.
 
@@ -17,12 +17,13 @@
 
 ## Project Layout
 
+- Primary product: IntelliJ IDEA plugin for Coding Agent semantic governance.
+- `pickles-intellij-plugin/`: IntelliJ plugin implementation, editor integration, Problem Board UI, and IDE-side orchestration.
+- `pickles-runtime/`: local governance runtime used by the plugin.
+- `pickles-mcp/`: MCP integration exposed to Coding Agents.
+- `pickles-hooks/`: Agent runtime hook integration.
+- `pickles-rules/`: rules, policies, and shared governance specifications.
 - `docs/`: AI routing docs, governance docs, designs, prompts, and human-facing notes.
-- `pickles-hooks/`: hook-related implementation and configuration.
-- `pickles-intellij-plugin/`: IntelliJ plugin implementation.
-- `pickles-mcp/`: MCP integration implementation.
-- `pickles-rules/`: rules, policies, and shared specifications.
-- `pickles-runtime/`: runtime implementation.
 
 ## Code Rules
 
