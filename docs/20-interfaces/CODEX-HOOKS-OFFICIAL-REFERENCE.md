@@ -283,7 +283,7 @@ Pickles MVP 固定使用 `SessionStart` 执行 session 初始化、本地 Plugin
 - 使用 `hookSpecificOutput.additionalContext` 添加 model-visible context。
 - 对 Bash 和 `apply_patch`，可以在 `permissionDecision: "allow"` 中返回 `updatedInput.command` 重写输入。
 
-Pickles MVP 可以使用 `PreToolUse` 观察 `apply_patch` 或 shell 操作，但不能把它当作完整文件变动捕获边界。
+Pickles MVP 固定使用 `PreToolUse` 观察 `apply_patch` 或 shell 操作，并记录 before 内容或变动线索，但不能把它当作最终文件变动通知边界。
 
 ### 13.3 PermissionRequest
 
@@ -381,8 +381,8 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 | Pickles 需要 | Codex Hooks 对应能力 | 采用方式 |
 |---|---|---|
 | Session 初始化 | `SessionStart` | 用于读取 `.pickles.json`、检查本地 Plugin 可用性并向 Codex 暴露启动上下文。 |
-| 捕获 Codex task 生命周期 | `SessionStart`、`Stop`、turn-scoped `turn_id`、公共 `session_id` | `SessionStart` 用于启动初始化；`Stop` 用于任务完成前治理反馈。 |
-| 捕获文件变动线索 | `PostToolUse` after `apply_patch` / `Bash`; `PreToolUse` 可观察 pending input | MVP 固定使用 `PostToolUse` 触发向 Plugin 上报。before / after 内容由 Pickles Hook 自行读取或记录。 |
+| 捕获 Codex task 生命周期 | `SessionStart`、`PreToolUse`、`PostToolUse`、`Stop`、turn-scoped `turn_id`、公共 `session_id` | `SessionStart` 用于启动初始化；`PreToolUse` / `PostToolUse` 用于变动捕获；`Stop` 用于任务完成前治理反馈。 |
+| 捕获文件变动线索 | `PreToolUse` before `apply_patch` / `Bash`; `PostToolUse` after `apply_patch` / `Bash` | `PreToolUse` 记录 before 内容或变动线索；`PostToolUse` 触发向 Plugin 上报。 |
 | 在完成前阻止或继续 | `Stop` 的 `decision: "block"` 会创建 continuation prompt | ERROR 存在时，Stop hook 可要求 Codex 继续修复。 |
 | 向 Codex 增加上下文 | `additionalContext` / `systemMessage` | WARN 或诊断信息可作为上下文返回。 |
 | 处理 approval | `PermissionRequest` | MVP 不依赖。 |
@@ -395,12 +395,13 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 - Pickles Hook 脚本固定使用 Node.js ESM `.mjs`。
 - Pickles Hook 脚本固定放在目标工程 `<repo>/.codex/hooks/`。
 - Pickles Hook MVP 不依赖 npm install，只使用 Node.js built-in modules。
-- Pickles MVP 固定配置 `SessionStart`、`PostToolUse` 和 `Stop`。
+- Pickles MVP 固定配置 `SessionStart`、`PreToolUse`、`PostToolUse` 和 `Stop`。
 - Pickles Bind 不读取、不修改、不依赖用户全局 `~/.codex`。
 - Pickles MVP 不使用 plugin-bundled hooks，因为当前 Hooks 页显示 plugin-bundled hooks 需要 `[features].plugin_hooks = true` 才会被发现。
 - Project-local hooks 需要项目 `.codex/` layer 被 trust。
 - Hook command 的工作目录是 Codex session `cwd`，这与 Pickles 的目标工程根目录定位有关。
 - `PostToolUse` 无法撤销副作用，因此 Pickles 必须把它视为通知/反馈点，而不是防护边界。
+- `PreToolUse` 适合记录 pending tool input、before 内容或变动线索，不承担最终通知。
 - `SessionStart` 适合做初始化和可用性检查，不承担文件变动捕获。
 - `Stop` hook 的 continuation 语义适合 Pickles 在 ERROR 存在时要求 Codex 继续修复。
 

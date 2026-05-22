@@ -106,8 +106,9 @@ Plugin 不修改业务代码、测试代码或工程实现代码。
 负责：
 
 - Task 生命周期检查点
-- 固定挂载 `SessionStart`、`PostToolUse` 和 `Stop`
+- 固定挂载 `SessionStart`、`PreToolUse`、`PostToolUse` 和 `Stop`
 - 在 `SessionStart` 读取目标工程配置并检查本地 Plugin 可用性
+- 在 `PreToolUse` 记录 before 内容或变动线索
 - 收集任务期间的增量文件变动
 - 在 `PostToolUse` 向 IntelliJ Plugin 发送变动通知，通知内容包含文件名、before 内容和 after 内容
 - 在 `Stop` 请求治理反馈

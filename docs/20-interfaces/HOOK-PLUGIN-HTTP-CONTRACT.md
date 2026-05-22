@@ -61,7 +61,7 @@ MVP 固定包含：
 
 - Hook 通知协议在 MVP 固定为本地 HTTP。
 - Hook 知道 Codex task 生命周期。
-- Hook 事件固定为 `SessionStart`、`PostToolUse` 和 `Stop`。
+- Hook 事件固定为 `SessionStart`、`PreToolUse`、`PostToolUse` 和 `Stop`。
 - Problem Board 按 workspace 聚合，不按单个 task 单独保存。
 - Hook payload 固定至少包含文件名、before 内容和 after 内容。
 - HTTP API 细节在 MVP 暂不定义。
@@ -69,6 +69,8 @@ MVP 固定包含：
 ## 7. Functional Requirements
 
 ### 7.1 File Change Notify
+
+Codex Hook 在 `PreToolUse` 记录 before 内容或变动线索。
 
 Codex Hook 在 `PostToolUse` 向 IntelliJ Plugin 发送变动通知。
 
@@ -94,11 +96,13 @@ Governance Server 基于变动集增量更新 Incremental Workspace Index。
 
 ### 8.1 Change Notify Flow
 
-1. Codex task 触发 `PostToolUse`。
-2. Codex Hook 捕获文件名、before 内容和 after 内容。
-3. Hook 通过本地 HTTP 通知 IntelliJ Plugin。
-4. Plugin 将变动集交给 Governance Server。
-5. Governance Server 更新 workspace index 并执行规则检测。
+1. Codex task 触发 `PreToolUse`。
+2. Codex Hook 记录 before 内容或变动线索。
+3. Codex task 触发 `PostToolUse`。
+4. Codex Hook 捕获文件名、before 内容和 after 内容。
+5. Hook 通过本地 HTTP 通知 IntelliJ Plugin。
+6. Plugin 将变动集交给 Governance Server。
+7. Governance Server 更新 workspace index 并执行规则检测。
 
 ### 8.2 Feedback Flow
 
