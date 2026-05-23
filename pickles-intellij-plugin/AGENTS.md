@@ -30,5 +30,5 @@
 ## Validation
 
 - 固定验证命令：在 `pickles-intellij-plugin/` 使用 JDK 17 和 Gradle 8.13+ 运行 `gradle build`。
-- 本机使用 jenv 时，先执行 `export JAVA_HOME="$(jenv prefix 17)"`，避免 Gradle 读取到上级环境的 Java 11。
+- 本机使用 jenv 时，先执行 `export JAVA_HOME="$(jenv prefix jetbrains64-17.0.14)"`，避免 Gradle 读取到上级环境的 Java 11；IntelliJ instrumentation 需要 JBR 17。
 - 修改 IDE 行为、事件监听或 UI 状态时，必须同步考虑测试或手动验证路径。
