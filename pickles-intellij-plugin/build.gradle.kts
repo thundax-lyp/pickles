@@ -55,4 +55,8 @@ tasks {
             showStandardStreams = true
         }
     }
+
+    named<JavaExec>("runIde") {
+        args(project.layout.projectDirectory.dir("../e2e/sample-project").asFile.absolutePath)
+    }
 }
