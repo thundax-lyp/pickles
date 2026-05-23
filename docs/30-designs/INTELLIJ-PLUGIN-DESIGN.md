@@ -47,6 +47,8 @@ Plugin 不修改业务代码、测试代码或工程实现代码。Plugin 可以
 ## 6. Global Constraints
 
 - Problem Board 是嵌入 IntelliJ IDEA 的工具窗口。
+- Problem Board 默认放在右侧 Tool Window 区域，底部区域优先留给 Terminal / Codex 交互。
+- 用户可以使用 IntelliJ IDEA Tool Window 的内置移动能力调整 Problem Board 位置。
 - MVP UI 只显示 `title`、`type`、`message`。
 - 每个问题项提供删除按钮。
 - 点击问题项跳转到对应文件位置。

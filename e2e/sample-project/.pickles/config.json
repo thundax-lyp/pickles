@@ -3,7 +3,7 @@
   "agent": "codex",
   "bind": {
     "agentsFile": "AGENTS.md",
-    "enabled": false
+    "enabled": true
   },
   "hook": {
     "protocol": "http"
@@ -15,7 +15,7 @@
     },
     "eslint": {
       "enabled": true,
-      "command": ""
+      "command": "npm run lint"
     },
     "scripts": []
   },

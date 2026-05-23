@@ -25,3 +25,12 @@ replay_pid*
 
 # IntelliJ IDEA project files
 .idea/
+
+# Gradle build output
+.gradle/
+**/.gradle/
+**/build/
+**/.intellijPlatform/
+
+# Local Java version manager state
+.java-version
