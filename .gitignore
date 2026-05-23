@@ -31,3 +31,6 @@ replay_pid*
 **/.gradle/
 **/build/
 **/.intellijPlatform/
+
+# Local Java version manager state
+.java-version
