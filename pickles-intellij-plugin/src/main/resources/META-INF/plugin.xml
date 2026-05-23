@@ -1,0 +1,21 @@
+<idea-plugin>
+    <id>com.pickles.intellij</id>
+    <name>Pickles</name>
+    <vendor email="pickles@example.invalid">Pickles</vendor>
+
+    <description><![CDATA[
+        Pickles governance integration for IntelliJ IDEA.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="com.pickles.intellij.PicklesProjectService"/>
+        <postStartupActivity implementation="com.pickles.intellij.PicklesStartupActivity"/>
+        <toolWindow
+            id="Pickles"
+            anchor="bottom"
+            factoryClass="com.pickles.intellij.PicklesToolWindowFactory"/>
+        <notificationGroup id="Pickles" displayType="BALLOON"/>
+    </extensions>
+</idea-plugin>

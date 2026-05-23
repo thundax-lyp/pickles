@@ -29,5 +29,5 @@
 
 ## Validation
 
-- 模块建立构建系统后，在本文件补充固定验证命令。
+- 固定验证命令：在 `pickles-intellij-plugin/` 使用 JDK 17 和 Gradle 8.13+ 运行 `gradle build`。
 - 修改 IDE 行为、事件监听或 UI 状态时，必须同步考虑测试或手动验证路径。
