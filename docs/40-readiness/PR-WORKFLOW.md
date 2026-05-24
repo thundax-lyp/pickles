@@ -39,9 +39,9 @@ testcase 分层、真实使用全流程和多人开发必测内容固定由 [`E2
 
 - `.github/workflows/pr-verify.yml`: GitHub PR 触发入口。
 - `scripts/verify-all.sh`: 仓库统一 verify 编排入口。
-- `pickles-intellij-plugin/`: 通过 `gradle build` 执行插件构建和测试。
-- `e2e/sample-project/`: 通过 `npm ci`、`npm run typecheck` 和 `npm run lint` 执行样例工程验证。
-- `pickles-hooks/`: 通过 `node --test` 执行 Hook HTTP contract 测试。
+- `scripts/verify-intellij-plugin.sh`: IntelliJ Plugin 构建和测试入口。
+- `scripts/verify-sample-project.sh`: e2e sample project 验证入口。
+- `scripts/verify-hooks.sh`: Hook HTTP contract 测试入口。
 - `docs/40-readiness/E2E-TEST-CASES.md`: 定义全流程 testcase、分段 testcase 和 PR 必测映射。
 
 ## 5. Core Objects
@@ -56,6 +56,8 @@ testcase 分层、真实使用全流程和多人开发必测内容固定由 [`E2
 - PR 必须完成阶段任务对应的文档、TODO 和 RUNBOOK 收口。
 - workflow 不直接散落项目验证细节，项目验证细节固定收敛到 `scripts/verify-all.sh`。
 - 新增项目验证能力时必须同步接入 `scripts/verify-all.sh`。
+- 自动化 testcase 固定使用 `Prepare`、`Execute`、`Assert`、`Restore` 四段式验证协议。
+- `scripts/verify-all.sh` 只负责编排，不直接展开模块验证细节。
 - 新增或改变跨模块 testcase 时必须同步更新 [`E2E-TEST-CASES.md`](./E2E-TEST-CASES.md)。
 - PR 自动验证只包含已自动化 testcase；未自动化 testcase 不得伪装为 PR 必过项。
 - 尚未建立构建系统或验证命令的模块不得在 workflow 中伪造空验证。
@@ -76,8 +78,7 @@ pull request 目标分支固定覆盖：
 IntelliJ Plugin verify 固定执行：
 
 ```bash
-cd pickles-intellij-plugin
-gradle build
+scripts/verify-intellij-plugin.sh
 ```
 
 ### 7.3 e2e Sample Project Verify
@@ -85,10 +86,7 @@ gradle build
 e2e sample project verify 固定执行：
 
 ```bash
-cd e2e/sample-project
-npm ci
-npm run typecheck
-npm run lint
+scripts/verify-sample-project.sh
 ```
 
 ### 7.4 Pickles Hooks Verify
@@ -96,7 +94,7 @@ npm run lint
 Pickles Hooks verify 固定执行：
 
 ```bash
-node --test pickles-hooks/test/hook-http-contract.test.mjs
+scripts/verify-hooks.sh
 ```
 
 ### 7.5 Testcase Coverage

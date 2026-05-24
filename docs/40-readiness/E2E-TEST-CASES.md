@@ -184,7 +184,7 @@ curl -i -X POST "http://127.0.0.1:$PORT/feedback" \
 
 ```bash
 cd pickles-intellij-plugin
-gradle build
+../scripts/verify-intellij-plugin.sh
 ```
 
 固定断言：
@@ -213,9 +213,7 @@ gradle build
 
 ```bash
 cd e2e/sample-project
-npm ci
-npm run typecheck
-npm run lint
+../../scripts/verify-sample-project.sh
 ```
 
 固定断言：
@@ -244,7 +242,7 @@ npm run lint
 固定命令：
 
 ```bash
-node --test pickles-hooks/test/hook-http-contract.test.mjs
+scripts/verify-hooks.sh
 ```
 
 固定断言：
@@ -369,11 +367,10 @@ node --test pickles-hooks/test/hook-http-contract.test.mjs
 
 当前 PR 必测固定为：
 
-1. `pickles-intellij-plugin/` 执行 `gradle build`。
-2. `e2e/sample-project/` 执行 `npm ci`。
-3. `e2e/sample-project/` 执行 `npm run typecheck`。
-4. `e2e/sample-project/` 执行 `npm run lint`。
-5. `pickles-hooks/` 执行 `node --test pickles-hooks/test/hook-http-contract.test.mjs`。
+1. `scripts/verify-intellij-plugin.sh`
+2. `scripts/verify-sample-project.sh`
+3. `scripts/verify-hooks.sh`
+4. `scripts/verify-all.sh`
 
 待 `RUNTIME_SAMPLE_PROJECT`、`PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
 

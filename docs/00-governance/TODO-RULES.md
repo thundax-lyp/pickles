@@ -277,3 +277,30 @@ PR 必须满足：
 - PR 描述记录验证命令和结果。
 
 PR 的验证入口固定由 [`../40-readiness/PR-WORKFLOW.md`](../40-readiness/PR-WORKFLOW.md) 和 `scripts/verify-all.sh` 承载。
+
+## 14. Verify Protocol
+
+自动化 testcase 固定使用四段式验证协议：
+
+1. `Prepare`：准备测试数据、临时目录、fixture、环境变量、端口、server stub 或依赖安装。
+2. `Execute`：执行被测命令、脚本、HTTP 调用或构建命令。
+3. `Assert`：验证退出码、stdout、stderr、HTTP response、生成文件或数据结构。
+4. `Restore`：删除临时目录、恢复被改动文件、停止后台进程、清理环境变量。
+
+验证脚本必须保证失败路径也执行 `Restore`。
+
+验证脚本固定分两层：
+
+- `scripts/verify-all.sh`：总入口，只负责编排各模块验证。
+- `scripts/verify-*.sh`：模块或 testcase 入口，负责自己的 `Prepare`、`Execute`、`Assert` 和 `Restore`。
+
+所有 `scripts/verify-*.sh` 固定满足：
+
+- 使用 `set -euo pipefail`。
+- 从脚本位置定位 repo root。
+- 输出当前正在验证的模块或 testcase。
+- 失败时返回非 0。
+- 不依赖调用者当前目录。
+- 不依赖用户全局配置。
+- 不把临时数据写入未声明的位置。
+- 执行完成后恢复由脚本创建或修改的数据。
