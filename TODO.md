@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：实现 `PostToolUse` notify contract payload
-  - 任务类型：实现任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`、`docs/20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`
-  - 范围对象：`pickles-hooks/`
-  - 处理动作：`PostToolUse` 触发时调用 `POST /notify`，request 固定包含 `schemaVersion = 1`、非空 `requestId`、`event`、`files`
-  - 验收点：`files` 默认空 array；仅测试模式支持 `PICKLES_TEST_CHANGED_FILE` 注入单个 changed file；测试模式不进入正式 Hook 配置
-  - 重要度：9/10
-
 - [ ] `pickles-hooks`：实现 `Stop` feedback pull
   - 任务类型：实现任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`、`docs/20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`

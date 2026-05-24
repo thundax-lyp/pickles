@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 import { spawnSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
+const SCHEMA_VERSION = 1;
 const SUPPORTED_EVENTS = new Set(["SessionStart", "PostToolUse", "Stop"]);
 
 async function main() {
@@ -16,6 +18,18 @@ async function main() {
 
   if (event.hookEventName === "SessionStart") {
     await client.getJson("/health");
+    return;
+  }
+
+  if (event.hookEventName === "PostToolUse") {
+    const files = readTestChangedFiles();
+    const request = {
+      schemaVersion: SCHEMA_VERSION,
+      requestId: randomUUID(),
+      event: buildNotifyEvent(event, workspace, files),
+      files,
+    };
+    await client.postJson("/notify", request);
     return;
   }
 }
@@ -181,6 +195,59 @@ function parseJsonResponse(route, text) {
     return text.length === 0 ? null : JSON.parse(text);
   } catch (error) {
     throw new Error(`${route} returned invalid JSON: ${error.message}`);
+  }
+}
+
+function buildNotifyEvent(event, workspace, files) {
+  return {
+    sessionId: event.sessionId,
+    turnId: event.turnId,
+    hookEventName: event.hookEventName,
+    workspace,
+    idempotencyKey: buildIdempotencyKey(event, files),
+  };
+}
+
+function buildIdempotencyKey(event, files) {
+  const base = [event.sessionId, event.turnId, event.hookEventName].join(":");
+  if (files.length === 0) {
+    return base;
+  }
+  return `${base}:${files[0].fileName}`;
+}
+
+function readTestChangedFiles() {
+  const raw = process.env.PICKLES_TEST_CHANGED_FILE;
+  if (raw === undefined || raw.length === 0) {
+    return [];
+  }
+
+  let file;
+  try {
+    file = JSON.parse(raw);
+  } catch (error) {
+    throw new Error(`PICKLES_TEST_CHANGED_FILE is invalid JSON: ${error.message}`);
+  }
+
+  validateChangedFile(file);
+  return [file];
+}
+
+function validateChangedFile(file) {
+  if (typeof file !== "object" || file === null || Array.isArray(file)) {
+    throw new Error("PICKLES_TEST_CHANGED_FILE must be a JSON object.");
+  }
+  if (typeof file.fileName !== "string" || file.fileName.length === 0) {
+    throw new Error("PICKLES_TEST_CHANGED_FILE.fileName must be a non-empty string.");
+  }
+  if (path.isAbsolute(file.fileName)) {
+    throw new Error("PICKLES_TEST_CHANGED_FILE.fileName must be relative.");
+  }
+  if (!(typeof file.before === "string" || file.before === null)) {
+    throw new Error("PICKLES_TEST_CHANGED_FILE.before must be a string or null.");
+  }
+  if (!(typeof file.after === "string" || file.after === null)) {
+    throw new Error("PICKLES_TEST_CHANGED_FILE.after must be a string or null.");
   }
 }
 
