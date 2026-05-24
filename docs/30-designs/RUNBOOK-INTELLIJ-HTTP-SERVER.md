@@ -4,7 +4,7 @@
 
 本文档定义在 `pickles-intellij-plugin/` 中实现本地 HTTP server 与 Hook API stub 的一次性执行手册。
 
-目标是在 IntelliJ Plugin 中按 [`../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`](../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md) 固定 endpoint、request / response schema、错误结构和基础校验，并让 `/notify` 与 `/feedback` 先返回 `unimplemented` 状态。
+目标是在 IntelliJ Plugin 中按 [`../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`](../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md) 固定 endpoint、request / response schema、错误结构和基础校验，并让 `/feedback` 先返回 `unimplemented` 状态。
 
 ## 2. Scope
 
