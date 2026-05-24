@@ -73,10 +73,21 @@ When a module gains its own `AGENTS.md`, read that file after this router and be
 - 根目录 `TODO.md` 是任务执行队列，不是完成历史。
 - 宏观任务进入 `TODO.md` 后，按 [`00-governance/TODO-RULES.md`](./00-governance/TODO-RULES.md) 完成人机讨论、任务拆解、人工审阅和执行关闭。
 - 已完成任务不得在 `TODO.md` 中打勾长期保留，必须直接删除。
-- 删除已完成 TODO 项必须和完成该任务的代码、文档或测试修改放在同一个 commit。
 - 任务只完成一部分时，不得删除整项；必须拆分或收窄为剩余未完成内容。
 - 待讨论项完成决策后，必须删除待讨论项；若仍需执行，新增明确执行项。
 - 完成历史以 commit / PR 保留，不在 `TODO.md` 中重复记录。
+
+## TODO / Commit / PR Model
+
+- TODO 是未关闭任务队列，表达当前还要做什么。
+- Commit 是工程判断记录，表达一次具体判断或小步能力变化。
+- PR 是阶段性交付边界，必须完整、可编译、可测试，并完成文档、TODO 和 RUNBOOK 收口。
+- Commit 可以是中间态，但必须有明确判断含义，不得是随机保存点。
+- Commit 不强制每一笔都通过全量验证；涉及可运行入口的 commit 必须运行该判断的最小相关验证。
+- PR 必须通过当前阶段对应的完整验证入口。
+- 删除或收窄 TODO 必须发生在真正完成该 TODO 的 commit 中。
+- 如果 commit 只是中间判断，不删除 TODO。
+- 阶段任务完成前，相关 TODO 必须清空或收窄为剩余未完成内容。
 
 ## Directory Map
 

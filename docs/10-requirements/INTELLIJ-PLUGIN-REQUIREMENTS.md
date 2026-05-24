@@ -21,7 +21,6 @@
 
 - 不执行 ArchUnit 或 ESLint 命令
 - 不实现 Codex Hook
-- 不定义 Hook HTTP API 细节
 - 不定义 AGENTS.md 注入块格式、marker 和幂等更新细节
 
 ## 3. Bounded Context
@@ -111,7 +110,7 @@ Bind / Unbind 的具体注入块格式、marker 和幂等更新细节在 MVP 暂
 
 `server.json` 是运行时状态文件，不写入 `.pickles/config.json`。
 
-HTTP endpoint 细节在 MVP 暂不定义。
+HTTP endpoint 与 request / response schema 固定由 [`../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`](../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md) 定义。
 
 ## 8. Key Flows
 
