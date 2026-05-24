@@ -11,4 +11,12 @@
 
 ## 待审阅任务项
 
+- [ ] `pickles-hooks`：按 RUNBOOK 拆解 Hook HTTP client contract 实现任务
+  - 任务类型：拆解任务
+  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
+  - 范围对象：`pickles-hooks/`、`e2e/sample-project/.codex/hooks.json`、`docs/40-readiness/E2E-TEST-CASES.md`
+  - 处理动作：将 RUNBOOK 拆解为可独立验收的 Hook HTTP client 实现任务
+  - 验收点：拆解后的执行任务覆盖脚本骨架、server discovery、health、notify、feedback、fake server 测试、e2e 配置、文档同步和 RUNBOOK 清理
+  - 重要度：9/10
+
 ## 待讨论项
