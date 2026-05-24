@@ -54,6 +54,7 @@ async function main() {
   }
 
   if (event.hookEventName === "Stop") {
+    await flushPendingDiffs(workspace, event, client);
     const request = {
       schemaVersion: SCHEMA_VERSION,
       requestId: randomUUID(),
@@ -396,6 +397,40 @@ async function readNotifyFiles(workspace, event) {
     const before = state?.beforeFiles && Object.hasOwn(state.beforeFiles, fileName)
       ? state.beforeFiles[fileName]
       : readGitHeadFile(workspace, fileName);
+    const after = await readWorkspaceFile(workspace, fileName);
+    files.push({ fileName, before, after });
+  }
+  return files;
+}
+
+async function flushPendingDiffs(workspace, event, client) {
+  const pendingStates = await listPendingCaptureStates(workspace, event);
+  if (pendingStates.length === 0) {
+    return;
+  }
+
+  const beforeFiles = {};
+  for (const pending of pendingStates) {
+    Object.assign(beforeFiles, pending.state.beforeFiles ?? {});
+  }
+  const files = await buildChangedFiles(workspace, beforeFiles);
+  const request = {
+    schemaVersion: SCHEMA_VERSION,
+    requestId: randomUUID(),
+    event: buildNotifyEvent(event, workspace, files),
+    files,
+  };
+  await client.postJson("/notify", request);
+
+  for (const pending of pendingStates) {
+    await rm(pending.filePath, { force: true });
+  }
+}
+
+async function buildChangedFiles(workspace, beforeFiles) {
+  const files = [];
+  for (const fileName of listChangedFiles(workspace)) {
+    const before = Object.hasOwn(beforeFiles, fileName) ? beforeFiles[fileName] : readGitHeadFile(workspace, fileName);
     const after = await readWorkspaceFile(workspace, fileName);
     files.push({ fileName, before, after });
   }

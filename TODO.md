@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：实现 `Stop` pending diff flush
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
-  - 范围对象：`pickles-hooks/pickles-hook.mjs`
-  - 处理动作：`Stop` 阶段先 flush 未上报 pending diff，再调用 `/feedback`
-  - 验收点：pending state 存在时先发送 `/notify`；flush 成功后清理 state；`/feedback` request 不包含文件内容
-  - 重要度：9/10
-
 - [ ] `pickles-hooks`：扩展文件捕获 contract test
   - 任务类型：测试任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
