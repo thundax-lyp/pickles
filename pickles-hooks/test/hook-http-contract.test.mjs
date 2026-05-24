@@ -68,6 +68,8 @@ test("hook calls health, notify, and feedback contracts", async () => {
       session_id: "session-1",
       turn_id: "turn-1",
       hook_event_name: "PostToolUse",
+      tool_use_id: "tool-1",
+      tool_name: "Bash",
       cwd: repo,
     });
     assert.equal(postToolUseEmpty.status, 0, postToolUseEmpty.stderr);
@@ -78,6 +80,8 @@ test("hook calls health, notify, and feedback contracts", async () => {
         session_id: "session-1",
         turn_id: "turn-2",
         hook_event_name: "PostToolUse",
+        tool_use_id: "tool-2",
+        tool_name: "Bash",
         cwd: repo,
       },
       {

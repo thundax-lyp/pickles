@@ -7,12 +7,29 @@ import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const SCHEMA_VERSION = 1;
-const SUPPORTED_EVENTS = new Set(["SessionStart", "PostToolUse", "Stop"]);
+const SUPPORTED_EVENTS = new Set(["SessionStart", "PreToolUse", "PostToolUse", "Stop"]);
 
 async function main() {
   const input = await readHookInput();
   const event = mapHookEvent(input);
   const workspace = discoverWorkspace(event.cwd);
+
+  if (event.hookEventName === "PreToolUse") {
+    const candidateFiles = extractCandidateFiles(event);
+    const beforeFiles = await readBeforeFiles(workspace, candidateFiles);
+    await writeCaptureState(workspace, event, {
+      schemaVersion: SCHEMA_VERSION,
+      sessionId: event.sessionId,
+      turnId: event.turnId,
+      toolUseId: event.toolUseId,
+      toolName: event.toolName,
+      workspace,
+      candidateFiles,
+      beforeFiles,
+    });
+    return;
+  }
+
   const server = await readServerFile(workspace);
   const client = createHttpClient(server.baseUrl);
 
@@ -88,11 +105,22 @@ function mapHookEvent(input) {
   if (hookEventName !== "SessionStart" && turnId === null) {
     throw new Error(`${hookEventName} requires turn_id.`);
   }
+  const toolUseId = input.tool_use_id ?? null;
+  const toolName = input.tool_name ?? null;
+  if ((hookEventName === "PreToolUse" || hookEventName === "PostToolUse") && typeof toolUseId !== "string") {
+    throw new Error(`${hookEventName} requires tool_use_id.`);
+  }
+  if ((hookEventName === "PreToolUse" || hookEventName === "PostToolUse") && typeof toolName !== "string") {
+    throw new Error(`${hookEventName} requires tool_name.`);
+  }
 
   return {
     sessionId,
     turnId,
     hookEventName,
+    toolUseId,
+    toolName,
+    toolInput: input.tool_input ?? {},
     cwd: typeof input.cwd === "string" && input.cwd.length > 0 ? input.cwd : process.cwd(),
   };
 }
@@ -263,6 +291,89 @@ function validateChangedFile(file) {
   }
   if (!(typeof file.after === "string" || file.after === null)) {
     throw new Error("PICKLES_TEST_CHANGED_FILE.after must be a string or null.");
+  }
+}
+
+function extractCandidateFiles(event) {
+  if (event.toolName === "apply_patch") {
+    return uniqueRelativePaths(extractPatchFiles(event.toolInput?.command ?? ""));
+  }
+  if (event.toolName === "Edit" || event.toolName === "Write") {
+    return uniqueRelativePaths(extractObjectPaths(event.toolInput));
+  }
+  return [];
+}
+
+function extractPatchFiles(command) {
+  if (typeof command !== "string") {
+    return [];
+  }
+
+  const files = [];
+  for (const line of command.split(/\r?\n/)) {
+    const match = line.match(/^\*\*\* (?:Add|Update|Delete) File: (.+)$/);
+    if (match) {
+      files.push(match[1].trim());
+      continue;
+    }
+    const moveMatch = line.match(/^\*\*\* Move to: (.+)$/);
+    if (moveMatch) {
+      files.push(moveMatch[1].trim());
+    }
+  }
+  return files;
+}
+
+function extractObjectPaths(value) {
+  if (typeof value !== "object" || value === null) {
+    return [];
+  }
+  const files = [];
+  for (const key of ["file_path", "filePath", "path"]) {
+    if (typeof value[key] === "string") {
+      files.push(value[key]);
+    }
+  }
+  return files;
+}
+
+function uniqueRelativePaths(files) {
+  const seen = new Set();
+  const result = [];
+  for (const file of files) {
+    if (typeof file !== "string" || file.length === 0 || path.isAbsolute(file)) {
+      continue;
+    }
+    const normalized = path.normalize(file).replaceAll("\\", "/");
+    if (normalized.startsWith("../") || normalized === ".." || seen.has(normalized)) {
+      continue;
+    }
+    seen.add(normalized);
+    result.push(normalized);
+  }
+  return result;
+}
+
+async function readBeforeFiles(workspace, files) {
+  const beforeFiles = {};
+  for (const fileName of files) {
+    beforeFiles[fileName] = await readWorkspaceFile(workspace, fileName);
+  }
+  return beforeFiles;
+}
+
+async function readWorkspaceFile(workspace, fileName) {
+  const filePath = path.join(workspace, fileName);
+  if (!filePath.startsWith(`${workspace}${path.sep}`)) {
+    throw new Error(`File is outside workspace: ${fileName}`);
+  }
+  try {
+    return await readFile(filePath, "utf8");
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return null;
+    }
+    throw new Error(`Unable to read ${fileName}: ${error.message}`);
   }
 }
 

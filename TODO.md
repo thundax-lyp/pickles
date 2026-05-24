@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：实现 `PreToolUse` before 快照
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
-  - 范围对象：`pickles-hooks/pickles-hook.mjs`
-  - 处理动作：在 `PreToolUse` 中提取候选文件并写入 before state
-  - 验收点：支持 `apply_patch` patch header、`Edit` / `Write` 常见路径字段；`Bash` 只记录空候选；`PreToolUse` 成功时不调用 `/notify`
-  - 重要度：9/10
-
 - [ ] `pickles-hooks`：实现 `PostToolUse` workspace diff 上报
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
