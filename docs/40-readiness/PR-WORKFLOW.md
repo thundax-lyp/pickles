@@ -14,6 +14,7 @@
 - 统一 verify 入口
 - IntelliJ Plugin verify
 - e2e sample project verify
+- pickles-hooks verify
 - testcase 入口引用
 
 不在范围内：
@@ -36,6 +37,7 @@ testcase 分层、真实使用全流程和多人开发必测内容固定由 [`E2
 - `scripts/verify-all.sh`: 仓库统一 verify 编排入口。
 - `pickles-intellij-plugin/`: 通过 `gradle build` 执行插件构建和测试。
 - `e2e/sample-project/`: 通过 `npm ci`、`npm run typecheck` 和 `npm run lint` 执行样例工程验证。
+- `pickles-hooks/`: 通过 `node --test` 执行 Hook HTTP contract 测试。
 - `docs/40-readiness/E2E-TEST-CASES.md`: 定义全流程 testcase、分段 testcase 和 PR 必测映射。
 
 ## 5. Core Objects
@@ -84,16 +86,25 @@ npm run typecheck
 npm run lint
 ```
 
-### 7.4 Testcase Coverage
+### 7.4 Pickles Hooks Verify
+
+Pickles Hooks verify 固定执行：
+
+```bash
+node --test pickles-hooks/test/hook-http-contract.test.mjs
+```
+
+### 7.5 Testcase Coverage
 
 当前 PR verify 固定覆盖 [`E2E-TEST-CASES.md`](./E2E-TEST-CASES.md) 中的以下 testcase：
 
 - `PLUGIN_HTTP_CONTRACT_UNIT`
 - `E2E_SAMPLE_PROJECT_VERIFY`
+- `HOOK_PLUGIN_CONTRACT`
 
 `PLUGIN_HTTP_CONTRACT_E2E` 当前为手动 e2e 调试 testcase，不作为 PR 自动必过项。
 
-`HOOK_PLUGIN_CONTRACT`、`RUNTIME_SAMPLE_PROJECT`、`PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
+`RUNTIME_SAMPLE_PROJECT`、`PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
 
 ## 8. Key Flows
 

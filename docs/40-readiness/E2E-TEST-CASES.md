@@ -231,7 +231,7 @@ npm run lint
 
 ### 7.4 HOOK_PLUGIN_CONTRACT
 
-状态：待实现。
+状态：已实现，已接入 `scripts/verify-all.sh`。
 
 目标：验证 `pickles-hooks/` 的 Node ESM hook 脚本能读取 `server.json` 并调用 Plugin HTTP contract。
 
@@ -241,16 +241,26 @@ npm run lint
 - `pickles-intellij-plugin/`
 - `e2e/sample-project/`
 
+固定命令：
+
+```bash
+node --test pickles-hooks/test/hook-http-contract.test.mjs
+```
+
 固定断言：
 
 - Hook 从当前 git root 定位目标工程。
 - Hook 读取 `<repo>/.pickles/server.json`。
 - Hook 使用 `http://127.0.0.1:<port>`。
+- `SessionStart` 触发 `GET /health`。
 - `PostToolUse` 触发 `POST /notify`。
 - `Stop` 触发 `POST /feedback`。
-- 新增文件使用 `before = null`。
-- 删除文件使用 `after = null`。
+- `PostToolUse` 默认发送空 `files` array。
+- 测试模式注入 changed file 时，`before` 与 `after` 支持 string 或 `null`。
 - Hook 通信失败能被 Codex 看见。
+- `server.json` 缺失时 Hook 非 0 退出并输出 stderr。
+- `server.json.port` 非 number 时 Hook 非 0 退出并输出 stderr。
+- `e2e/sample-project/.codex/hooks.json` 绑定 `SessionStart`、`PostToolUse` 和 `Stop`，不绑定 `PreToolUse`。
 
 防漂移点：
 
@@ -363,8 +373,9 @@ npm run lint
 2. `e2e/sample-project/` 执行 `npm ci`。
 3. `e2e/sample-project/` 执行 `npm run typecheck`。
 4. `e2e/sample-project/` 执行 `npm run lint`。
+5. `pickles-hooks/` 执行 `node --test pickles-hooks/test/hook-http-contract.test.mjs`。
 
-待 `HOOK_PLUGIN_CONTRACT`、`RUNTIME_SAMPLE_PROJECT`、`PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
+待 `RUNTIME_SAMPLE_PROJECT`、`PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
 
 ## 9. Non-Functional Requirements
 
@@ -377,7 +388,6 @@ npm run lint
 
 ## 10. Open Items
 
-- `HOOK_PLUGIN_CONTRACT` 自动化。
 - `RUNTIME_SAMPLE_PROJECT` 自动化。
 - `PLUGIN_RUNTIME_FLOW` 自动化。
 - `E2E_FULL_FLOW` 自动化。

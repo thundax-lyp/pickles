@@ -22,5 +22,14 @@ verify_sample_project() {
   )
 }
 
+verify_pickles_hooks() {
+  echo "==> verify pickles-hooks"
+  (
+    cd "${ROOT_DIR}"
+    node --test pickles-hooks/test/hook-http-contract.test.mjs
+  )
+}
+
 verify_intellij_plugin
 verify_sample_project
+verify_pickles_hooks
