@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：扩展文件捕获 contract test
-  - 任务类型：测试任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
-  - 范围对象：`pickles-hooks/test/hook-http-contract.test.mjs`
-  - 处理动作：新增真实文件修改、新增、删除、缺失 state fallback 和 Stop flush 测试
-  - 验收点：`scripts/verify-hooks.sh` 覆盖真实文件 before / after 捕获；测试断言 state 写入与清理；测试断言 `ChangedFile.fileName` 不是绝对路径
-  - 重要度：10/10
-
 - [ ] `e2e`：配置 sample project `PreToolUse` Hook
   - 任务类型：配置任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
