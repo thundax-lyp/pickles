@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `scripts`：收窄 `verify-all.sh` 为验证编排入口
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-VERIFY-PROTOCOL.md`
-  - 范围对象：`scripts/verify-all.sh`
-  - 处理动作：改造 `verify-all.sh`，只调用 `verify-intellij-plugin.sh`、`verify-sample-project.sh` 和 `verify-hooks.sh`
-  - 验收点：`verify-all.sh` 不直接展开模块验证细节；可从任意目录调用；任一子验证失败时总入口返回非 0
-  - 重要度：8/10
-
 - [ ] `docs`：同步验证协议文档并清理 RUNBOOK
   - 任务类型：收尾任务
   - 依据文档：`docs/30-designs/RUNBOOK-VERIFY-PROTOCOL.md`

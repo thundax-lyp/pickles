@@ -2,34 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-GRADLE_CMD="${GRADLE_CMD:-gradle}"
 
-verify_intellij_plugin() {
-  echo "==> verify pickles-intellij-plugin"
-  (
-    cd "${ROOT_DIR}/pickles-intellij-plugin"
-    "${GRADLE_CMD}" build
-  )
-}
-
-verify_sample_project() {
-  echo "==> verify e2e/sample-project"
-  (
-    cd "${ROOT_DIR}/e2e/sample-project"
-    npm ci
-    npm run typecheck
-    npm run lint
-  )
-}
-
-verify_pickles_hooks() {
-  echo "==> verify pickles-hooks"
-  (
-    cd "${ROOT_DIR}"
-    node --test pickles-hooks/test/hook-http-contract.test.mjs
-  )
-}
-
-verify_intellij_plugin
-verify_sample_project
-verify_pickles_hooks
+"${ROOT_DIR}/scripts/verify-intellij-plugin.sh"
+"${ROOT_DIR}/scripts/verify-sample-project.sh"
+"${ROOT_DIR}/scripts/verify-hooks.sh"
