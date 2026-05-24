@@ -38,14 +38,9 @@ data class PicklesProblem(
     val type: String,
     val message: String,
     val severity: String = "WARN",
-    val source: ProblemSource = ProblemSource(),
+    val source: String = "pickles",
     val file: String = "",
     val position: ProblemPosition = ProblemPosition(),
-)
-
-data class ProblemSource(
-    val tool: String = "pickles",
-    val rule: String? = null,
 )
 
 data class ProblemPosition(

@@ -32,8 +32,7 @@ class PicklesModelsTest {
         )
 
         assertEquals("WARN", problem.severity)
-        assertEquals("pickles", problem.source.tool)
-        assertEquals(null, problem.source.rule)
+        assertEquals("pickles", problem.source)
         assertEquals(1, problem.position.line)
         assertEquals(1, problem.position.column)
     }

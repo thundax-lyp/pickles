@@ -151,18 +151,7 @@ MVP 固定包含：
 
 `text` 固定为 string。
 
-### 5.7 FeedbackStatus
-
-Feedback status 表达治理反馈是否已经接入 runtime。
-
-MVP 固定允许值：
-
-- `ok`
-- `unimplemented`
-
-`unimplemented` 固定表示 Plugin 已实现 HTTP contract，但尚未接入 Governance Server。
-
-### 5.8 ApiError
+### 5.7 ApiError
 
 API error 表达统一错误响应。
 
@@ -184,7 +173,7 @@ MVP 固定包含：
 
 `details` 固定为 JSON object。无额外细节时固定为 `{}`。
 
-### 5.9 ServerFile
+### 5.8 ServerFile
 
 Server file 固定为目标工程 `<repo>/.pickles/server.json`。
 
@@ -324,20 +313,34 @@ POST /feedback
 {
   "schemaVersion": 1,
   "requestId": "request-id",
-  "status": "unimplemented",
-  "hasBlockingProblems": false,
+  "status": "ok",
+  "hasBlockingProblems": true,
   "summary": {
-    "errorCount": 0,
-    "warnCount": 0,
-    "text": "Governance feedback is not implemented yet."
+    "errorCount": 1,
+    "warnCount": 2,
+    "text": "1 ERROR and 2 WARN problems found."
   },
-  "problems": []
+  "problems": [
+    {
+      "title": "Architecture rule failed",
+      "type": "ARCHUNIT",
+      "message": "Runtime must not depend on IntelliJ plugin internals.",
+      "severity": "ERROR",
+      "source": {
+        "tool": "archunit",
+        "rule": "module-boundary"
+      },
+      "file": "pickles-runtime/src/main/kotlin/Example.kt",
+      "position": {
+        "line": 12,
+        "column": 1
+      }
+    }
+  ]
 }
 ```
 
 `hasBlockingProblems` 固定为是否存在 `severity = "ERROR"` 的 Problem。
-
-`status` 为 `unimplemented` 时，`hasBlockingProblems` 固定为 `false`，`problems` 固定为空 array，`summary.errorCount` 与 `summary.warnCount` 固定为 `0`。
 
 `summary.errorCount` 固定为 `severity = "ERROR"` 的 Problem 数量。
 

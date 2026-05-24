@@ -20,6 +20,7 @@
 
 - 不执行规则命令
 - 不实现 Codex Hook
+- 不定义 HTTP API 细节
 
 ## 3. Bounded Context
 
@@ -95,7 +96,7 @@ Plugin 启动本地 HTTP 服务接收 Codex Hook 通知。
 
 Plugin 将本地 HTTP 服务端口写入目标工程 `<repo>/.pickles/server.json`。
 
-HTTP endpoint 与 request / response schema 固定由 [`../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`](../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md) 定义。
+HTTP endpoint 细节在 MVP 暂不定义。
 
 ## 8. Key Flows
 

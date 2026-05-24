@@ -130,7 +130,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
         executor.execute {
             runCatching {
                 val server = HttpServer.create(InetSocketAddress("127.0.0.1", 0), 0)
-                server.createContext("/health") { exchange -> handleHealth(exchange) }
+                server.createContext("/health") { exchange -> respond(exchange, 200, """{"status":"ok"}""") }
                 server.createContext("/notify") { exchange -> handleNotify(exchange) }
                 server.createContext("/feedback") { exchange -> handleFeedback(exchange) }
                 server.executor = executor
@@ -153,43 +153,17 @@ class PicklesProjectService(private val project: Project) : Disposable {
 
     private fun handleNotify(exchange: HttpExchange) {
         if (exchange.requestMethod != "POST") {
-            respond(exchange, contractHandler().methodNotAllowed())
+            respond(exchange, 405, """{"error":"method not allowed"}""")
             return
         }
-        val result = contractHandler().notify(readRequestBody(exchange))
-        respond(exchange, result)
-        if (result.status == 202) {
-            updateStatus("Hook notification received.")
-        }
+        exchange.requestBody.use { it.readBytes() }
+        updateStatus("Hook notification received.")
+        respond(exchange, 202, """{"accepted":true}""")
     }
 
     private fun handleFeedback(exchange: HttpExchange) {
-        if (exchange.requestMethod != "POST") {
-            respond(exchange, contractHandler().methodNotAllowed())
-            return
-        }
-        respond(exchange, contractHandler().feedback(readRequestBody(exchange)))
-    }
-
-    private fun handleHealth(exchange: HttpExchange) {
-        if (exchange.requestMethod != "GET") {
-            respond(exchange, contractHandler().methodNotAllowed())
-            return
-        }
-        respond(exchange, contractHandler().health())
-    }
-
-    private fun readRequestBody(exchange: HttpExchange): String =
-        exchange.requestBody.use { String(it.readBytes(), StandardCharsets.UTF_8) }
-
-    private fun contractHandler(): PicklesHttpContractHandler =
-        PicklesHttpContractHandler(
-            gson = gson,
-            projectRoot = requireProjectRoot(),
-        )
-
-    private fun respond(exchange: HttpExchange, result: PicklesHttpResult) {
-        respond(exchange, result.status, gson.toJson(result.body))
+        val body = gson.toJson(mapOf("problems" to currentProblems))
+        respond(exchange, 200, body)
     }
 
     private fun respond(exchange: HttpExchange, status: Int, body: String) {

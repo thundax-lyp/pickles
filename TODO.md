@@ -9,14 +9,14 @@
 
 ## 当前任务项
 
-- [ ] `pickles-intellij-plugin`：验证 Hook HTTP contract stub 并清理 RUNBOOK
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-HTTP-SERVER.md`
-  - 范围对象：`pickles-intellij-plugin/`、`TODO.md` 与 `docs/30-designs/RUNBOOK-INTELLIJ-HTTP-SERVER.md`
-  - 处理动作：在 Gradle 可用后运行插件模块验证并删除已完成 TODO 与一次性 RUNBOOK
-  - 验收点：`gradle build` 通过，且任务闭环只保留在 commit 历史中
-  - 重要度：9/10
-
 ## 待审阅任务项
+
+- [ ] `pickles-intellij-plugin`：按 RUNBOOK 实现本地 HTTP server contract stub
+  - 任务类型：拆解任务
+  - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-HTTP-SERVER.md`
+  - 范围对象：`pickles-intellij-plugin/`
+  - 处理动作：将 RUNBOOK 拆解为可独立验收的 IntelliJ HTTP server 实现任务
+  - 验收点：拆解后的执行任务覆盖 contract model、endpoint 行为、校验、测试、文档同步和 RUNBOOK 清理
+  - 重要度：9/10
 
 ## 待讨论项
