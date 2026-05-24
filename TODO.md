@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `docs`：同步文件捕获文档并清理 RUNBOOK
-  - 任务类型：收尾任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
-  - 范围对象：`docs/10-requirements/CODEX-HOOKS-REQUIREMENTS.md`、`docs/20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`、`docs/40-readiness/E2E-TEST-CASES.md`、`TODO.md`、`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
-  - 处理动作：同步真实文件捕获状态、测试口径和配置口径，删除已完成 RUNBOOK 并清理对应 TODO
-  - 验收点：`HOOK_PLUGIN_CONTRACT` 固定断言包含真实文件捕获；最终验证命令通过；RUNBOOK 删除；相关 TODO 清空或收窄
-  - 重要度：8/10
-
 ## 待讨论项

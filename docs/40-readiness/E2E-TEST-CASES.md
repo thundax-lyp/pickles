@@ -250,15 +250,19 @@ scripts/verify-hooks.sh
 - Hook 从当前 git root 定位目标工程。
 - Hook 读取 `<repo>/.pickles/server.json`。
 - Hook 使用 `http://127.0.0.1:<port>`。
+- `PreToolUse` 读取候选文件 before 并写入 hook state。
 - `SessionStart` 触发 `GET /health`。
 - `PostToolUse` 触发 `POST /notify`。
 - `Stop` 触发 `POST /feedback`。
-- `PostToolUse` 默认发送空 `files` array。
-- 测试模式注入 changed file 时，`before` 与 `after` 支持 string 或 `null`。
+- 修改已有文件时，`/notify` 包含 before 和 after。
+- 新增文件时，`before = null`。
+- 删除文件时，`after = null`。
+- 缺失 hook state 时，`PostToolUse` 使用 git fallback 计算 before。
+- `Stop` 在 pending state 存在时先 flush `/notify`，再调用 `/feedback`。
 - Hook 通信失败能被 Codex 看见。
 - `server.json` 缺失时 Hook 非 0 退出并输出 stderr。
 - `server.json.port` 非 number 时 Hook 非 0 退出并输出 stderr。
-- `e2e/sample-project/.codex/hooks.json` 绑定 `SessionStart`、`PostToolUse` 和 `Stop`，不绑定 `PreToolUse`。
+- `e2e/sample-project/.codex/hooks.json` 绑定 `SessionStart`、`PreToolUse`、`PostToolUse` 和 `Stop`。
 
 防漂移点：
 
@@ -266,6 +270,7 @@ scripts/verify-hooks.sh
 - Hook 不执行规则命令。
 - Hook 不修改用户业务代码。
 - `tool_name` 与 `tool_input` 不得作为最终文件列表真相源。
+- `ChangedFile.fileName` 不得使用绝对路径。
 
 ### 7.5 RUNTIME_SAMPLE_PROJECT
 
