@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：实现 server discovery 与 HTTP client 基础能力
-  - 任务类型：实现任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
-  - 范围对象：`pickles-hooks/`
-  - 处理动作：通过 `git rev-parse --show-toplevel` 定位工程根目录，读取 `<repo>/.pickles/server.json`，校验 `port`，组装 `http://127.0.0.1:<port>`，封装 GET/POST 调用
-  - 验收点：`server.json` 缺失、`port` 非 number、HTTP 非 2xx、JSON 解析失败都输出 stderr 并非 0 退出
-  - 重要度：9/10
-
 - [ ] `pickles-hooks`：实现 `SessionStart` health check
   - 任务类型：实现任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
