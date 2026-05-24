@@ -32,6 +32,21 @@ async function main() {
     await client.postJson("/notify", request);
     return;
   }
+
+  if (event.hookEventName === "Stop") {
+    const request = {
+      schemaVersion: SCHEMA_VERSION,
+      requestId: randomUUID(),
+      sessionId: event.sessionId,
+      turnId: event.turnId,
+      workspace,
+    };
+    const feedback = await client.postJson("/feedback", request);
+    writeStopFeedback(feedback);
+    return;
+  }
+
+  throw new Error(`Unsupported hook event: ${event.hookEventName}`);
 }
 
 async function readHookInput() {
@@ -249,6 +264,13 @@ function validateChangedFile(file) {
   if (!(typeof file.after === "string" || file.after === null)) {
     throw new Error("PICKLES_TEST_CHANGED_FILE.after must be a string or null.");
   }
+}
+
+function writeStopFeedback(feedback) {
+  const status = typeof feedback?.status === "string" ? feedback.status : "unknown";
+  const text = typeof feedback?.summary?.text === "string" ? feedback.summary.text : "";
+  const systemMessage = text.length > 0 ? `Pickles feedback status: ${status}. ${text}` : `Pickles feedback status: ${status}.`;
+  process.stdout.write(`${JSON.stringify({ continue: true, systemMessage })}\n`);
 }
 
 main()

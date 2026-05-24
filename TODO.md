@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：实现 `Stop` feedback pull
-  - 任务类型：实现任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`、`docs/20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`
-  - 范围对象：`pickles-hooks/`
-  - 处理动作：`Stop` 触发时调用 `POST /feedback`，并把 feedback response 输出为 Codex 可见内容
-  - 验收点：Plugin 返回 `status = "unimplemented"` 时脚本成功退出并输出该状态；feedback request 不包含文件内容
-  - 重要度：8/10
-
 - [ ] `pickles-hooks`：补齐 fake HTTP server contract test
   - 任务类型：测试任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
