@@ -12,7 +12,12 @@ async function main() {
   const event = mapHookEvent(input);
   const workspace = discoverWorkspace(event.cwd);
   const server = await readServerFile(workspace);
-  createHttpClient(server.baseUrl);
+  const client = createHttpClient(server.baseUrl);
+
+  if (event.hookEventName === "SessionStart") {
+    await client.getJson("/health");
+    return;
+  }
 }
 
 async function readHookInput() {

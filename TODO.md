@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：实现 `SessionStart` health check
-  - 任务类型：实现任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
-  - 范围对象：`pickles-hooks/`
-  - 处理动作：`SessionStart` 触发时调用 Plugin `GET /health`
-  - 验收点：health 成功时 0 退出；health 失败时 stderr 输出错误并非 0 退出
-  - 重要度：8/10
-
 - [ ] `pickles-hooks`：实现 `PostToolUse` notify contract payload
   - 任务类型：实现任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`、`docs/20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`
