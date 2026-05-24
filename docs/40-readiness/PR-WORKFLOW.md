@@ -25,6 +25,10 @@
 
 ## 3. Bounded Context
 
+Commit 是工程判断记录，可以表示阶段任务中的中间判断。
+
+PR 是阶段性交付边界。PR 合并前必须完整、可编译、可测试，并完成文档、TODO 和 RUNBOOK 收口。
+
 PR 合并前固定执行 `.github/workflows/pr-verify.yml`。
 
 workflow 固定调用 `scripts/verify-all.sh`。各项目新增或调整验证命令时，必须接入该脚本，避免 GitHub Actions 与本地验证入口分叉。
@@ -49,6 +53,7 @@ testcase 分层、真实使用全流程和多人开发必测内容固定由 [`E2
 ## 6. Global Constraints
 
 - PR 合并前必须通过统一 verify workflow。
+- PR 必须完成阶段任务对应的文档、TODO 和 RUNBOOK 收口。
 - workflow 不直接散落项目验证细节，项目验证细节固定收敛到 `scripts/verify-all.sh`。
 - 新增项目验证能力时必须同步接入 `scripts/verify-all.sh`。
 - 新增或改变跨模块 testcase 时必须同步更新 [`E2E-TEST-CASES.md`](./E2E-TEST-CASES.md)。
