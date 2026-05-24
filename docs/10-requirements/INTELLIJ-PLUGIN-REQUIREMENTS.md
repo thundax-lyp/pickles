@@ -21,7 +21,6 @@
 
 - 不执行 ArchUnit 或 ESLint 命令
 - 不实现 Codex Hook
-- 不定义 Hook HTTP API 细节
 - 不定义 AGENTS.md 注入块格式、marker 和幂等更新细节
 
 ## 3. Bounded Context
