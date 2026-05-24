@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：建立 Hook HTTP client 脚本骨架
-  - 任务类型：实现任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
-  - 范围对象：`pickles-hooks/`
-  - 处理动作：新增 Node.js ESM hook 入口，读取 stdin JSON，识别 `SessionStart`、`PostToolUse`、`Stop`，未知事件输出 stderr 并非 0 退出
-  - 验收点：脚本不依赖 npm install 或第三方 package；公共字段完成 camelCase 映射；`SessionStart` 缺失 `turn_id` 时 `turnId` 为 `null`
-  - 重要度：9/10
-
 - [ ] `pickles-hooks`：实现 server discovery 与 HTTP client 基础能力
   - 任务类型：实现任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
