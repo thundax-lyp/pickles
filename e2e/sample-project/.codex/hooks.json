@@ -26,6 +26,19 @@
         ]
       }
     ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/e2e/sample-project/.codex/hooks/pickles-hook.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Capturing Pickles before state"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [
