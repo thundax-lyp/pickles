@@ -111,7 +111,7 @@ Bind / Unbind 的具体注入块格式、marker 和幂等更新细节在 MVP 暂
 
 `server.json` 是运行时状态文件，不写入 `.pickles/config.json`。
 
-HTTP endpoint 细节在 MVP 暂不定义。
+HTTP endpoint 与 request / response schema 固定由 [`../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`](../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md) 定义。
 
 ## 8. Key Flows
 
