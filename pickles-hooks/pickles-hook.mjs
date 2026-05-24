@@ -39,7 +39,7 @@ async function main() {
   }
 
   if (event.hookEventName === "PostToolUse") {
-    const files = readTestChangedFiles();
+    const files = await readNotifyFiles(workspace, event);
     const request = {
       schemaVersion: SCHEMA_VERSION,
       requestId: randomUUID(),
@@ -47,6 +47,9 @@ async function main() {
       files,
     };
     await client.postJson("/notify", request);
+    if (!hasTestChangedFile()) {
+      await deleteCaptureState(workspace, event);
+    }
     return;
   }
 
@@ -276,6 +279,10 @@ function readTestChangedFiles() {
   return [file];
 }
 
+function hasTestChangedFile() {
+  return process.env.PICKLES_TEST_CHANGED_FILE !== undefined && process.env.PICKLES_TEST_CHANGED_FILE.length > 0;
+}
+
 function validateChangedFile(file) {
   if (typeof file !== "object" || file === null || Array.isArray(file)) {
     throw new Error("PICKLES_TEST_CHANGED_FILE must be a JSON object.");
@@ -375,6 +382,80 @@ async function readWorkspaceFile(workspace, fileName) {
     }
     throw new Error(`Unable to read ${fileName}: ${error.message}`);
   }
+}
+
+async function readNotifyFiles(workspace, event) {
+  if (hasTestChangedFile()) {
+    return readTestChangedFiles();
+  }
+
+  const state = await readCaptureState(workspace, event);
+  const changedFiles = listChangedFiles(workspace);
+  const files = [];
+  for (const fileName of changedFiles) {
+    const before = state?.beforeFiles && Object.hasOwn(state.beforeFiles, fileName)
+      ? state.beforeFiles[fileName]
+      : readGitHeadFile(workspace, fileName);
+    const after = await readWorkspaceFile(workspace, fileName);
+    files.push({ fileName, before, after });
+  }
+  return files;
+}
+
+function listChangedFiles(workspace) {
+  const result = spawnSync("git", ["status", "--porcelain", "--untracked-files=all"], {
+    cwd: workspace,
+    encoding: "utf8",
+  });
+  if (result.status !== 0) {
+    const reason = result.stderr.trim() || "git status failed.";
+    throw new Error(`Unable to inspect workspace diff: ${reason}`);
+  }
+
+  const files = [];
+  for (const line of result.stdout.split(/\r?\n/)) {
+    if (line.length === 0) {
+      continue;
+    }
+    for (const fileName of parseGitStatusLine(line)) {
+      if (fileName.startsWith(".pickles/")) {
+        continue;
+      }
+      files.push(fileName);
+    }
+  }
+  return uniqueRelativePaths(files);
+}
+
+function parseGitStatusLine(line) {
+  const rawPath = line.slice(3).trim();
+  if (rawPath.includes(" -> ")) {
+    return rawPath.split(" -> ").map((value) => unquoteGitPath(value.trim()));
+  }
+  return [unquoteGitPath(rawPath)];
+}
+
+function unquoteGitPath(value) {
+  if (value.startsWith('"') && value.endsWith('"')) {
+    try {
+      return JSON.parse(value);
+    } catch {
+      return value.slice(1, -1);
+    }
+  }
+  return value;
+}
+
+function readGitHeadFile(workspace, fileName) {
+  const result = spawnSync("git", ["show", `HEAD:${fileName}`], {
+    cwd: workspace,
+    encoding: "utf8",
+    maxBuffer: 20 * 1024 * 1024,
+  });
+  if (result.status !== 0) {
+    return null;
+  }
+  return result.stdout;
 }
 
 function stateFilePath(workspace, event) {

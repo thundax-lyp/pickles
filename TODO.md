@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：实现 `PostToolUse` workspace diff 上报
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
-  - 范围对象：`pickles-hooks/pickles-hook.mjs`
-  - 处理动作：使用 git workspace 状态确认实际变动文件，合并 before / after 并调用 `/notify`
-  - 验收点：修改、新增、删除文件均生成合法 `ChangedFile`；`fileName` 为相对路径；notify 成功后清理对应 state；缺失 state 时使用 git fallback
-  - 重要度：10/10
-
 - [ ] `pickles-hooks`：实现 `Stop` pending diff flush
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
