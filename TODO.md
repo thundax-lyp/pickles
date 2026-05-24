@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `scripts`：新增 sample project 验证脚本
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-VERIFY-PROTOCOL.md`
-  - 范围对象：`scripts/verify-sample-project.sh`
-  - 处理动作：将 `e2e/sample-project/` 依赖安装、typecheck 和 lint 验证从 `verify-all.sh` 拆为独立脚本
-  - 验收点：脚本使用 `set -euo pipefail`；从脚本位置定位 repo root；执行 `npm ci`、`npm run typecheck`、`npm run lint`；可从任意目录调用；失败返回非 0
-  - 重要度：9/10
-
 - [ ] `scripts`：新增 Hook contract 验证脚本
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-VERIFY-PROTOCOL.md`
