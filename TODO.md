@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：建立 Hook capture state 存储
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`
-  - 范围对象：`pickles-hooks/pickles-hook.mjs`、`e2e/sample-project/.pickles/.gitignore`
-  - 处理动作：实现 `<repo>/.pickles/hooks-state/` 状态目录、状态文件命名、读写和清理基础能力
-  - 验收点：状态文件按 `session_id/turn_id/tool_use_id` 定位；`.pickles/.gitignore` 忽略 `hooks-state/`；不写入用户全局 `~/.codex`
-  - 重要度：9/10
-
 - [ ] `pickles-hooks`：实现 `PreToolUse` before 快照
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-FILE-CAPTURE.md`

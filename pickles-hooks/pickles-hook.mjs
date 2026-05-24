@@ -3,7 +3,7 @@
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const SCHEMA_VERSION = 1;
@@ -264,6 +264,78 @@ function validateChangedFile(file) {
   if (!(typeof file.after === "string" || file.after === null)) {
     throw new Error("PICKLES_TEST_CHANGED_FILE.after must be a string or null.");
   }
+}
+
+function stateFilePath(workspace, event) {
+  const turnId = event.turnId ?? "session";
+  const toolUseId = requireString(event.toolUseId, "tool_use_id");
+  return path.join(
+    workspace,
+    ".pickles",
+    "hooks-state",
+    encodeStatePathPart(event.sessionId),
+    encodeStatePathPart(turnId),
+    `${encodeStatePathPart(toolUseId)}.json`,
+  );
+}
+
+async function writeCaptureState(workspace, event, state) {
+  const filePath = stateFilePath(workspace, event);
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, `${JSON.stringify(state, null, 2)}\n`, "utf8");
+}
+
+async function readCaptureState(workspace, event) {
+  const filePath = stateFilePath(workspace, event);
+  try {
+    return JSON.parse(await readFile(filePath, "utf8"));
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return null;
+    }
+    throw new Error(`Unable to read hook state ${filePath}: ${error.message}`);
+  }
+}
+
+async function deleteCaptureState(workspace, event) {
+  await rm(stateFilePath(workspace, event), { force: true });
+}
+
+async function listPendingCaptureStates(workspace, event) {
+  const turnId = event.turnId ?? "session";
+  const dir = path.join(
+    workspace,
+    ".pickles",
+    "hooks-state",
+    encodeStatePathPart(event.sessionId),
+    encodeStatePathPart(turnId),
+  );
+  let entries;
+  try {
+    entries = await readdir(dir, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return [];
+    }
+    throw new Error(`Unable to list hook state ${dir}: ${error.message}`);
+  }
+
+  const states = [];
+  for (const entry of entries) {
+    if (!entry.isFile() || !entry.name.endsWith(".json")) {
+      continue;
+    }
+    const filePath = path.join(dir, entry.name);
+    states.push({
+      filePath,
+      state: JSON.parse(await readFile(filePath, "utf8")),
+    });
+  }
+  return states;
+}
+
+function encodeStatePathPart(value) {
+  return encodeURIComponent(value).replaceAll("%", "_");
 }
 
 function writeStopFeedback(feedback) {
