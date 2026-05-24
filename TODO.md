@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `e2e`：配置 sample project 本地 Hook 绑定
-  - 任务类型：配置任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
-  - 范围对象：`e2e/sample-project/.codex/hooks.json`、`e2e/sample-project/.codex/hooks/`
-  - 处理动作：为 `SessionStart`、`PostToolUse`、`Stop` 配置目标工程本地 hook，明确源脚本到目标脚本的同步方式
-  - 验收点：hook command 从当前 git root 定位 `.codex/hooks/pickles-hook.mjs`；不写死 Pickles 仓库路径；不配置 `PreToolUse`
-  - 重要度：8/10
-
 - [ ] `pickles-hooks`：完成 Hook HTTP client contract 文档同步与 RUNBOOK 收尾
   - 任务类型：收尾任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`

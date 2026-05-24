@@ -1,3 +1,42 @@
 {
-  "hooks": {}
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/e2e/sample-project/.codex/hooks/pickles-hook.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Checking Pickles HTTP server"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|apply_patch|Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/e2e/sample-project/.codex/hooks/pickles-hook.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Notifying Pickles"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/e2e/sample-project/.codex/hooks/pickles-hook.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Reading Pickles feedback"
+          }
+        ]
+      }
+    ]
+  }
 }
