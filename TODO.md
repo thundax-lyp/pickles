@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `scripts`：新增 Hook contract 验证脚本
-  - 任务类型：执行任务
-  - 依据文档：`docs/30-designs/RUNBOOK-VERIFY-PROTOCOL.md`
-  - 范围对象：`scripts/verify-hooks.sh`
-  - 处理动作：将 `HOOK_PLUGIN_CONTRACT` Node test 验证从 `verify-all.sh` 拆为独立脚本
-  - 验收点：脚本使用 `set -euo pipefail`；从脚本位置定位 repo root；执行 `node --test pickles-hooks/test/hook-http-contract.test.mjs`；可从任意目录调用；失败返回非 0
-  - 重要度：9/10
-
 - [ ] `scripts`：收窄 `verify-all.sh` 为验证编排入口
   - 任务类型：执行任务
   - 依据文档：`docs/30-designs/RUNBOOK-VERIFY-PROTOCOL.md`
