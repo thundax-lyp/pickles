@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-hooks`：补齐 fake HTTP server contract test
-  - 任务类型：测试任务
-  - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
-  - 范围对象：`pickles-hooks/`
-  - 处理动作：新增无第三方依赖的 fake HTTP server 测试，覆盖 health、notify、feedback、server discovery 失败路径
-  - 验收点：测试断言 fake server 收到 `/health`、`/notify`、`/feedback`；notify 包含 `schemaVersion`、`requestId`、`event.sessionId`、`event.hookEventName`、`event.workspace`、`event.idempotencyKey`、array 类型 `files`
-  - 重要度：9/10
-
 - [ ] `e2e`：配置 sample project 本地 Hook 绑定
   - 任务类型：配置任务
   - 依据文档：`docs/30-designs/RUNBOOK-HOOK-HTTP-CLIENT.md`
