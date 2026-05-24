@@ -27,7 +27,7 @@ import javax.swing.SwingUtilities
 
 @Service(Service.Level.PROJECT)
 class PicklesProjectService(private val project: Project) : Disposable {
-    private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
+    private val gson: Gson = GsonBuilder().serializeNulls().setPrettyPrinting().create()
     private val listeners = CopyOnWriteArrayList<() -> Unit>()
     private val executor = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "Pickles Project Service").apply { isDaemon = true }

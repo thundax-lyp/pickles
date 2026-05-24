@@ -12,17 +12,19 @@ class PicklesHttpContractTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
 
-    private val gson = GsonBuilder().create()
+    private val gson = GsonBuilder().serializeNulls().create()
 
     @Test
     fun healthReturnsContractEnvelope() {
         val result = handler().health()
         val body = result.body as HealthResponse
+        val json = gson.toJson(body)
 
         assertEquals(200, result.status)
         assertEquals(1, body.schemaVersion)
         assertEquals(null, body.requestId)
         assertEquals("ok", body.status)
+        assertTrue(json.contains("\"requestId\":null"))
     }
 
     @Test
