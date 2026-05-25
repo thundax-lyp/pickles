@@ -11,12 +11,4 @@
 
 ## 待审阅任务项
 
-- [ ] `runtime-stdio-closure`：清理 RUNBOOK 和 TODO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`TODO.md`、`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 处理动作：完成实现和验证后删除已完成 TODO 并清理本 RUNBOOK
-    - 验收点：`TODO.md` 无已完成项残留，RUNBOOK 已删除或收窄为剩余范围
-    - 重要度：8/10
-
 ## 待讨论项
