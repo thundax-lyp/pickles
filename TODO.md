@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `feedback-runtime-status`：锁定 `/feedback` 接入后状态语义
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesHttpContract.kt`、`PicklesHttpContractTest.kt`
-    - 处理动作：覆盖 Runtime 已接入和未接入两种 feedback 状态
-    - 验收点：`status = ok` 和 `status = unimplemented` 路径均有测试
-    - 重要度：8/10
 - [ ] `e2e-full-flow-stdio`：将 full-flow 改为 Runtime stdio 路径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
