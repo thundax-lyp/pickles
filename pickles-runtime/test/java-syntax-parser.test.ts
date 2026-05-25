@@ -234,6 +234,45 @@ public class Repository<T extends Entity> {
     );
 });
 
+test("java syntax parser extracts field and annotation variants", () => {
+    const parser = new JavaSyntaxParser();
+    const file = parser.parse(
+        "src/main/java/com/example/PackageLocal.java",
+        `package com.example;
+
+@com.example.Audited
+class PackageLocal {
+    String firstName, lastName;
+
+    void touch() {
+    }
+}
+`,
+    );
+
+    const type = file.types[0];
+
+    assert.deepEqual(type.annotations, ["com.example.Audited"]);
+    assert.deepEqual(type.modifiers, []);
+    assert.deepEqual(
+        type.fields?.map((field) => ({
+            name: field.name,
+            modifiers: field.modifiers,
+        })),
+        [
+            { name: "firstName", modifiers: [] },
+            { name: "lastName", modifiers: [] },
+        ],
+    );
+    assert.deepEqual(
+        type.methods?.map((method) => ({
+            name: method.name,
+            modifiers: method.modifiers,
+        })),
+        [{ name: "touch", modifiers: [] }],
+    );
+});
+
 test("java syntax parser extracts class extends and implements declarations", () => {
     const parser = new JavaSyntaxParser();
     const file = parser.parse(
