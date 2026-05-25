@@ -116,13 +116,25 @@ Bind / Unbind 的具体注入块格式、marker 和幂等更新细节在 MVP 暂
 
 HTTP endpoint 与 request / response schema 固定由 [`../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`](../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md) 定义。
 
+### 7.5 Runtime Lifecycle
+
+插件必须启动并管理独立 Node.js Runtime 子进程。
+
+插件必须在目标工程打开、HTTP server 启动且 Runtime 子进程可用后，后台触发 Runtime 首次 workspace 全量索引。
+
+首次 workspace 全量索引不得阻塞 IDE UI。
+
+Hook `SessionStart` 不触发 Runtime 全量索引。
+
+插件必须提供手动 Refresh / Reindex 入口，允许用户重新触发 workspace 全量索引。
+
 ## 8. Key Flows
 
 ### 8.1 Problem Display Flow
 
 1. 插件收到 Hook 通知。
-2. 插件调用 Governance Engine。
-3. Governance Engine 返回 Problem Board 数据。
+2. 插件调用 Runtime。
+3. Runtime 返回 Problem Board 数据。
 4. 插件刷新 Tool Window。
 
 ### 8.2 Bind Flow

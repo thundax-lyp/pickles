@@ -13,12 +13,6 @@
 
 ## 待讨论项
 
-- [ ] 确定首次 workspace 全量索引触发时机
-    - 任务类型：待讨论项
-    - 关联任务：`Runtime-Plugin Boundary`
-    - 决策要求：确认打开项目、首次检测、Hook 首次通知或手动刷新中的触发时机
-    - 重要度：9/10
-
 - [ ] 设计 Tool Window 具体布局
     - 任务类型：待讨论项
     - 关联任务：`IntelliJ Plugin`

@@ -461,7 +461,17 @@ Plugin 只接收 Problem Board 数据、health 状态和可展示 summary。
 13. 将 Runtime 检测入口接入 Plugin 编排。
 14. 将 Runtime 验证接入 `scripts/verify-all.sh`。
 
-## 11. Verification
+## 11. Lifecycle
+
+Runtime 首次 workspace 全量索引固定由 IntelliJ Plugin 在目标工程打开、HTTP server 启动且 Runtime 子进程可用后后台触发。
+
+Hook `SessionStart` 固定只执行 Plugin health check，不触发 Runtime 全量索引。
+
+`/notify` 路径必须始终支持基于 changed files 的即时检测。首次全量索引尚未完成时，Runtime 先索引 changed files 并返回当前可计算 Problem。
+
+Tool Window 手动 Refresh / Reindex 可以重新触发 workspace 全量索引。
+
+## 12. Verification
 
 固定验证入口：
 
@@ -483,6 +493,6 @@ Plugin 只接收 Problem Board 数据、health 状态和可展示 summary。
 - constructor。
 - syntax error。
 
-## 12. Open Items
+## 13. Open Items
 
-- Runtime 首次 workspace 全量索引触发时机必须在 Plugin 编排设计中确定。
+无
