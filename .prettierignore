@@ -7,3 +7,4 @@ node_modules/
 **/build/
 **/.intellijPlatform/
 **/node_modules/
+**/.pickles/server.json
