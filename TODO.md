@@ -56,7 +56,7 @@
 - [ ] 补齐 Pickles native rule authoring contract 剩余边界
     - 任务类型：待讨论项
     - 关联任务：`pickles-rules`
-    - 决策要求：确定 rule 禁止事项和 `.pickles/*` 辅助实现目录边界
+    - 决策要求：确定 `.pickles/*` 辅助实现目录边界
     - 重要度：10/10
 
 - [ ] 设计 external adapter execution

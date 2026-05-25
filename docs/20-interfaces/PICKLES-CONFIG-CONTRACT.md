@@ -241,7 +241,15 @@ Native rule 的 `fixHint` 固定作为 Agent-facing 默认修复建议。
 
 Native rule 的 options 必须可 JSON 序列化。
 
+Native rule 固定为 lint-style 纯检查函数。
+
+Native rule 只能通过 `RuleContext` 和 JSON-serializable `options` 获取输入。
+
 Native rule 的 `rule(ctx)` 必须返回 `ProblemInput[]` 或 `Promise<ProblemInput[]>`。
+
+Native rule helper 必须遵守同样的无副作用约束。
+
+Native rule 不得修改文件、创建目录、启动外部命令、访问网络、依赖 Agent / IDE / Hook / MCP 内部状态、直接使用 parser 原生对象、读取隐藏全局状态或保存跨 invocation 状态。
 
 Native rule 的输出必须能归一化为 Problem。
 

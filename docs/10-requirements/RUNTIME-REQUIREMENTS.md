@@ -224,7 +224,15 @@ Native rule 的 `language` 字段必须为 string。Runtime MVP 只支持 `java`
 - Java helper
 - problem factory
 
+Native rule 固定为 lint-style 纯检查函数。
+
+Native rule 只能通过 `RuleContext` 和 JSON-serializable `options` 获取输入。
+
 Rule implementation 必须返回 `ProblemInput[]` 或 `Promise<ProblemInput[]>`。
+
+Native rule helper 必须遵守同样的无副作用约束。
+
+Native rule 不得修改文件、创建目录、启动外部命令、访问网络、依赖 Agent / IDE / Hook / MCP 内部状态、直接使用 parser 原生对象、读取隐藏全局状态或保存跨 invocation 状态。
 
 Rule author 调用 `ctx.problem(input)` 时，`input.message` 固定必填。
 
