@@ -131,7 +131,11 @@ const parseImports = (root: Parser.SyntaxNode): JavaImportDeclaration[] => {
     return root.namedChildren
         .filter((child) => child.type === "import_declaration")
         .map((node) => {
-            const importName = node.namedChildren.map((child) => child.text).join(".");
+            const importName = node.text
+                .replace(/^import\s+/, "")
+                .replace(/^static\s+/, "")
+                .replace(/;$/, "")
+                .trim();
 
             return {
                 name: importName,

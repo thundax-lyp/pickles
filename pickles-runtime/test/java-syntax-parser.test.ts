@@ -94,6 +94,33 @@ test("java syntax parser extracts package imports and top-level type declaration
     );
 });
 
+test("java syntax parser extracts normal static and wildcard imports", () => {
+    const parser = new JavaSyntaxParser();
+    const file = parser.parse(
+        "src/main/java/com/example/App.java",
+        `package com.example;
+
+import java.util.List;
+import java.util.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.*;
+
+public class App {
+}
+`,
+    );
+
+    assert.deepEqual(
+        file.imports.map((importDeclaration) => importDeclaration.name),
+        [
+            "java.util.List",
+            "java.util.*",
+            "java.util.Collections.emptyList",
+            "java.util.Collections.*",
+        ],
+    );
+});
+
 test("java syntax parser extracts members annotations modifiers nested types and ranges", () => {
     const parser = new JavaSyntaxParser();
     const file = parser.parse(

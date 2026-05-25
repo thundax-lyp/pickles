@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：覆盖 Java import 变体
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`pickles-runtime/test/**/*.ts`、`pickles-runtime/src/java-syntax-parser.ts`
-    - 处理动作：补充 normal import、static import 和 wildcard import parser fixture
-    - 验收点：import fixture tests 通过且 `scripts/verify-runtime-sample-project.sh` 通过
-    - 重要度：8/10
 - [ ] `pickles-runtime`：覆盖 Java 泛型语法样例
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
