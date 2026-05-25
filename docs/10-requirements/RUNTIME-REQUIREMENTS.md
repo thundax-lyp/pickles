@@ -226,6 +226,24 @@ Native rule 的 `language` 字段必须为 string。Runtime MVP 只支持 `java`
 
 Rule implementation 必须返回 `ProblemInput[]` 或 `Promise<ProblemInput[]>`。
 
+Rule author 调用 `ctx.problem(input)` 时，`input.message` 固定必填。
+
+`ProblemInput.title` 固定可选，未提供时 Runtime 必须使用 rule metadata 的 `title`。
+
+`ProblemInput.fixHint` 固定可选，未提供时 Runtime 必须使用 rule metadata 的 `fixHint` 或 `null`。
+
+`ProblemInput.file` 固定为 string 或 `null`。
+
+`ProblemInput.position` 固定为 `Position` 或 `null`。
+
+`ProblemInput` 不得覆盖 `severity`。
+
+`ProblemInput` 不得覆盖 `source`。
+
+Runtime 必须为 native rule problem 自动补齐 `source.tool` 和 `source.rule`。
+
+Native rule Problem 的 `source.tool` 固定为 `pickles-native`。
+
 Runtime 必须把 rule result 归一化为 Problem。
 
 Runtime 不得要求 rule implementation 直接读取 tree-sitter 原生对象。
@@ -379,10 +397,13 @@ Parser diagnostic 必须包含：
 - `file`
 - `position`
 - `source`
+- `fixHint`
 
 Java parser diagnostic 的 `source.tool` 固定为 `tree-sitter-java`。
 
 Parser diagnostic 的 `severity` 固定为 `WARN`。
+
+Parser diagnostic 的 `fixHint` 固定为 `null`。
 
 单个文件解析失败不得中断整批检测。
 
@@ -427,7 +448,7 @@ Problem 必须符合 `PROBLEM-MODEL-CONTRACT.md`。
 
 Problem `source.tool` 必须保留来源工具：
 
-- `pickles`
+- `pickles-native`
 - `tree-sitter-java`
 
 ### 7.13 Repair-Oriented Summary

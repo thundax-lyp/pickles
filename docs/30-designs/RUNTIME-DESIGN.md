@@ -270,8 +270,11 @@ Parser diagnostic 必须包含：
 - `file`
 - `position`
 - `source`
+- `fixHint`
 
 `severity` 固定为 `WARN`。
+
+`fixHint` 固定为 `null`。
 
 ### 7.6 Incremental Index Update
 
