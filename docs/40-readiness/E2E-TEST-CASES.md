@@ -187,6 +187,12 @@ cd pickles-intellij-plugin
 ../scripts/verify-intellij-plugin.sh
 ```
 
+执行条件：
+
+- 需要 Java 17+。
+- 默认使用 `pickles-intellij-plugin/gradlew`。
+- 如需覆盖 Gradle 命令，可设置 `GRADLE_CMD`。
+
 固定断言：
 
 - `healthReturnsContractEnvelope`
@@ -323,6 +329,12 @@ scripts/verify-runtime-sample-project.sh
 ```bash
 scripts/verify-intellij-plugin.sh
 ```
+
+执行条件：
+
+- 需要 Java 17+。
+- 默认使用 `pickles-intellij-plugin/gradlew`。
+- 如需覆盖 Gradle 命令，可设置 `GRADLE_CMD`。
 
 固定断言：
 

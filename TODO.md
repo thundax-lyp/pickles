@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `runtime tree-sitter hardening docs`：同步验证和 Runtime 文档口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`docs/10-requirements/RUNTIME-REQUIREMENTS.md`、`docs/30-designs/RUNTIME-DESIGN.md`、`docs/40-readiness/E2E-TEST-CASES.md`、`docs/40-readiness/PR-WORKFLOW.md`
-    - 处理动作：同步 Runtime parser hardening 和验证入口实现口径
-    - 验收点：文档没有保留过期实现口径且没有新增未实现承诺
-    - 重要度：6/10
 - [ ] `runtime tree-sitter hardening runbook`：收口文档、TODO 和 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
