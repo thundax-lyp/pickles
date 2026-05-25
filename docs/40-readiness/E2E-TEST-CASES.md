@@ -413,6 +413,4 @@ scripts/verify-full-flow.sh
 
 ## 10. Open Items
 
-- `RUNTIME_SAMPLE_PROJECT` 自动化。
-- `PLUGIN_RUNTIME_FLOW` 自动化。
-- `E2E_FULL_FLOW` 自动化。
+无

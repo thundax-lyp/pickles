@@ -104,10 +104,11 @@ scripts/verify-hooks.sh
 - `PLUGIN_HTTP_CONTRACT_UNIT`
 - `E2E_SAMPLE_PROJECT_VERIFY`
 - `HOOK_PLUGIN_CONTRACT`
+- `RUNTIME_SAMPLE_PROJECT`
+- `PLUGIN_RUNTIME_FLOW`
+- `E2E_FULL_FLOW`
 
 `PLUGIN_HTTP_CONTRACT_E2E` 当前为手动 e2e 调试 testcase，不作为 PR 自动必过项。
-
-`RUNTIME_SAMPLE_PROJECT`、`PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
 
 ## 8. Key Flows
 
