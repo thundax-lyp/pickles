@@ -188,6 +188,8 @@ Runtime 必须支持类似 ESLint config 的 JS / TS 可编程规则定义。
 
 - rule id
 - rule title
+- rule message
+- rule fix hint
 - rule type
 - severity
 - language scope
@@ -197,13 +199,29 @@ Runtime 必须支持类似 ESLint config 的 JS / TS 可编程规则定义。
 
 Rule implementation 必须通过 Runtime 提供的 `RuleContext` 获取输入。
 
+Rule metadata 必须至少包含 `id`、`title`、`message`、`type`、`severity`、`language` 和 `files`。
+
+Rule metadata 的 `message` 必须作为 Agent-facing 默认规则反馈。
+
+Rule metadata 的 `fixHint` 必须作为可选 Agent-facing 默认修复建议。
+
+RuleContext 固定分为通用层和 language-specific helper。
+
+通用层必须提供文件查询、受控 syntax query 和 problem factory。
+
+Language-specific helper 按语言扩展。
+
+Runtime MVP 只实现 Java helper。
+
+Native rule 的 `language` 字段必须为 string。Runtime MVP 只支持 `java`，遇到未支持 language 必须返回配置错误。
+
 `RuleContext` 必须至少提供：
 
 - workspace root
 - changed files
-- syntax index query
-- parser-specific query helper
-- config query
+- file query
+- syntax query
+- Java helper
 - problem factory
 
 Rule implementation 必须返回 `ProblemInput[]` 或 `Promise<ProblemInput[]>`。
@@ -255,6 +273,10 @@ Reusable rule package 必须导出 `defineRule({...})` 返回值，或由这些 
 Rule API 必须优先使用稳定字段、显式命名和 JSON-serializable options。
 
 Rule API 不得依赖复杂继承、隐式上下文或运行时 monkey patch。
+
+Pickles native rule metadata 必须包含 `message`。
+
+Pickles native rule metadata 可以包含 `fixHint`。
 
 Pickles runtime config 必须使用 `export default defineConfig({...})`。
 
