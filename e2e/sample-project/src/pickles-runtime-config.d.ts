@@ -7,7 +7,35 @@ declare module "@pickles/runtime/config" {
         source?: { tool?: string; rule?: string | null };
     };
 
+    export type SourceFile = {
+        path: string;
+        language?: string;
+    };
+
+    export type SyntaxMatch = {
+        name: string;
+        kind: string;
+        text: string;
+        range: {
+            start: { line: number; column: number };
+            end: { line: number; column: number };
+        };
+    };
+
     export type RuleContext = {
+        workspaceRoot: string;
+        changedFiles: SourceFile[];
+        files: {
+            changed(language?: string): SourceFile[];
+        };
+        java: {
+            files(): SourceFile[];
+            changedFiles(): SourceFile[];
+            findType(qualifiedName: string): SyntaxMatch | null;
+            findTypesByAnnotation(annotationName: string): SyntaxMatch[];
+            findFilesByImport(importTarget: string): SourceFile[];
+            query(file: SourceFile, query: string): SyntaxMatch[];
+        };
         problem(input: ProblemInput): ProblemInput;
     };
 

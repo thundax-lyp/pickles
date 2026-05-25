@@ -173,6 +173,7 @@ Rule implementation 必须通过 Runtime 提供的 `RuleContext` 获取输入。
 - workspace root
 - changed files
 - syntax index query
+- parser-specific query helper
 - config query
 - problem factory
 
@@ -183,6 +184,12 @@ Runtime 必须把 rule result 归一化为 Problem。
 Runtime 不得要求 rule implementation 直接读取 tree-sitter 原生对象。
 
 Runtime 不得要求 rule implementation 直接读取 Plugin 或 Hook 内部状态。
+
+Runtime 必须提供受控 syntax query 能力。
+
+Syntax query 必须返回 Pickles-owned DTO。
+
+Runtime 不得向 rule implementation 暴露 raw tree-sitter node。
 
 ### 7.4 AI-Generated Rule Support
 

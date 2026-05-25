@@ -91,7 +91,26 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - `position`
 - `source`
 
-### 5.6 ExternalAdapterRuleConfig
+### 5.6 RuleContext
+
+固定字段：
+
+- `workspaceRoot`
+- `changedFiles`
+- `files`
+- `java`
+- `problem`
+
+### 5.7 SyntaxMatch
+
+固定字段：
+
+- `name`
+- `kind`
+- `text`
+- `range`
+
+### 5.8 ExternalAdapterRuleConfig
 
 固定字段：
 
@@ -102,7 +121,7 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - `adapter`
 - `command`
 
-### 5.7 ProblemBoardConfig
+### 5.9 ProblemBoardConfig
 
 固定字段：
 
@@ -127,6 +146,9 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - Rule function 固定返回 `ProblemInput[]` 或 `Promise<ProblemInput[]>`。
 - `ProblemInput.file` 固定为 string 或 `null`。
 - `ProblemInput.position` 固定为 `Position` 或 `null`。
+- `RuleContext` 不暴露 raw tree-sitter node。
+- Parser-specific query helper 固定返回 Pickles-owned DTO。
+- Syntax query 结果固定使用 `SyntaxMatch`。
 
 ## 7. Functional Requirements
 
@@ -171,6 +193,25 @@ Native rule 的 options 必须可 JSON 序列化。
 Native rule 的 `rule(ctx)` 必须返回 `ProblemInput[]` 或 `Promise<ProblemInput[]>`。
 
 Native rule 的输出必须能归一化为 Problem。
+
+`RuleContext` 必须提供稳定 index query、parser-specific query helper 和 problem factory。
+
+`RuleContext` 必须至少提供：
+
+- `workspaceRoot`
+- `changedFiles`
+- `files.changed(language?)`
+- `java.files()`
+- `java.changedFiles()`
+- `java.findType(qualifiedName)`
+- `java.findTypesByAnnotation(annotationName)`
+- `java.findFilesByImport(importTarget)`
+- `java.query(file, query)`
+- `problem(input)`
+
+`java.query(file, query)` 必须返回 `SyntaxMatch[]`。
+
+`SyntaxMatch` 必须由 Runtime 创建，不得暴露 raw tree-sitter node。
 
 Native rule 示例：
 
