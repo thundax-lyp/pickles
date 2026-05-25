@@ -85,6 +85,8 @@ export interface JavaTypeDeclaration {
     name: string;
     qualifiedName: string;
     annotations: string[];
+    extendsTypes?: string[];
+    implementsTypes?: string[];
     modifiers?: string[];
     methods?: JavaMethodDeclaration[];
     constructors?: JavaMethodDeclaration[];

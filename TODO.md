@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：扩展 Java type 继承 DTO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`pickles-runtime/src/types.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：为 JavaTypeDeclaration 增加 extendsTypes 和 implementsTypes 默认 DTO 字段
-    - 验收点：`npm run typecheck` 和 `npm run test` 通过
-    - 重要度：8/10
 - [ ] `pickles-runtime`：解析 class extends / implements
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`

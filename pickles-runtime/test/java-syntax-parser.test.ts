@@ -19,6 +19,8 @@ test("java syntax parser can parse a minimal Java class without exposing tree-si
     assert.equal(file.packageName, "com.example");
     assert.deepEqual(file.imports, []);
     assert.equal(file.types[0].qualifiedName, "com.example.App");
+    assert.deepEqual(file.types[0].extendsTypes, []);
+    assert.deepEqual(file.types[0].implementsTypes, []);
     assert.deepEqual(file.diagnostics, []);
 });
 

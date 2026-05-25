@@ -162,6 +162,8 @@ const parseTypeDeclaration = (
         name,
         qualifiedName,
         annotations: parseAnnotationNames(node),
+        extendsTypes: [],
+        implementsTypes: [],
         modifiers: parseModifiers(node),
         methods: body === null ? [] : parseMethods(body),
         constructors: body === null ? [] : parseConstructors(body),
