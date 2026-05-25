@@ -13,11 +13,12 @@
     - `pickles-mcp/`
     - `pickles-hooks/`
     - `pickles-rules/`
+    - `pickles-skills/`
 
 ## Architecture Shape
 
 - IntelliJ IDEA Plugin 是主要产品入口。
-- 规则定义、运行时执行、Agent 工具集成和 IDE 集成保持边界清晰。
+- 规则定义、运行时执行、Agent-side governance、Agent 工具集成和 IDE 集成保持边界清晰。
 - 模块之间优先通过稳定契约交互，不通过临时内部实现互相耦合。
 - 新增共享能力前，先确认它被至少两个模块真实需要。
 - 不为了未来可能的扩展提前新增抽象层。
@@ -29,6 +30,7 @@
 - `pickles-mcp/`: MCP server、tool、resource 和 Agent 协议适配。
 - `pickles-hooks/`: 与 Agent task 生命周期和 hook 触发相关的入口、脚本或适配。
 - `pickles-rules/`: 规则、策略、规范和可复用治理声明。
+- `pickles-skills/`: Agent-side skills。`pickles-rule-authoring-skill` 负责规则创作和维护，`pickles-agent-governance-skill` 负责提示 Agent 读取规则、运行检查、理解 Problem 并复检。
 - `docs/`: AI 读取路由、治理规则、设计文档和人工材料。
 
 ## Cross-Module Rule

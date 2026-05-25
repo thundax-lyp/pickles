@@ -57,6 +57,7 @@
 - `pickles-mcp/` -> MCP integration work.
 - `pickles-rules/` -> rules, policies, and shared specifications.
 - `pickles-runtime/` -> runtime implementation.
+- `pickles-skills/` -> Agent-side skills. `pickles-rule-authoring-skill` creates and maintains rules; `pickles-agent-governance-skill` prompts Agents to run checks and interpret Problems.
 
 When a module gains its own `AGENTS.md`, read that file after this router and before editing that module.
 
