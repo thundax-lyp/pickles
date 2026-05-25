@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `scripts`：明确 verify-intellij-plugin 的 Gradle 解析
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`scripts/verify-intellij-plugin.sh`
-    - 处理动作：缺少系统 gradle 时输出包含安装要求或 GRADLE_CMD 用法的可行动错误
-    - 验收点：缺少系统 gradle 时不再出现裸 command not found
-    - 重要度：7/10
 - [ ] `scripts`：提供可重复本地 Gradle 执行路径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
