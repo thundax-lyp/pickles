@@ -161,9 +161,8 @@ class PicklesHttpContractTest {
 
     private fun handler() = handler(temporaryFolder.newFolder("workspace").toPath())
 
-    private fun handler(root: java.nio.file.Path) =
-        PicklesHttpContractHandler(
-            gson = gson,
-            projectRoot = root,
-        )
+    private fun handler(root: java.nio.file.Path) = PicklesHttpContractHandler(
+        gson = gson,
+        projectRoot = root,
+    )
 }

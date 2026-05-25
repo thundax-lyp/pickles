@@ -104,29 +104,29 @@ MVP 最小配置固定为：
 
 ```json
 {
-  "version": 1,
-  "agent": "codex",
-  "bind": {
-    "agentsFile": "AGENTS.md",
-    "enabled": false
-  },
-  "hook": {
-    "protocol": "http"
-  },
-  "rules": {
-    "archunit": {
-      "enabled": true,
-      "command": ""
+    "version": 1,
+    "agent": "codex",
+    "bind": {
+        "agentsFile": "AGENTS.md",
+        "enabled": false
     },
-    "eslint": {
-      "enabled": true,
-      "command": ""
+    "hook": {
+        "protocol": "http"
     },
-    "scripts": []
-  },
-  "problemBoard": {
-    "aggregation": "workspace"
-  }
+    "rules": {
+        "archunit": {
+            "enabled": true,
+            "command": ""
+        },
+        "eslint": {
+            "enabled": true,
+            "command": ""
+        },
+        "scripts": []
+    },
+    "problemBoard": {
+        "aggregation": "workspace"
+    }
 }
 ```
 

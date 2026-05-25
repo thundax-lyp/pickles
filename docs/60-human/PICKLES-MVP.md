@@ -42,14 +42,14 @@ Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 
 # 核心概念
 
-| 概念 | 描述 |
-|---|---|
-| Problem Board | 聚合后的语义与架构问题看板 |
-| Governance Server | 规则执行与问题聚合运行时 |
-| Incremental Workspace Index | 基于 Agent Hook 上报的增量文件变动，更新 workspace 级工程索引与治理问题 |
-| Agent Hooks | 部署在 Codex Runtime 内的生命周期触发点 |
-| Plugin Notify Protocol | Hook 向 IntelliJ Plugin 发送通知的本地协议，MVP 默认使用 Plugin 启动的本地 HTTP 服务 |
-| Project Configuration | 目标工程 `.pickles/config.json`，作为被治理项目的配置真相源 |
+| 概念                        | 描述                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------ |
+| Problem Board               | 聚合后的语义与架构问题看板                                                           |
+| Governance Server           | 规则执行与问题聚合运行时                                                             |
+| Incremental Workspace Index | 基于 Agent Hook 上报的增量文件变动，更新 workspace 级工程索引与治理问题              |
+| Agent Hooks                 | 部署在 Codex Runtime 内的生命周期触发点                                              |
+| Plugin Notify Protocol      | Hook 向 IntelliJ Plugin 发送通知的本地协议，MVP 默认使用 Plugin 启动的本地 HTTP 服务 |
+| Project Configuration       | 目标工程 `.pickles/config.json`，作为被治理项目的配置真相源                          |
 
 ---
 
@@ -175,29 +175,29 @@ MVP 最小配置：
 
 ```json
 {
-  "version": 1,
-  "agent": "codex",
-  "bind": {
-    "agentsFile": "AGENTS.md",
-    "enabled": false
-  },
-  "hook": {
-    "protocol": "http"
-  },
-  "rules": {
-    "archunit": {
-      "enabled": true,
-      "command": ""
+    "version": 1,
+    "agent": "codex",
+    "bind": {
+        "agentsFile": "AGENTS.md",
+        "enabled": false
     },
-    "eslint": {
-      "enabled": true,
-      "command": ""
+    "hook": {
+        "protocol": "http"
     },
-    "scripts": []
-  },
-  "problemBoard": {
-    "aggregation": "workspace"
-  }
+    "rules": {
+        "archunit": {
+            "enabled": true,
+            "command": ""
+        },
+        "eslint": {
+            "enabled": true,
+            "command": ""
+        },
+        "scripts": []
+    },
+    "problemBoard": {
+        "aggregation": "workspace"
+    }
 }
 ```
 
@@ -261,14 +261,14 @@ Before finalizing a task:
 
 # MVP 技术栈
 
-| 层级 | 技术 |
-|---|---|
-| IDE | IntelliJ IDEA |
-| Agent | Codex |
-| Hook Runtime | Codex Runtime |
-| Hook Notify Protocol | Local HTTP |
-| Workspace Input | Codex Hook 增量文件变动 |
-| Rule Detection | ArchUnit + ESLint |
+| 层级                 | 技术                    |
+| -------------------- | ----------------------- |
+| IDE                  | IntelliJ IDEA           |
+| Agent                | Codex                   |
+| Hook Runtime         | Codex Runtime           |
+| Hook Notify Protocol | Local HTTP              |
+| Workspace Input      | Codex Hook 增量文件变动 |
+| Rule Detection       | ArchUnit + ESLint       |
 
 ---
 

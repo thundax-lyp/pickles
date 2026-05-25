@@ -159,11 +159,9 @@ class PicklesHttpContractHandler(
         )
     }
 
-    fun methodNotAllowed(requestId: String? = null): PicklesHttpResult =
-        error(405, requestId, "INVALID_REQUEST", "Method not allowed.")
+    fun methodNotAllowed(requestId: String? = null): PicklesHttpResult = error(405, requestId, "INVALID_REQUEST", "Method not allowed.")
 
-    fun internalError(message: String): PicklesHttpResult =
-        error(500, null, "INTERNAL_ERROR", message)
+    fun internalError(message: String): PicklesHttpResult = error(500, null, "INTERNAL_ERROR", message)
 
     private fun validateCommon(schemaVersion: Int?, requestId: String?): PicklesHttpResult? {
         if (schemaVersion != PICKLES_HTTP_SCHEMA_VERSION) {
@@ -188,32 +186,29 @@ class PicklesHttpContractHandler(
         return null
     }
 
-    private fun error(status: Int, requestId: String?, code: String, message: String): PicklesHttpResult =
-        PicklesHttpResult(
-            status,
-            ApiErrorResponse(
-                requestId = requestId,
-                error = ApiError(
-                    code = code,
-                    message = message,
-                    details = emptyMap(),
-                ),
+    private fun error(status: Int, requestId: String?, code: String, message: String): PicklesHttpResult = PicklesHttpResult(
+        status,
+        ApiErrorResponse(
+            requestId = requestId,
+            error = ApiError(
+                code = code,
+                message = message,
+                details = emptyMap(),
             ),
-        )
+        ),
+    )
 
-    private fun extractRequestId(body: String): String? =
-        runCatching {
-            JsonParser.parseString(body).asJsonObject.get("requestId")?.takeIf { !it.isJsonNull }?.asString
-        }.getOrNull()
+    private fun extractRequestId(body: String): String? = runCatching {
+        JsonParser.parseString(body).asJsonObject.get("requestId")?.takeIf { !it.isJsonNull }?.asString
+    }.getOrNull()
 
-    private fun <T> parseJson(body: String, type: Class<T>): T? =
-        try {
-            gson.fromJson(body, type)
-        } catch (_: JsonParseException) {
-            null
-        } catch (_: IllegalStateException) {
-            null
-        }
+    private fun <T> parseJson(body: String, type: Class<T>): T? = try {
+        gson.fromJson(body, type)
+    } catch (_: JsonParseException) {
+        null
+    } catch (_: IllegalStateException) {
+        null
+    }
 
     private companion object {
         val HOOK_EVENT_NAMES = setOf("SessionStart", "PreToolUse", "PostToolUse", "Stop")

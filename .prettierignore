@@ -1,0 +1,9 @@
+.git/
+.gradle/
+.idea/
+node_modules/
+
+**/.gradle/
+**/build/
+**/.intellijPlatform/
+**/node_modules/

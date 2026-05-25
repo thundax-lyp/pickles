@@ -179,14 +179,12 @@ class PicklesProjectService(private val project: Project) : Disposable {
         respond(exchange, contractHandler().health())
     }
 
-    private fun readRequestBody(exchange: HttpExchange): String =
-        exchange.requestBody.use { String(it.readBytes(), StandardCharsets.UTF_8) }
+    private fun readRequestBody(exchange: HttpExchange): String = exchange.requestBody.use { String(it.readBytes(), StandardCharsets.UTF_8) }
 
-    private fun contractHandler(): PicklesHttpContractHandler =
-        PicklesHttpContractHandler(
-            gson = gson,
-            projectRoot = requireProjectRoot(),
-        )
+    private fun contractHandler(): PicklesHttpContractHandler = PicklesHttpContractHandler(
+        gson = gson,
+        projectRoot = requireProjectRoot(),
+    )
 
     private fun respond(exchange: HttpExchange, result: PicklesHttpResult) {
         respond(exchange, result.status, gson.toJson(result.body))
@@ -207,8 +205,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
 
     private fun configPath(): Path = requireProjectRoot().resolve(".pickles").resolve("config.json")
 
-    private fun requireProjectRoot(): Path =
-        projectRoot ?: throw IOException("Project root is unavailable.")
+    private fun requireProjectRoot(): Path = projectRoot ?: throw IOException("Project root is unavailable.")
 
     private fun updateStatus(message: String) {
         lastStatus = message

@@ -8,11 +8,11 @@
 - primary product: Pickles IntelliJ IDEA plugin
 - root docs: `docs/`
 - implementation areas:
-  - `pickles-intellij-plugin/`
-  - `pickles-runtime/`
-  - `pickles-mcp/`
-  - `pickles-hooks/`
-  - `pickles-rules/`
+    - `pickles-intellij-plugin/`
+    - `pickles-runtime/`
+    - `pickles-mcp/`
+    - `pickles-hooks/`
+    - `pickles-rules/`
 
 ## Architecture Shape
 

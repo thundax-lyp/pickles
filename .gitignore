@@ -32,5 +32,9 @@ replay_pid*
 **/build/
 **/.intellijPlatform/
 
+# Node package installs
+node_modules/
+**/node_modules/
+
 # Local Java version manager state
 .java-version

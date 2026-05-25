@@ -5,6 +5,7 @@ plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.25"
     id("org.jetbrains.intellij.platform") version "2.10.5"
+    id("com.diffplug.spotless") version "8.5.1"
 }
 
 group = "com.pickles"
@@ -35,6 +36,18 @@ intellijPlatform {
         ideaVersion {
             sinceBuild.set("242")
         }
+    }
+}
+
+spotless {
+    kotlin {
+        target("src/**/*.kt")
+        ktlint("1.8.0")
+    }
+
+    kotlinGradle {
+        target("*.gradle.kts", "settings.gradle.kts")
+        ktlint("1.8.0")
     }
 }
 

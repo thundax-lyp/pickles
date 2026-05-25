@@ -22,18 +22,18 @@ docs/60-human/DOCUMENT-ROUTING-MAP.md
 
 它的用途是帮助人类理解、检查和优化当前文档加载网络：
 
-* 某类任务从入口会读到哪些文档
-* 某条文档依赖链是否清晰
-* 某个文档是否缺少上游加载路径
-* `docs/AGENTS.md` 是否存在漏路由、重复路由或过度路由
+- 某类任务从入口会读到哪些文档
+- 某条文档依赖链是否清晰
+- 某个文档是否缺少上游加载路径
+- `docs/AGENTS.md` 是否存在漏路由、重复路由或过度路由
 
 生成的文档不得把自己写成新的路由规则来源。
 
 必须明确写出：
 
-* 真实加载规则以 `./AGENTS.md`、`docs/AGENTS.md`、模块内 `AGENTS.md` 和具体文档内的直接链接为准
-* 本文档只是一张人类阅读的地图
-* 本文档不要求 AI 在普通任务中默认读取
+- 真实加载规则以 `./AGENTS.md`、`docs/AGENTS.md`、模块内 `AGENTS.md` 和具体文档内的直接链接为准
+- 本文档只是一张人类阅读的地图
+- 本文档不要求 AI 在普通任务中默认读取
 
 ---
 
@@ -51,11 +51,11 @@ docs/60-human/DOCUMENT-ROUTING-MAP.md
 
 关键入口文档至少包括：
 
-* `docs/00-governance/ARCHITECTURE.md`
-* `docs/00-governance/TODO-RULES.md`
-* `docs/00-governance/DOCUMENT-RULES.md`
-* `docs/00-governance/NAMING-AND-PLACEMENT-RULES.md`
-* `pickles-intellij-plugin/AGENTS.md`
+- `docs/00-governance/ARCHITECTURE.md`
+- `docs/00-governance/TODO-RULES.md`
+- `docs/00-governance/DOCUMENT-RULES.md`
+- `docs/00-governance/NAMING-AND-PLACEMENT-RULES.md`
+- `pickles-intellij-plugin/AGENTS.md`
 
 可以读取 `docs/AGENTS.md` 明确路由到的模块需求文档、接口文档和专项设计文档，用于绘制模块路线图。
 
@@ -69,14 +69,14 @@ docs/60-human/DOCUMENT-ROUTING-MAP.md
 
 必须遵守：
 
-* 每条图连线都必须标明“何种情况加载”
-* 不画无条件的泛泛引用边，除非它确实是固定入口
-* 不把文档目录画成全量索引
-* 不重复 `docs/AGENTS.md` 的全文
-* 只画关键路径和典型路径
-* 重点呈现路由判断，而不是文件清单
-* 当发现某条路径只存在于文档内部链接中，必须按“上游文档 -> 直接链接文档”的方式表达
-* 当发现某条路径由 `docs/AGENTS.md` 直接触发，必须按“任务信号 -> 文档”的方式表达
+- 每条图连线都必须标明“何种情况加载”
+- 不画无条件的泛泛引用边，除非它确实是固定入口
+- 不把文档目录画成全量索引
+- 不重复 `docs/AGENTS.md` 的全文
+- 只画关键路径和典型路径
+- 重点呈现路由判断，而不是文件清单
+- 当发现某条路径只存在于文档内部链接中，必须按“上游文档 -> 直接链接文档”的方式表达
+- 当发现某条路径由 `docs/AGENTS.md` 直接触发，必须按“任务信号 -> 文档”的方式表达
 
 生成出的文档必须适合人类维护者 review。
 
@@ -164,20 +164,20 @@ flowchart LR
 
 包括：
 
-* 架构与模块边界
-* TODO 协作与任务收口
-* 文档规则
-* 命名与文件归属
+- 架构与模块边界
+- TODO 协作与任务收口
+- 文档规则
+- 命名与文件归属
 
 3. 模块路由路径
 
 至少覆盖：
 
-* `pickles-intellij-plugin/`
-* `pickles-runtime/`
-* `pickles-mcp/`
-* `pickles-hooks/`
-* `pickles-rules/`
+- `pickles-intellij-plugin/`
+- `pickles-runtime/`
+- `pickles-mcp/`
+- `pickles-hooks/`
+- `pickles-rules/`
 
 如果模块内存在 `AGENTS.md`，必须表达 `docs/AGENTS.md` 到该模块 `AGENTS.md` 的加载条件。
 
@@ -185,20 +185,20 @@ flowchart LR
 
 至少覆盖：
 
-* IntelliJ plugin 任务
-* runtime 任务
-* MCP 任务
-* hooks 任务
-* rules 任务
-* 插件与 runtime / MCP / hooks / rules 的边界
+- IntelliJ plugin 任务
+- runtime 任务
+- MCP 任务
+- hooks 任务
+- rules 任务
+- 插件与 runtime / MCP / hooks / rules 的边界
 
 5. TODO / RUNBOOK 路径
 
 至少覆盖：
 
-* `TODO-RULES.md`
-* `RUNBOOK-*.md`
-* `TODO.md`
+- `TODO-RULES.md`
+- `RUNBOOK-*.md`
+- `TODO.md`
 
 ---
 
@@ -208,17 +208,17 @@ flowchart LR
 
 生成前必须检查：
 
-* 图中的路径是否真实存在，通配符路径除外
-* 图中的加载条件是否能在 `docs/AGENTS.md`、模块内 `AGENTS.md` 或上游文档直接链接中找到依据
-* 是否误把 `docs/50-prompts/` 或 `docs/60-human/` 文档放进 AI 默认加载路径
-* 是否误把本文档写成正式路由规则
+- 图中的路径是否真实存在，通配符路径除外
+- 图中的加载条件是否能在 `docs/AGENTS.md`、模块内 `AGENTS.md` 或上游文档直接链接中找到依据
+- 是否误把 `docs/50-prompts/` 或 `docs/60-human/` 文档放进 AI 默认加载路径
+- 是否误把本文档写成正式路由规则
 
 生成后必须检查：
 
-* Mermaid 代码块完整闭合
-* 每条边都有 label
-* `Open Items` 不为空时必须是可执行的文档治理问题
-* 不存在与 `docs/AGENTS.md` 明显冲突的加载路径
+- Mermaid 代码块完整闭合
+- 每条边都有 label
+- `Open Items` 不为空时必须是可执行的文档治理问题
+- 不存在与 `docs/AGENTS.md` 明显冲突的加载路径
 
 ---
 
@@ -228,10 +228,10 @@ flowchart LR
 
 禁止：
 
-* 把 `DOCUMENT-ROUTING-MAP.md` 写入 `docs/AGENTS.md` 的默认加载路径
-* 生成全量文档目录索引
-* 没有加载条件的连线
-* 依赖聊天上下文
-* 引用外部项目或外部资料
-* 把 `docs/50-prompts/` 或 `docs/60-human/` 当作 AI 默认输入目录
-* 在最终响应中输出解释、摘要或额外说明
+- 把 `DOCUMENT-ROUTING-MAP.md` 写入 `docs/AGENTS.md` 的默认加载路径
+- 生成全量文档目录索引
+- 没有加载条件的连线
+- 依赖聊天上下文
+- 引用外部项目或外部资料
+- 把 `docs/50-prompts/` 或 `docs/60-human/` 当作 AI 默认输入目录
+- 在最终响应中输出解释、摘要或额外说明

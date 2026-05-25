@@ -1,25 +1,25 @@
 {
-  "version": 1,
-  "agent": "codex",
-  "bind": {
-    "agentsFile": "AGENTS.md",
-    "enabled": true
-  },
-  "hook": {
-    "protocol": "http"
-  },
-  "rules": {
-    "archunit": {
-      "enabled": true,
-      "command": ""
+    "version": 1,
+    "agent": "codex",
+    "bind": {
+        "agentsFile": "AGENTS.md",
+        "enabled": true
     },
-    "eslint": {
-      "enabled": true,
-      "command": "npm run lint"
+    "hook": {
+        "protocol": "http"
     },
-    "scripts": []
-  },
-  "problemBoard": {
-    "aggregation": "workspace"
-  }
+    "rules": {
+        "archunit": {
+            "enabled": true,
+            "command": ""
+        },
+        "eslint": {
+            "enabled": true,
+            "command": "npm run lint"
+        },
+        "scripts": []
+    },
+    "problemBoard": {
+        "aggregation": "workspace"
+    }
 }

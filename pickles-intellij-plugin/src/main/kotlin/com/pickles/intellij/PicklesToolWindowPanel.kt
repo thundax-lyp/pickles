@@ -21,7 +21,8 @@ import javax.swing.JTextField
 class PicklesToolWindowPanel(
     private val project: com.intellij.openapi.project.Project,
     private val service: PicklesProjectService,
-) : JPanel(BorderLayout()), Disposable {
+) : JPanel(BorderLayout()),
+    Disposable {
     private val statusLabel = JBLabel()
     private val bindButton = JButton("Bind")
     private val unbindButton = JButton("Unbind")

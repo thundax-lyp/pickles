@@ -1,13 +1,13 @@
 {
-  "name": "pickles-sample-project",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit"
-  },
-  "devDependencies": {
-    "typescript": "5.8.3"
-  }
+    "name": "pickles-sample-project",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "typecheck": "tsc --noEmit",
+        "lint": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "typescript": "5.8.3"
+    }
 }

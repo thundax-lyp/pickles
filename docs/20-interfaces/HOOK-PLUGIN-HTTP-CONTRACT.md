@@ -224,9 +224,9 @@ GET /health
 
 ```json
 {
-  "schemaVersion": 1,
-  "requestId": null,
-  "status": "ok"
+    "schemaVersion": 1,
+    "requestId": null,
+    "status": "ok"
 }
 ```
 
@@ -262,22 +262,22 @@ POST /feedback
 
 ```json
 {
-  "schemaVersion": 1,
-  "requestId": "request-id",
-  "event": {
-    "sessionId": "codex-session-id",
-    "turnId": "codex-turn-id",
-    "hookEventName": "PostToolUse",
-    "workspace": "/absolute/path/to/repo",
-    "idempotencyKey": "session:turn:event:file-or-event"
-  },
-  "files": [
-    {
-      "fileName": "relative/path/File.kt",
-      "before": "old content",
-      "after": "new content"
-    }
-  ]
+    "schemaVersion": 1,
+    "requestId": "request-id",
+    "event": {
+        "sessionId": "codex-session-id",
+        "turnId": "codex-turn-id",
+        "hookEventName": "PostToolUse",
+        "workspace": "/absolute/path/to/repo",
+        "idempotencyKey": "session:turn:event:file-or-event"
+    },
+    "files": [
+        {
+            "fileName": "relative/path/File.kt",
+            "before": "old content",
+            "after": "new content"
+        }
+    ]
 }
 ```
 
@@ -289,10 +289,10 @@ POST /feedback
 
 ```json
 {
-  "schemaVersion": 1,
-  "requestId": "request-id",
-  "accepted": true,
-  "processed": false
+    "schemaVersion": 1,
+    "requestId": "request-id",
+    "accepted": true,
+    "processed": false
 }
 ```
 
@@ -306,11 +306,11 @@ POST /feedback
 
 ```json
 {
-  "schemaVersion": 1,
-  "requestId": "request-id",
-  "sessionId": "codex-session-id",
-  "turnId": "codex-turn-id",
-  "workspace": "/absolute/path/to/repo"
+    "schemaVersion": 1,
+    "requestId": "request-id",
+    "sessionId": "codex-session-id",
+    "turnId": "codex-turn-id",
+    "workspace": "/absolute/path/to/repo"
 }
 ```
 
@@ -322,16 +322,16 @@ POST /feedback
 
 ```json
 {
-  "schemaVersion": 1,
-  "requestId": "request-id",
-  "status": "unimplemented",
-  "hasBlockingProblems": false,
-  "summary": {
-    "errorCount": 0,
-    "warnCount": 0,
-    "text": "Governance feedback is not implemented yet."
-  },
-  "problems": []
+    "schemaVersion": 1,
+    "requestId": "request-id",
+    "status": "unimplemented",
+    "hasBlockingProblems": false,
+    "summary": {
+        "errorCount": 0,
+        "warnCount": 0,
+        "text": "Governance feedback is not implemented yet."
+    },
+    "problems": []
 }
 ```
 
@@ -349,13 +349,13 @@ POST /feedback
 
 ```json
 {
-  "schemaVersion": 1,
-  "requestId": "request-id-or-null",
-  "error": {
-    "code": "INVALID_REQUEST",
-    "message": "Missing event.sessionId.",
-    "details": {}
-  }
+    "schemaVersion": 1,
+    "requestId": "request-id-or-null",
+    "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Missing event.sessionId.",
+        "details": {}
+    }
 }
 ```
 
@@ -363,15 +363,15 @@ POST /feedback
 
 HTTP status 固定规则：
 
-| Status | 使用场景 |
-|---|---|
-| `200` | `/health` 成功；`/feedback` 成功 |
-| `202` | `/notify` 已接收 |
-| `400` | request JSON 非法、schema 不匹配或必填字段缺失 |
-| `404` | request workspace 不属于当前 Plugin 服务 |
-| `409` | 幂等键冲突或 session / workspace 状态冲突 |
-| `503` | Plugin 服务尚未准备好 |
-| `500` | 未预期服务端错误 |
+| Status | 使用场景                                       |
+| ------ | ---------------------------------------------- |
+| `200`  | `/health` 成功；`/feedback` 成功               |
+| `202`  | `/notify` 已接收                               |
+| `400`  | request JSON 非法、schema 不匹配或必填字段缺失 |
+| `404`  | request workspace 不属于当前 Plugin 服务       |
+| `409`  | 幂等键冲突或 session / workspace 状态冲突      |
+| `503`  | Plugin 服务尚未准备好                          |
+| `500`  | 未预期服务端错误                               |
 
 ## 9. Functional Requirements
 
@@ -413,7 +413,7 @@ IntelliJ Plugin 启动本地 HTTP 服务后，必须写入目标工程 `<repo>/.
 
 ```json
 {
-  "port": 0
+    "port": 0
 }
 ```
 
