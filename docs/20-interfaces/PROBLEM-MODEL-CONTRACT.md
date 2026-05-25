@@ -19,7 +19,6 @@
 不在范围内：
 
 - 不定义问题持久化格式
-- 不定义问题去重算法
 - 不定义完整 Repair-Oriented Summary 结构
 
 ## 3. Bounded Context
@@ -143,6 +142,37 @@ MVP 只显示以下字段：
 
 `file` 或 `position` 为 `null` 时，Plugin 不展示跳转失败状态。
 
+### 7.6 Problem Deduplication
+
+Runtime 聚合 Problem 时必须去重。
+
+MVP dedupe key 固定由以下字段组成：
+
+- `source.tool`
+- `source.rule`
+- `file`
+- `position.line`
+- `position.column`
+- `message`
+
+`file` 为 `null` 时，dedupe key 中使用空值。
+
+`position` 为 `null` 时，`position.line` 和 `position.column` 使用空值。
+
+MVP 只删除 dedupe key 完全相同的重复 Problem。
+
+MVP 不做跨 rule 合并。
+
+MVP 不做跨 tool 合并。
+
+MVP 不做相似 message 合并。
+
+`title` 不参与去重。
+
+`fixHint` 不参与去重。
+
+重复 Problem 固定保留第一次出现的 Problem。
+
 ## 8. Key Flows
 
 ### 8.1 Display Flow
@@ -165,4 +195,4 @@ MVP 只显示以下字段：
 
 ## 10. Open Items
 
-- 问题去重规则。
+无

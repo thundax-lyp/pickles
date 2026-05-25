@@ -53,12 +53,6 @@
 
 ## 待讨论项
 
-- [ ] 确定问题去重规则
-    - 任务类型：待讨论项
-    - 关联任务：`Problem Model`
-    - 决策要求：确认 Problem 去重 key、同源/跨源合并策略和展示保留规则
-    - 重要度：8/10
-
 - [ ] 定义 Repair-Oriented Summary 稳定 JSON contract
     - 任务类型：待讨论项
     - 关联任务：`Repair-Oriented Summary`
