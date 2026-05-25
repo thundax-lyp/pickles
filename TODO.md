@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `e2e-full-flow-stdio`：将 full-flow 改为 Runtime stdio 路径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`e2e/full-flow/full-flow.test.mjs`
-    - 处理动作：移除 direct import Runtime，改用 Runtime stdio 子进程
-    - 验收点：`./scripts/verify-full-flow.sh` 覆盖 stdio 闭环
-    - 重要度：9/10
 - [ ] `runtime-stdio-doc-sync`：同步 Runtime stdio 稳定文档
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
