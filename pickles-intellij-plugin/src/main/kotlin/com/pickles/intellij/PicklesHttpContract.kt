@@ -128,17 +128,26 @@ class PicklesHttpContractHandler(
             }
         }
 
-        val runtimeProblems = runtimeClient
-            ?.inspect(
-                files.map { file ->
-                    RuntimeChangedFile(
-                        fileName = file.fileName!!,
-                        before = file.before,
-                        after = file.after,
-                    )
-                },
-            )
-            ?: emptyList()
+        val runtimeProblems = runtimeClient?.let { client ->
+            runCatching {
+                client.inspect(
+                    files.map { file ->
+                        RuntimeChangedFile(
+                            fileName = file.fileName!!,
+                            before = file.before,
+                            after = file.after,
+                        )
+                    },
+                )
+            }.getOrElse { failure ->
+                return error(
+                    500,
+                    request.requestId,
+                    "INTERNAL_ERROR",
+                    failure.message ?: "Pickles Runtime failed.",
+                )
+            }
+        } ?: emptyList()
         problemBoard?.replaceProblems(runtimeProblems)
 
         return PicklesHttpResult(

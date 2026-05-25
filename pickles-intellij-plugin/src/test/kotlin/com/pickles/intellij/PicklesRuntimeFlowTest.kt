@@ -194,6 +194,55 @@ class PicklesRuntimeFlowTest {
         assertEquals("Pickles Runtime returned an empty response.", error.message)
     }
 
+    @Test
+    fun notifyReturnsInternalErrorWhenRuntimeFailsWithoutClearingProblemBoard() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        val existingProblem = PicklesProblem(
+            title = "Existing",
+            type = "architecture",
+            message = "Existing problem.",
+            severity = "ERROR",
+        )
+        val problemBoard = PicklesProblemBoardState()
+        problemBoard.replaceProblems(listOf(existingProblem))
+        val handler = PicklesHttpContractHandler(
+            gson = gson,
+            projectRoot = root,
+            runtimeClient = FailingRuntimeClient(),
+            problemBoard = problemBoard,
+        )
+
+        val result = handler.notify(
+            """
+            {
+              "schemaVersion": 1,
+              "requestId": "req-runtime-error",
+              "event": {
+                "sessionId": "session-1",
+                "turnId": "turn-1",
+                "hookEventName": "PostToolUse",
+                "workspace": "${root.toAbsolutePath()}",
+                "idempotencyKey": "session-1:turn-1:PostToolUse:src/main/java/com/example/web/OrderController.java"
+              },
+              "files": [
+                {
+                  "fileName": "src/main/java/com/example/web/OrderController.java",
+                  "before": "old",
+                  "after": "new"
+                }
+              ]
+            }
+            """.trimIndent(),
+        )
+        val body = result.body as ApiErrorResponse
+
+        assertEquals(500, result.status)
+        assertEquals("req-runtime-error", body.requestId)
+        assertEquals("INTERNAL_ERROR", body.error.code)
+        assertEquals("Runtime unavailable.", body.error.message)
+        assertEquals(listOf(existingProblem), problemBoard.problems())
+    }
+
     private class RecordingRuntimeClient(
         val problemsToReturn: List<PicklesProblem>,
     ) : PicklesRuntimeClient {
@@ -204,6 +253,10 @@ class PicklesRuntimeFlowTest {
             receivedFiles = files
             return problemsToReturn
         }
+    }
+
+    private class FailingRuntimeClient : PicklesRuntimeClient {
+        override fun inspect(files: List<RuntimeChangedFile>): List<PicklesProblem> = throw IOException("Runtime unavailable.")
     }
 
     private fun withSystemProperty(name: String, value: String, action: () -> Unit) {

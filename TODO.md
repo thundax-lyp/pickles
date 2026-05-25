@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `notify-runtime-error`：补 `/notify` Runtime failure 映射
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesHttpContract.kt`、`PicklesRuntimeFlowTest.kt`
-    - 处理动作：Runtime client 失败时返回 `INTERNAL_ERROR` 且不清空 Problem Board
-    - 验收点：Runtime failure 有 HTTP contract 测试覆盖
-    - 重要度：9/10
 - [ ] `feedback-runtime-status`：锁定 `/feedback` 接入后状态语义
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
