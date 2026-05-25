@@ -270,6 +270,16 @@ Pickles native rule API 必须适合 AI 根据说明书生成。
 
 `pickles-rules/` 必须承载 Pickles native rule authoring contract、规则说明书和可复用规则模板。
 
+MVP rule templates 固定放在 `pickles-rules/templates/`。
+
+MVP rule templates 固定只提供 Java native rule 模板：
+
+- file-level native rule template。
+- Java syntax query rule template。
+- workspace-level native rule template。
+
+MVP 不提供 external adapter、ArchUnit、ESLint、TypeScript、Python、auto-fix 或 package publishing 模板。
+
 `pickles-rule-authoring-skill` 必须使用规则说明书生成和维护 Pickles rules。
 
 `pickles-rule-authoring-skill` 生成 native rule 声明时，默认写入 `pickles.config.js`、`pickles.config.mjs` 或 `pickles.config.ts`。
@@ -517,11 +527,8 @@ MVP 不定义完整 Repair-Oriented Summary 稳定 JSON contract。
 ## 10. Open Items
 
 - Incremental Workspace Index 的内部结构。
-- Pickles native rule authoring contract。
 - AI-generated rule authoring guide。
-- Rule templates。
 - Skill-to-rules workflow。
-- Pickles runtime config 加载优先级。
 - Repair-Oriented Summary 结构。
 - Runtime 与 Plugin 的进程边界。
 - Runtime 首次 workspace 全量索引触发时机。

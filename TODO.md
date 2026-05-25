@@ -53,12 +53,6 @@
 
 ## 待讨论项
 
-- [ ] 设计 Rule templates
-    - 任务类型：待讨论项
-    - 关联任务：`pickles-rules`
-    - 决策要求：确定 MVP 需要提供的 native rule 和 Java syntax query 模板
-    - 重要度：8/10
-
 - [ ] 定义 Skill-to-rules workflow
     - 任务类型：待讨论项
     - 关联任务：`pickles-skills/pickles-rule-authoring-skill`
