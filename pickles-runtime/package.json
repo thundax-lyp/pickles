@@ -17,6 +17,7 @@
         "build": "tsc --noEmit",
         "typecheck": "tsc --noEmit",
         "lint": "npm run typecheck",
+        "stdio": "node --import tsx src/stdio.ts",
         "test": "node --import tsx --test test/runtime-sample-project.test.ts"
     },
     "devDependencies": {

@@ -8,6 +8,7 @@ data class PicklesProblem(
     val source: ProblemSource = ProblemSource(),
     val file: String? = null,
     val position: ProblemPosition? = null,
+    val fixHint: String? = null,
 )
 
 data class ProblemSource(

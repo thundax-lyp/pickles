@@ -186,6 +186,8 @@ Runtime 子进程生命周期跟随目标工程。
 
 Plugin 通过 stdio JSON request / response 调用 Runtime。
 
+当前阶段 Plugin 每次检测启动一个 Node.js Runtime stdio 子进程。
+
 Runtime stdout 固定用于 JSON response。
 
 Runtime stderr 固定用于日志。

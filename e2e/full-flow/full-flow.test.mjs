@@ -15,8 +15,6 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { runRuntimeCheck } from "../../pickles-runtime/src/index.ts";
-
 const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
 const hookScript = path.join(repoRoot, "pickles-hooks/pickles-hook.mjs");
 const runtimePackage = path.join(repoRoot, "pickles-runtime");
@@ -119,7 +117,7 @@ function createPluginHarness(requests, problemBoard) {
         }
 
         if (request.method === "POST" && request.url === "/notify") {
-            const result = await runRuntimeCheck({
+            const result = runRuntimeStdio({
                 workspaceRoot: body.event.workspace,
                 changedFiles: body.files.map((file) => ({
                     path: file.fileName,
@@ -252,6 +250,17 @@ function changeType(file) {
     if (file.before === null) return "added";
     if (file.after === null) return "deleted";
     return "modified";
+}
+
+function runRuntimeStdio(input) {
+    const result = spawnSync(process.execPath, ["--import", "tsx", "src/stdio.ts"], {
+        cwd: runtimePackage,
+        input: JSON.stringify(input),
+        encoding: "utf8",
+    });
+
+    assert.equal(result.status, 0, result.stderr || result.stdout);
+    return JSON.parse(result.stdout);
 }
 
 function runHook(cwd, input) {

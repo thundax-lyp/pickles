@@ -12,7 +12,7 @@ interface JavaIndex {
     filePathsByImport: Map<string, Set<string>>;
 }
 
-export function createJavaIndex(changedFiles: ChangedFile[]): JavaIndex {
+export const createJavaIndex = (changedFiles: ChangedFile[]): JavaIndex => {
     const index: JavaIndex = {
         filesByPath: new Map(),
         typesByQualifiedName: new Map(),
@@ -50,34 +50,34 @@ export function createJavaIndex(changedFiles: ChangedFile[]): JavaIndex {
     }
 
     return index;
-}
+};
 
-export function javaFiles(index: JavaIndex): JavaSyntaxFile[] {
+export const javaFiles = (index: JavaIndex): JavaSyntaxFile[] => {
     return [...index.filesByPath.values()];
-}
+};
 
-export function findType(index: JavaIndex, qualifiedName: string): JavaTypeDeclaration | null {
+export const findType = (index: JavaIndex, qualifiedName: string): JavaTypeDeclaration | null => {
     return index.typesByQualifiedName.get(qualifiedName) ?? null;
-}
+};
 
-export function findTypesByAnnotation(
+export const findTypesByAnnotation = (
     index: JavaIndex,
     annotationName: string,
-): JavaTypeDeclaration[] {
+): JavaTypeDeclaration[] => {
     const names = index.typeNamesByAnnotation.get(annotationName) ?? new Set<string>();
     return [...names]
         .map((name) => index.typesByQualifiedName.get(name))
         .filter((type) => type !== undefined);
-}
+};
 
-export function findFilesByImport(index: JavaIndex, importTarget: string): JavaSyntaxFile[] {
+export const findFilesByImport = (index: JavaIndex, importTarget: string): JavaSyntaxFile[] => {
     const paths = index.filePathsByImport.get(importTarget) ?? new Set<string>();
     return [...paths]
         .map((path) => index.filesByPath.get(path))
         .filter((file) => file !== undefined);
-}
+};
 
-function parseJavaFile(path: string, content: string): JavaSyntaxFile {
+const parseJavaFile = (path: string, content: string): JavaSyntaxFile => {
     const packageName = content.match(/^\s*package\s+([a-zA-Z_][\w.]*)\s*;/m)?.[1] ?? null;
     const imports = parseImports(content);
     const types = parseTypes(content, packageName);
@@ -88,9 +88,9 @@ function parseJavaFile(path: string, content: string): JavaSyntaxFile {
         imports,
         types,
     };
-}
+};
 
-function parseImports(content: string): JavaImportDeclaration[] {
+const parseImports = (content: string): JavaImportDeclaration[] => {
     const imports: JavaImportDeclaration[] = [];
     const importPattern = /^[ \t]*import\s+([a-zA-Z_][\w.*]*)\s*;/gm;
     let match: RegExpExecArray | null;
@@ -103,9 +103,9 @@ function parseImports(content: string): JavaImportDeclaration[] {
     }
 
     return imports;
-}
+};
 
-function parseTypes(content: string, packageName: string | null): JavaTypeDeclaration[] {
+const parseTypes = (content: string, packageName: string | null): JavaTypeDeclaration[] => {
     const types: JavaTypeDeclaration[] = [];
     const typePattern =
         /((?:^[ \t]*@([a-zA-Z_][\w.]*)[^\n]*\n)*)^[ \t]*(?:public\s+|private\s+|protected\s+|abstract\s+|final\s+)*?(?:class|interface|enum|record|@interface)\s+([a-zA-Z_]\w*)/gm;
@@ -126,9 +126,9 @@ function parseTypes(content: string, packageName: string | null): JavaTypeDeclar
     }
 
     return types;
-}
+};
 
-function positionAt(content: string, offset: number) {
+const positionAt = (content: string, offset: number) => {
     const prefix = content.slice(0, offset);
     const lines = prefix.split("\n");
 
@@ -136,4 +136,4 @@ function positionAt(content: string, offset: number) {
         line: lines.length,
         column: lines[lines.length - 1].length + 1,
     };
-}
+};

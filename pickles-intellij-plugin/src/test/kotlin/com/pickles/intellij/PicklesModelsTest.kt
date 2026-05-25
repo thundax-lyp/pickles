@@ -27,5 +27,6 @@ class PicklesModelsTest {
         assertEquals(null, problem.source.rule)
         assertEquals(null, problem.file)
         assertEquals(null, problem.position)
+        assertEquals(null, problem.fixHint)
     }
 }

@@ -22,7 +22,7 @@ import type {
 
 const CONFIG_CANDIDATES = ["pickles.config.ts", "pickles.config.mjs", "pickles.config.js"];
 
-export async function runRuntimeCheck(input: RuntimeCheckInput): Promise<RuntimeCheckResult> {
+export const runRuntimeCheck = async (input: RuntimeCheckInput): Promise<RuntimeCheckResult> => {
     const config = await loadRuntimeConfig(input.workspaceRoot);
     validateConfig(config);
 
@@ -77,9 +77,9 @@ export async function runRuntimeCheck(input: RuntimeCheckInput): Promise<Runtime
     return {
         problems: dedupeProblems(problems),
     };
-}
+};
 
-async function loadRuntimeConfig(workspaceRoot: string): Promise<PicklesRuntimeConfig> {
+const loadRuntimeConfig = async (workspaceRoot: string): Promise<PicklesRuntimeConfig> => {
     for (const candidate of CONFIG_CANDIDATES) {
         const configPath = path.join(workspaceRoot, candidate);
 
@@ -101,9 +101,9 @@ async function loadRuntimeConfig(workspaceRoot: string): Promise<PicklesRuntimeC
     }
 
     throw new Error(`Pickles runtime config not found in ${workspaceRoot}`);
-}
+};
 
-function validateConfig(config: PicklesRuntimeConfig): void {
+const validateConfig = (config: PicklesRuntimeConfig): void => {
     if (config.agent !== "codex") {
         throw new Error("Pickles config agent must be codex");
     }
@@ -132,9 +132,9 @@ function validateConfig(config: PicklesRuntimeConfig): void {
             }
         }
     }
-}
+};
 
-function normalizeProblem(
+const normalizeProblem = (
     rule: PicklesNativeRule,
     problem: {
         title?: string;
@@ -143,7 +143,7 @@ function normalizeProblem(
         position?: Problem["position"];
         fixHint?: string | null;
     },
-): Problem {
+): Problem => {
     if (problem.message === undefined || problem.message.length === 0) {
         throw new Error(`Rule ${rule.id} returned a problem without message`);
     }
@@ -161,9 +161,9 @@ function normalizeProblem(
         position: problem.position ?? null,
         fixHint: problem.fixHint ?? rule.fixHint ?? null,
     };
-}
+};
 
-function dedupeProblems(problems: Problem[]): Problem[] {
+const dedupeProblems = (problems: Problem[]): Problem[] => {
     const seen = new Set<string>();
     const deduped: Problem[] = [];
 
@@ -186,13 +186,13 @@ function dedupeProblems(problems: Problem[]): Problem[] {
     }
 
     return deduped;
-}
+};
 
-function matchesLanguage(file: ChangedFile, language: string): boolean {
+const matchesLanguage = (file: ChangedFile, language: string): boolean => {
     return language === "java" && file.path.endsWith(".java");
-}
+};
 
-function matchesAnyGlob(filePath: string, patterns: string[]): boolean {
+const matchesAnyGlob = (filePath: string, patterns: string[]): boolean => {
     return patterns.some((pattern) => {
         if (pattern === filePath) {
             return true;
@@ -209,10 +209,10 @@ function matchesAnyGlob(filePath: string, patterns: string[]): boolean {
 
         return false;
     });
-}
+};
 
-function unsupportedQuery(): never {
+const unsupportedQuery = (): never => {
     throw new Error("Syntax query is not implemented in the runtime sample testcase baseline");
-}
+};
 
 export type { ChangedFile, PicklesRuntimeConfig, Problem, RuntimeCheckResult } from "./types.ts";

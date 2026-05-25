@@ -138,6 +138,42 @@ class PicklesHttpContractTest {
     }
 
     @Test
+    fun feedbackReturnsOkWhenProblemBoardIsAvailable() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        val problem = PicklesProblem(
+            title = "Problem",
+            type = "architecture",
+            message = "Message",
+            severity = "ERROR",
+        )
+        val problemBoard = PicklesProblemBoardState()
+        problemBoard.replaceProblems(listOf(problem))
+        val result = PicklesHttpContractHandler(
+            gson = gson,
+            projectRoot = root,
+            problemBoard = problemBoard,
+        ).feedback(
+            """
+            {
+              "schemaVersion": 1,
+              "requestId": "req-feedback-ok",
+              "sessionId": "session-1",
+              "turnId": "turn-1",
+              "workspace": "${root.toAbsolutePath()}"
+            }
+            """.trimIndent(),
+        )
+        val body = result.body as FeedbackResponse
+
+        assertEquals(200, result.status)
+        assertEquals("ok", body.status)
+        assertTrue(body.hasBlockingProblems)
+        assertEquals(1, body.summary.errorCount)
+        assertEquals(0, body.summary.warnCount)
+        assertEquals(listOf(problem), body.problems)
+    }
+
+    @Test
     fun methodNotAllowedUsesErrorEnvelope() {
         val result = handler().methodNotAllowed()
         val body = result.body as ApiErrorResponse

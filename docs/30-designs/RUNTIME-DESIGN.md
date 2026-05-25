@@ -84,6 +84,8 @@ RuntimeHost 固定通过 stdio 接收 JSON request，并通过 stdout 写回 JSO
 
 RuntimeHost 日志固定写入 stderr。
 
+当前阶段 RuntimeHost 固定采用单请求 stdio 模型：stdin 接收一个 `RuntimeCheckInput`，stdout 返回一个 `RuntimeCheckResult` 或 `error.message`，进程退出码非 0 表示本次检测失败。
+
 ### 5.2 `ChangedFile`
 
 Hook 或 Plugin 提交给 Runtime 的文件变动。
@@ -379,6 +381,8 @@ Summary 中的文件路径固定使用目标工程相对路径。
 Plugin 固定通过稳定 Runtime 入口触发检测。
 
 Plugin 固定启动并管理 Runtime Node.js 子进程。
+
+当前阶段 Plugin 每次 Runtime 检测启动一个 Node.js Runtime stdio 子进程。
 
 Plugin 关闭目标工程时必须关闭对应 Runtime 子进程。
 

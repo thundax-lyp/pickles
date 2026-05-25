@@ -1,7 +1,7 @@
 import { CHANNEL_LABELS, type CheckoutSummary, type OrderDraft } from "./orderTypes.js";
 import { calculateDiscountCents, calculateSubtotalCents } from "./pricing.js";
 
-export function validateOrder(order: OrderDraft): string[] {
+export const validateOrder = (order: OrderDraft): string[] => {
     const errors: string[] = [];
 
     if (order.lines.length === 0) {
@@ -27,9 +27,9 @@ export function validateOrder(order: OrderDraft): string[] {
     }
 
     return errors;
-}
+};
 
-export function buildCheckoutSummary(order: OrderDraft): CheckoutSummary {
+export const buildCheckoutSummary = (order: OrderDraft): CheckoutSummary => {
     const errors = validateOrder(order);
     if (errors.length > 0) {
         throw new Error(errors.join(" "));
@@ -45,8 +45,8 @@ export function buildCheckoutSummary(order: OrderDraft): CheckoutSummary {
         discountCents,
         payableCents: subtotalCents - discountCents,
     };
-}
+};
 
-function assertNever(value: never): never {
+const assertNever = (value: never): never => {
     throw new Error(`Unhandled order channel: ${String(value)}`);
-}
+};

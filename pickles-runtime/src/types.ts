@@ -119,3 +119,11 @@ export interface RuntimeCheckInput {
 export interface RuntimeCheckResult {
     problems: Problem[];
 }
+
+export interface RuntimeStdioError {
+    error: {
+        message: string;
+    };
+}
+
+export type RuntimeStdioResponse = RuntimeCheckResult | RuntimeStdioError;
