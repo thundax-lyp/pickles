@@ -598,5 +598,4 @@ Hook `/feedback` 的 `FeedbackSummary.text` 可以由 Repair-Oriented Summary �
 
 ## 10. Open Items
 
-- AI-generated rule authoring guide。
 - Runtime 首次 workspace 全量索引触发时机。

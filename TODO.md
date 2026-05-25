@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-rules`：编写 AI-generated rule authoring guide
-    - 任务类型：执行任务
-    - 依据文档：`docs/10-requirements/RUNTIME-REQUIREMENTS.md`
-    - 范围对象：`pickles-rules/` AI rule authoring guide
-    - 处理动作：把已确认的规则作者契约整理成 AI 可执行说明
-    - 验收点：guide 能覆盖 config 内联规则、`.pickles/*` 脚本引用和 Problem 输出
-    - 重要度：9/10
-
 - [ ] `RUNTIME_SAMPLE_PROJECT`：自动化 Runtime sample project testcase
     - 任务类型：执行任务
     - 依据文档：`docs/40-readiness/E2E-TEST-CASES.md`
