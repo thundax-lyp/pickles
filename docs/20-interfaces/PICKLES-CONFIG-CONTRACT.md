@@ -109,8 +109,18 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - `kind`
 - `text`
 - `range`
+- `captures`
 
-### 5.8 ExternalAdapterRuleConfig
+### 5.8 SyntaxCapture
+
+固定字段：
+
+- `name`
+- `kind`
+- `text`
+- `range`
+
+### 5.9 ExternalAdapterRuleConfig
 
 固定字段：
 
@@ -121,7 +131,7 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - `adapter`
 - `command`
 
-### 5.9 ProblemBoardConfig
+### 5.10 ProblemBoardConfig
 
 固定字段：
 
@@ -149,6 +159,7 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - `RuleContext` 不暴露 raw tree-sitter node。
 - Parser-specific query helper 固定返回 Pickles-owned DTO。
 - Syntax query 结果固定使用 `SyntaxMatch`。
+- `SyntaxMatch.captures` 固定使用 `SyntaxCapture[]`。
 
 ## 7. Functional Requirements
 
@@ -210,6 +221,10 @@ Native rule 的输出必须能归一化为 Problem。
 - `problem(input)`
 
 `java.query(file, query)` 必须返回 `SyntaxMatch[]`。
+
+`SyntaxMatch.captures` 必须保留 tree-sitter query capture 信息。
+
+`SyntaxCapture` 必须由 Runtime 创建，不得暴露 raw tree-sitter node。
 
 `SyntaxMatch` 必须由 Runtime 创建，不得暴露 raw tree-sitter node。
 

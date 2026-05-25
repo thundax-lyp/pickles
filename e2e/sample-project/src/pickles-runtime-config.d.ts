@@ -12,7 +12,7 @@ declare module "@pickles/runtime/config" {
         language?: string;
     };
 
-    export type SyntaxMatch = {
+    export type SyntaxCapture = {
         name: string;
         kind: string;
         text: string;
@@ -20,6 +20,10 @@ declare module "@pickles/runtime/config" {
             start: { line: number; column: number };
             end: { line: number; column: number };
         };
+    };
+
+    export type SyntaxMatch = SyntaxCapture & {
+        captures: SyntaxCapture[];
     };
 
     export type RuleContext = {

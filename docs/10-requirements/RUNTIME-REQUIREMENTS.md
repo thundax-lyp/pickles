@@ -189,6 +189,8 @@ Runtime 必须提供受控 syntax query 能力。
 
 Syntax query 必须返回 Pickles-owned DTO。
 
+Syntax query result 必须包含 capture 信息。
+
 Runtime 不得向 rule implementation 暴露 raw tree-sitter node。
 
 ### 7.4 AI-Generated Rule Support
