@@ -40,7 +40,7 @@
     - 依据文档：`docs/40-readiness/E2E-TEST-CASES.md`
     - 范围对象：`PLUGIN_RUNTIME_FLOW`
     - 处理动作：实现 Plugin 触发 Runtime 检测并展示 Problem 的自动化验证
-    - 验收点：testcase 可覆盖 Plugin 不执行规则命令的边界
+    - 验收点：testcase 可覆盖 Plugin 不执行 native rule 的边界
     - 重要度：7/10
 
 - [ ] `E2E_FULL_FLOW`：自动化 full flow testcase
@@ -52,12 +52,6 @@
     - 重要度：7/10
 
 ## 待讨论项
-
-- [ ] 设计 external adapter execution
-    - 任务类型：待讨论项
-    - 关联任务：`External Adapter`
-    - 决策要求：确定 ArchUnit、ESLint 和 `.pickles/*` 脚本作为后续兼容能力的执行方式、工作目录、超时和失败表达
-    - 重要度：6/10
 
 - [ ] 设计 Rule templates
     - 任务类型：待讨论项
