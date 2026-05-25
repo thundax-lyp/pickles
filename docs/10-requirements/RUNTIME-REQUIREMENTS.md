@@ -84,7 +84,7 @@ Runtime 不加载 skill。Runtime 只加载 Pickles runtime config、native rule
 - `PicklesRuleConfig`
 - `PicklesNativeRule`
 - `RuleContext`
-- `RuleResult`
+- `ProblemInput`
 - `SyntaxParser`
 - `SyntaxIndex`
 - `JavaSyntaxFile`
@@ -176,7 +176,7 @@ Rule implementation 必须通过 Runtime 提供的 `RuleContext` 获取输入。
 - config query
 - problem factory
 
-Rule implementation 必须返回 `RuleResult` 或 Problem-compatible result。
+Rule implementation 必须返回 `ProblemInput[]` 或 `Promise<ProblemInput[]>`。
 
 Runtime 必须把 rule result 归一化为 Problem。
 
@@ -207,6 +207,12 @@ Pickles native rule API 必须适合 AI 根据说明书生成。
 Rule API 必须优先使用稳定字段、显式命名和 JSON-serializable options。
 
 Rule API 不得依赖复杂继承、隐式上下文或运行时 monkey patch。
+
+Pickles runtime config 必须使用 `export default defineConfig({...})`。
+
+Pickles native rule 必须使用 `defineRule({...})`。
+
+`defineConfig` 和 `defineRule` 固定由 `@pickles/runtime/config` 提供。
 
 ### 7.5 Changed File Input
 
@@ -427,7 +433,6 @@ MVP 不定义完整 Repair-Oriented Summary 稳定 JSON contract。
 ## 10. Open Items
 
 - Incremental Workspace Index 的内部结构。
-- Pickles native rule API 的具体 TypeScript 类型。
 - Pickles native rule authoring contract。
 - AI-generated rule authoring guide。
 - Rule templates。

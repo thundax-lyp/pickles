@@ -6,8 +6,8 @@ data class PicklesProblem(
     val message: String,
     val severity: String = "WARN",
     val source: ProblemSource = ProblemSource(),
-    val file: String = "",
-    val position: ProblemPosition = ProblemPosition(),
+    val file: String? = null,
+    val position: ProblemPosition? = null,
 )
 
 data class ProblemSource(

@@ -15,7 +15,7 @@ class PicklesModelsTest {
     }
 
     @Test
-    fun defaultProblemPositionUsesOneBasedLocation() {
+    fun defaultProblemHasWorkspaceLevelLocation() {
         val problem = PicklesProblem(
             title = "Title",
             type = "rule",
@@ -25,7 +25,7 @@ class PicklesModelsTest {
         assertEquals("WARN", problem.severity)
         assertEquals("pickles", problem.source.tool)
         assertEquals(null, problem.source.rule)
-        assertEquals(1, problem.position.line)
-        assertEquals(1, problem.position.column)
+        assertEquals(null, problem.file)
+        assertEquals(null, problem.position)
     }
 }

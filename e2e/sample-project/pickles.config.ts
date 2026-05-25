@@ -1,4 +1,6 @@
-export default {
+import { defineConfig } from "@pickles/runtime/config";
+
+export default defineConfig({
     agent: "codex",
     hook: {
         protocol: "http",
@@ -16,4 +18,4 @@ export default {
     problemBoard: {
         aggregation: "workspace",
     },
-};
+});

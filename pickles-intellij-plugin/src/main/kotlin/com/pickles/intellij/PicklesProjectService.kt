@@ -102,14 +102,16 @@ class PicklesProjectService(private val project: Project) : Disposable {
     }
 
     fun openProblem(problem: PicklesProblem) {
+        val file = problem.file ?: return
+        val position = problem.position ?: return
         val root = requireProjectRoot()
-        val filePath = root.resolve(problem.file).normalize()
+        val filePath = root.resolve(file).normalize()
         val virtualFile: VirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(filePath)
-            ?: return showError("Cannot open ${problem.file}: file does not exist.")
+            ?: return showError("Cannot open $file: file does not exist.")
 
         ApplicationManager.getApplication().invokeLater {
-            val line = (problem.position.line - 1).coerceAtLeast(0)
-            val column = (problem.position.column - 1).coerceAtLeast(0)
+            val line = (position.line - 1).coerceAtLeast(0)
+            val column = (position.column - 1).coerceAtLeast(0)
             OpenFileDescriptor(project, virtualFile, line, column).navigate(true)
         }
     }
@@ -214,7 +216,9 @@ class PicklesProjectService(private val project: Project) : Disposable {
     }
 
     fun defaultConfigText(): String = """
-        export default {
+        import { defineConfig } from "@pickles/runtime/config";
+
+        export default defineConfig({
             agent: "codex",
             hook: {
                 protocol: "http",
@@ -232,7 +236,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
             problemBoard: {
                 aggregation: "workspace",
             },
-        };
+        });
     """.trimIndent()
 
     private companion object {

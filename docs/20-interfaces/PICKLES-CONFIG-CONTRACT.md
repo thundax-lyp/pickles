@@ -21,7 +21,7 @@
 - 不定义 Plugin UI 的具体交互控件
 - 不定义 `.pickles/server.json` 的完整 schema
 - 不定义 AGENTS.md 注入块格式
-- 不定义 native rule API 的完整 TypeScript 类型
+- 不定义 Runtime 内部实现类型
 
 ## 3. Bounded Context
 
@@ -81,7 +81,17 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - `options`
 - `rule`
 
-### 5.5 ExternalAdapterRuleConfig
+### 5.5 ProblemInput
+
+固定字段：
+
+- `title`
+- `message`
+- `file`
+- `position`
+- `source`
+
+### 5.6 ExternalAdapterRuleConfig
 
 固定字段：
 
@@ -92,7 +102,7 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - `adapter`
 - `command`
 
-### 5.6 ProblemBoardConfig
+### 5.7 ProblemBoardConfig
 
 固定字段：
 
@@ -111,6 +121,12 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - `rules` 固定使用数组。
 - Native rules 固定由 Runtime 执行。
 - ArchUnit 与 ESLint 固定作为 external adapter rule。
+- Runtime config 必须使用 `export default defineConfig({...})`。
+- Native rule 必须使用 `defineRule({...})`。
+- `defineConfig` 和 `defineRule` 固定由 `@pickles/runtime/config` 提供。
+- Rule function 固定返回 `ProblemInput[]` 或 `Promise<ProblemInput[]>`。
+- `ProblemInput.file` 固定为 string 或 `null`。
+- `ProblemInput.position` 固定为 `Position` 或 `null`。
 
 ## 7. Functional Requirements
 
@@ -119,7 +135,9 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 MVP 最小配置固定为：
 
 ```ts
-export default {
+import { defineConfig } from "@pickles/runtime/config";
+
+export default defineConfig({
     agent: "codex",
     hook: {
         protocol: "http",
@@ -137,7 +155,7 @@ export default {
     problemBoard: {
         aggregation: "workspace",
     },
-};
+});
 ```
 
 ### 7.2 Native Rule Config
@@ -146,9 +164,42 @@ Native rule config 必须能表达 JS / TS 可编程规则。
 
 Native rule 必须通过 Runtime 提供的 `RuleContext` 读取输入。
 
+Native rule 必须使用 `defineRule({...})` 定义。
+
 Native rule 的 options 必须可 JSON 序列化。
 
+Native rule 的 `rule(ctx)` 必须返回 `ProblemInput[]` 或 `Promise<ProblemInput[]>`。
+
 Native rule 的输出必须能归一化为 Problem。
+
+Native rule 示例：
+
+```ts
+import { defineConfig, defineRule } from "@pickles/runtime/config";
+
+const noControllerToRepository = defineRule({
+    id: "java-no-controller-to-repository",
+    title: "Controller must not depend on repository",
+    type: "architecture",
+    severity: "ERROR",
+    language: "java",
+    files: ["src/main/java/**/*.java"],
+    rule(ctx) {
+        return [
+            ctx.problem({
+                message: "Controller imports repository directly.",
+                file: null,
+                position: null,
+            }),
+        ];
+    },
+});
+
+export default defineConfig({
+    agent: "codex",
+    rules: [noControllerToRepository],
+});
+```
 
 ### 7.3 External Adapter Config
 
@@ -195,7 +246,6 @@ External adapter execution 和输出归一化由后续 adapter design 定义。
 
 ## 10. Open Items
 
-- Native rule API 的完整 TypeScript 类型。
 - Rule plugin package 引用格式。
 - Config TypeScript 加载器选择。
 - External adapter execution design。
