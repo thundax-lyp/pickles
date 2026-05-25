@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime/test`：补 Runtime stdio 子进程测试
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-runtime/test/runtime-sample-project.test.ts`
-    - 处理动作：用 Node 子进程覆盖 Runtime stdio 成功和失败路径
-    - 验收点：`npm --prefix pickles-runtime test` 覆盖 stdio host
-    - 重要度：9/10
 - [ ] `plugin-runtime-dto`：对齐 Plugin Runtime DTO
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
