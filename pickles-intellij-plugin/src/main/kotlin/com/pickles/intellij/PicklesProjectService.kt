@@ -65,8 +65,9 @@ class PicklesProjectService(private val project: Project) : Disposable {
 
     fun bindStatus(): BindStatus {
         val root = requireProjectRoot()
+        val agentsPath = root.resolve(AGENTS_FILE)
         return BindStatus(
-            agentsFileExists = Files.exists(root.resolve(AGENTS_FILE)),
+            agentsBlockBound = Files.exists(agentsPath) && PicklesAgentsBinding.isBound(Files.readString(agentsPath, StandardCharsets.UTF_8)),
             hooksFileExists = Files.exists(root.resolve(".codex").resolve("hooks.json")),
         )
     }
@@ -77,9 +78,8 @@ class PicklesProjectService(private val project: Project) : Disposable {
         val hooksPath = root.resolve(".codex").resolve("hooks.json")
 
         Files.createDirectories(agentsPath.parent ?: root)
-        if (!Files.exists(agentsPath)) {
-            Files.writeString(agentsPath, "# Project Agents\n", StandardCharsets.UTF_8)
-        }
+        val agentsContent = if (Files.exists(agentsPath)) Files.readString(agentsPath, StandardCharsets.UTF_8) else null
+        Files.writeString(agentsPath, PicklesAgentsBinding.bind(agentsContent), StandardCharsets.UTF_8)
 
         Files.createDirectories(hooksPath.parent)
         if (!Files.exists(hooksPath)) {
@@ -90,6 +90,15 @@ class PicklesProjectService(private val project: Project) : Disposable {
     }
 
     fun unbind(): Result<Unit> = runCatching {
+        val root = requireProjectRoot()
+        val agentsPath = root.resolve(AGENTS_FILE)
+        if (Files.exists(agentsPath)) {
+            val agentsContent = Files.readString(agentsPath, StandardCharsets.UTF_8)
+            val updatedContent = PicklesAgentsBinding.unbind(agentsContent)
+            if (updatedContent != null) {
+                Files.writeString(agentsPath, updatedContent, StandardCharsets.UTF_8)
+            }
+        }
         updateStatus("Project unbound from Pickles.")
     }
 

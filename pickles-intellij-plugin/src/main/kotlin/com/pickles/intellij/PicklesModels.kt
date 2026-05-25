@@ -21,9 +21,9 @@ data class ProblemPosition(
 )
 
 data class BindStatus(
-    val agentsFileExists: Boolean,
+    val agentsBlockBound: Boolean,
     val hooksFileExists: Boolean,
 ) {
     val bound: Boolean
-        get() = agentsFileExists && hooksFileExists
+        get() = agentsBlockBound && hooksFileExists
 }

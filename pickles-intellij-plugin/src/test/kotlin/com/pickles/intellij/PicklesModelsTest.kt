@@ -7,7 +7,7 @@ class PicklesModelsTest {
     @Test
     fun bindStatusUsesProjectFiles() {
         val status = BindStatus(
-            agentsFileExists = true,
+            agentsBlockBound = true,
             hooksFileExists = true,
         )
 
