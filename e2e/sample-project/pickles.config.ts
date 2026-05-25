@@ -4,7 +4,8 @@ const noControllerRepositoryImport = defineRule({
     id: "sample-java-no-controller-repository-import",
     title: "Controller must not import repository directly",
     message: "Controller classes must access repositories through a service layer.",
-    fixHint: "Move repository access behind a service and let the controller depend on that service.",
+    fixHint:
+        "Move repository access behind a service and let the controller depend on that service.",
     type: "architecture",
     severity: "ERROR",
     language: "java",

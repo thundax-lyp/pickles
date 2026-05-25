@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from "node:fs";
+import {
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    realpathSync,
+    symlinkSync,
+    writeFileSync,
+} from "node:fs";
 import http from "node:http";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -68,9 +76,14 @@ test("hook plugin runtime and feedback full flow", async () => {
         assert.match(stop.stdout, /blocking problem/);
 
         assert.equal(existsSync(path.join(workspace, ".pickles/server.json")), true);
-        assert.equal(requests.some((request) => request.method === "GET" && request.url === "/health"), true);
+        assert.equal(
+            requests.some((request) => request.method === "GET" && request.url === "/health"),
+            true,
+        );
 
-        const notify = requests.find((request) => request.method === "POST" && request.url === "/notify");
+        const notify = requests.find(
+            (request) => request.method === "POST" && request.url === "/notify",
+        );
         assert.equal(notify.body.event.workspace, workspace);
         assert.deepEqual(notify.body.files, [
             {
@@ -85,7 +98,9 @@ test("hook plugin runtime and feedback full flow", async () => {
         assert.equal(problemBoard[0].source.rule, "sample-java-no-controller-repository-import");
         assert.equal(problemBoard[0].file, sampleJavaPath);
 
-        const feedback = requests.find((request) => request.method === "POST" && request.url === "/feedback");
+        const feedback = requests.find(
+            (request) => request.method === "POST" && request.url === "/feedback",
+        );
         assert.equal(feedback.body.workspace, workspace);
     } finally {
         await close(server);
@@ -124,7 +139,9 @@ function createPluginHarness(requests, problemBoard) {
         }
 
         if (request.method === "POST" && request.url === "/feedback") {
-            const errorCount = problemBoard.filter((problem) => problem.severity === "ERROR").length;
+            const errorCount = problemBoard.filter(
+                (problem) => problem.severity === "ERROR",
+            ).length;
             const warnCount = problemBoard.filter((problem) => problem.severity === "WARN").length;
             writeJson(response, 200, {
                 schemaVersion: 1,

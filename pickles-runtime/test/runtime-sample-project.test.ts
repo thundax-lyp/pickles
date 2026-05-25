@@ -29,7 +29,8 @@ test("runtime executes sample project native rule and returns a Problem", async 
     assert.deepEqual(result.problems[0], {
         title: "Controller must not import repository directly",
         type: "architecture",
-        message: "src/main/java/com/example/web/OrderController.java imports com.example.data.OrderRepository directly.",
+        message:
+            "src/main/java/com/example/web/OrderController.java imports com.example.data.OrderRepository directly.",
         severity: "ERROR",
         source: {
             tool: "pickles-native",
@@ -40,6 +41,7 @@ test("runtime executes sample project native rule and returns a Problem", async 
             line: 3,
             column: 1,
         },
-        fixHint: "Move repository access behind a service and let the controller depend on that service.",
+        fixHint:
+            "Move repository access behind a service and let the controller depend on that service.",
     });
 });

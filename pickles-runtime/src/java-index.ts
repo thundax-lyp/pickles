@@ -1,4 +1,9 @@
-import type { ChangedFile, JavaImportDeclaration, JavaSyntaxFile, JavaTypeDeclaration } from "./types.ts";
+import type {
+    ChangedFile,
+    JavaImportDeclaration,
+    JavaSyntaxFile,
+    JavaTypeDeclaration,
+} from "./types.ts";
 
 interface JavaIndex {
     filesByPath: Map<string, JavaSyntaxFile>;
@@ -55,14 +60,21 @@ export function findType(index: JavaIndex, qualifiedName: string): JavaTypeDecla
     return index.typesByQualifiedName.get(qualifiedName) ?? null;
 }
 
-export function findTypesByAnnotation(index: JavaIndex, annotationName: string): JavaTypeDeclaration[] {
+export function findTypesByAnnotation(
+    index: JavaIndex,
+    annotationName: string,
+): JavaTypeDeclaration[] {
     const names = index.typeNamesByAnnotation.get(annotationName) ?? new Set<string>();
-    return [...names].map((name) => index.typesByQualifiedName.get(name)).filter((type) => type !== undefined);
+    return [...names]
+        .map((name) => index.typesByQualifiedName.get(name))
+        .filter((type) => type !== undefined);
 }
 
 export function findFilesByImport(index: JavaIndex, importTarget: string): JavaSyntaxFile[] {
     const paths = index.filePathsByImport.get(importTarget) ?? new Set<string>();
-    return [...paths].map((path) => index.filesByPath.get(path)).filter((file) => file !== undefined);
+    return [...paths]
+        .map((path) => index.filesByPath.get(path))
+        .filter((file) => file !== undefined);
 }
 
 function parseJavaFile(path: string, content: string): JavaSyntaxFile {
@@ -101,7 +113,9 @@ function parseTypes(content: string, packageName: string | null): JavaTypeDeclar
 
     while ((match = typePattern.exec(content)) !== null) {
         const name = match[3];
-        const annotations = [...match[1].matchAll(/^\s*@([a-zA-Z_][\w.]*)/gm)].map((annotation) => annotation[1]);
+        const annotations = [...match[1].matchAll(/^\s*@([a-zA-Z_][\w.]*)/gm)].map(
+            (annotation) => annotation[1],
+        );
 
         types.push({
             name,

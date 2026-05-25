@@ -34,7 +34,9 @@ export async function runRuntimeCheck(input: RuntimeCheckInput): Promise<Runtime
             throw new Error(`Unsupported rule language: ${rule.language}`);
         }
 
-        const ruleChangedFiles = activeChangedFiles.filter((file) => matchesAnyGlob(file.path, rule.files));
+        const ruleChangedFiles = activeChangedFiles.filter((file) =>
+            matchesAnyGlob(file.path, rule.files),
+        );
         const javaIndex = createJavaIndex(ruleChangedFiles);
 
         const context: RuleContext = {
@@ -42,10 +44,15 @@ export async function runRuntimeCheck(input: RuntimeCheckInput): Promise<Runtime
             changedFiles: ruleChangedFiles,
             files: {
                 changed: (language?: string) =>
-                    ruleChangedFiles.filter((file) => language === undefined || matchesLanguage(file, language)),
+                    ruleChangedFiles.filter(
+                        (file) => language === undefined || matchesLanguage(file, language),
+                    ),
                 byGlob: (patterns: string | string[]) =>
-                    ruleChangedFiles.filter((file) => matchesAnyGlob(file.path, Array.isArray(patterns) ? patterns : [patterns])),
-                read: async (file: string) => readFile(path.join(input.workspaceRoot, file), "utf8"),
+                    ruleChangedFiles.filter((file) =>
+                        matchesAnyGlob(file.path, Array.isArray(patterns) ? patterns : [patterns]),
+                    ),
+                read: async (file: string) =>
+                    readFile(path.join(input.workspaceRoot, file), "utf8"),
             },
             syntax: {
                 query: unsupportedQuery,
@@ -54,8 +61,10 @@ export async function runRuntimeCheck(input: RuntimeCheckInput): Promise<Runtime
                 files: () => javaFiles(javaIndex),
                 changedFiles: () => javaFiles(javaIndex),
                 findType: (qualifiedName: string) => findType(javaIndex, qualifiedName),
-                findTypesByAnnotation: (annotationName: string) => findTypesByAnnotation(javaIndex, annotationName),
-                findFilesByImport: (importTarget: string) => findFilesByImport(javaIndex, importTarget),
+                findTypesByAnnotation: (annotationName: string) =>
+                    findTypesByAnnotation(javaIndex, annotationName),
+                findFilesByImport: (importTarget: string) =>
+                    findFilesByImport(javaIndex, importTarget),
                 query: unsupportedQuery,
             },
             problem: (problemInput: ProblemInput) => problemInput,
@@ -108,7 +117,16 @@ function validateConfig(config: PicklesRuntimeConfig): void {
     }
 
     for (const rule of config.rules) {
-        for (const field of ["id", "title", "message", "type", "severity", "language", "files", "rule"] as const) {
+        for (const field of [
+            "id",
+            "title",
+            "message",
+            "type",
+            "severity",
+            "language",
+            "files",
+            "rule",
+        ] as const) {
             if (rule[field] === undefined || rule[field] === null) {
                 throw new Error(`Pickles native rule is missing ${field}`);
             }
@@ -116,7 +134,16 @@ function validateConfig(config: PicklesRuntimeConfig): void {
     }
 }
 
-function normalizeProblem(rule: PicklesNativeRule, problem: { title?: string; message: string; file?: string | null; position?: Problem["position"]; fixHint?: string | null }): Problem {
+function normalizeProblem(
+    rule: PicklesNativeRule,
+    problem: {
+        title?: string;
+        message: string;
+        file?: string | null;
+        position?: Problem["position"];
+        fixHint?: string | null;
+    },
+): Problem {
     if (problem.message === undefined || problem.message.length === 0) {
         throw new Error(`Rule ${rule.id} returned a problem without message`);
     }
