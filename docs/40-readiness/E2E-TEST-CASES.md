@@ -274,9 +274,9 @@ scripts/verify-hooks.sh
 
 ### 7.5 RUNTIME_SAMPLE_PROJECT
 
-状态：待实现。
+状态：已自动化。
 
-目标：验证 `pickles-runtime/` 能基于 changed files 和 Pickles runtime config 执行样例工程规则命令并生成 Problem。
+目标：验证 `pickles-runtime/` 能基于 changed files 和 Pickles runtime config 执行样例工程 native rule 并生成 Problem。
 
 覆盖模块：
 
@@ -284,20 +284,28 @@ scripts/verify-hooks.sh
 - `e2e/sample-project/`
 - `docs/20-interfaces/PROBLEM-MODEL-CONTRACT.md`
 
+固定命令：
+
+```bash
+scripts/verify-runtime-sample-project.sh
+```
+
 固定断言：
 
 - Runtime 读取 `<repo>/pickles.config.ts`。
 - Runtime 基于 changed files 更新 workspace index。
-- Runtime 执行 `adapter: "eslint"` 规则命令。
-- Runtime 将命令失败转换为 Problem。
+- Runtime 执行 Pickles native rule。
+- Runtime 将 `ProblemInput` 归一化为 Problem。
 - Problem 包含 `title`、`type`、`message`、`severity`、`source`、`file`、`position`。
 - `source` 固定为 object，包含 `tool` 与 `rule`。
+- `source.tool` 固定为 `pickles-native`。
 
 防漂移点：
 
 - Runtime 不拥有 UI。
 - Runtime 不修改业务代码。
 - Runtime 不保存全量语义持久化数据。
+- Runtime 不执行 ArchUnit、ESLint 或用户业务命令。
 
 ### 7.6 PLUGIN_RUNTIME_FLOW
 
@@ -375,9 +383,10 @@ scripts/verify-hooks.sh
 1. `scripts/verify-intellij-plugin.sh`
 2. `scripts/verify-sample-project.sh`
 3. `scripts/verify-hooks.sh`
-4. `scripts/verify-all.sh`
+4. `scripts/verify-runtime-sample-project.sh`
+5. `scripts/verify-all.sh`
 
-待 `RUNTIME_SAMPLE_PROJECT`、`PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
+待 `PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
 
 ## 9. Non-Functional Requirements
 

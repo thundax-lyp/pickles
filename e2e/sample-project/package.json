@@ -8,6 +8,7 @@
         "lint": "tsc --noEmit"
     },
     "devDependencies": {
+        "@pickles/runtime": "file:../../pickles-runtime",
         "typescript": "5.8.3"
     }
 }

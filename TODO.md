@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `RUNTIME_SAMPLE_PROJECT`：自动化 Runtime sample project testcase
-    - 任务类型：执行任务
-    - 依据文档：`docs/40-readiness/E2E-TEST-CASES.md`
-    - 范围对象：`RUNTIME_SAMPLE_PROJECT`
-    - 处理动作：实现 Runtime 基于 sample project config 执行规则并生成 Problem 的自动化验证
-    - 验收点：testcase 可通过仓库验证入口稳定运行
-    - 重要度：8/10
-
 - [ ] `PLUGIN_RUNTIME_FLOW`：自动化 Plugin-Runtime flow testcase
     - 任务类型：执行任务
     - 依据文档：`docs/40-readiness/E2E-TEST-CASES.md`

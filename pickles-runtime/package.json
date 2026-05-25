@@ -1,0 +1,27 @@
+{
+    "name": "@pickles/runtime",
+    "version": "0.0.1-dev",
+    "private": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./src/index.ts",
+            "default": "./src/index.ts"
+        },
+        "./config": {
+            "types": "./src/config.ts",
+            "default": "./src/config.ts"
+        }
+    },
+    "scripts": {
+        "build": "tsc --noEmit",
+        "typecheck": "tsc --noEmit",
+        "lint": "npm run typecheck",
+        "test": "node --import tsx --test test/runtime-sample-project.test.ts"
+    },
+    "devDependencies": {
+        "@types/node": "22.15.3",
+        "tsx": "4.20.5",
+        "typescript": "5.8.3"
+    }
+}
