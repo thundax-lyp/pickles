@@ -309,7 +309,7 @@ scripts/verify-runtime-sample-project.sh
 
 ### 7.6 PLUGIN_RUNTIME_FLOW
 
-状态：待实现。
+状态：已自动化。
 
 目标：验证 Plugin 收到 `/notify` 后能将 changed files 交给 Runtime，并刷新 Problem Board service 数据。
 
@@ -317,6 +317,12 @@ scripts/verify-runtime-sample-project.sh
 
 - `pickles-intellij-plugin/`
 - `pickles-runtime/`
+
+固定命令：
+
+```bash
+scripts/verify-intellij-plugin.sh
+```
 
 固定断言：
 
@@ -386,7 +392,7 @@ scripts/verify-runtime-sample-project.sh
 4. `scripts/verify-runtime-sample-project.sh`
 5. `scripts/verify-all.sh`
 
-待 `PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
+待 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
 
 ## 9. Non-Functional Requirements
 

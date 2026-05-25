@@ -31,12 +31,11 @@ class PicklesProjectService(private val project: Project) : Disposable {
     private val executor = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "Pickles Project Service").apply { isDaemon = true }
     }
+    private val runtimeClient: PicklesRuntimeClient = EmptyPicklesRuntimeClient()
+    private val problemBoard = PicklesProblemBoardState()
 
     @Volatile
     private var httpServer: HttpServer? = null
-
-    @Volatile
-    private var currentProblems: List<PicklesProblem> = emptyList()
 
     @Volatile
     var lastStatus: String = "Pickles is idle."
@@ -94,10 +93,10 @@ class PicklesProjectService(private val project: Project) : Disposable {
         updateStatus("Project unbound from Pickles.")
     }
 
-    fun problems(): List<PicklesProblem> = currentProblems
+    fun problems(): List<PicklesProblem> = problemBoard.problems()
 
     fun deleteProblem(problem: PicklesProblem) {
-        currentProblems = currentProblems.filterNot { it == problem }
+        problemBoard.deleteProblem(problem)
         updateStatus("Problem removed from current board.")
     }
 
@@ -177,6 +176,8 @@ class PicklesProjectService(private val project: Project) : Disposable {
     private fun contractHandler(): PicklesHttpContractHandler = PicklesHttpContractHandler(
         gson = gson,
         projectRoot = requireProjectRoot(),
+        runtimeClient = runtimeClient,
+        problemBoard = problemBoard,
     )
 
     private fun respond(exchange: HttpExchange, result: PicklesHttpResult) {
@@ -223,16 +224,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
             hook: {
                 protocol: "http",
             },
-            rules: [
-                {
-                    id: "sample-eslint",
-                    title: "Sample TypeScript validation",
-                    type: "external-adapter",
-                    severity: "ERROR",
-                    adapter: "eslint",
-                    command: "npm run lint",
-                },
-            ],
+            rules: [],
             problemBoard: {
                 aggregation: "workspace",
             },

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `PLUGIN_RUNTIME_FLOW`：自动化 Plugin-Runtime flow testcase
-    - 任务类型：执行任务
-    - 依据文档：`docs/40-readiness/E2E-TEST-CASES.md`
-    - 范围对象：`PLUGIN_RUNTIME_FLOW`
-    - 处理动作：实现 Plugin 触发 Runtime 检测并展示 Problem 的自动化验证
-    - 验收点：testcase 可覆盖 Plugin 不执行 native rule 的边界
-    - 重要度：7/10
-
 - [ ] `E2E_FULL_FLOW`：自动化 full flow testcase
     - 任务类型：执行任务
     - 依据文档：`docs/40-readiness/E2E-TEST-CASES.md`

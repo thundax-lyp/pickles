@@ -84,6 +84,8 @@ data class PicklesHttpResult(
 class PicklesHttpContractHandler(
     private val gson: Gson,
     private val projectRoot: Path,
+    private val runtimeClient: PicklesRuntimeClient? = null,
+    private val problemBoard: PicklesProblemBoardState? = null,
 ) {
     fun health(): PicklesHttpResult = PicklesHttpResult(200, HealthResponse())
 
@@ -126,7 +128,26 @@ class PicklesHttpContractHandler(
             }
         }
 
-        return PicklesHttpResult(202, NotifyResponse(requestId = request.requestId!!))
+        val runtimeProblems = runtimeClient
+            ?.inspect(
+                files.map { file ->
+                    RuntimeChangedFile(
+                        fileName = file.fileName!!,
+                        before = file.before,
+                        after = file.after,
+                    )
+                },
+            )
+            ?: emptyList()
+        problemBoard?.replaceProblems(runtimeProblems)
+
+        return PicklesHttpResult(
+            202,
+            NotifyResponse(
+                requestId = request.requestId!!,
+                processed = runtimeClient != null,
+            ),
+        )
     }
 
     fun feedback(body: String): PicklesHttpResult {
@@ -143,18 +164,32 @@ class PicklesHttpContractHandler(
         val workspaceError = validateWorkspace(request.workspace, request.requestId)
         if (workspaceError != null) return workspaceError
 
+        val problems = problemBoard?.problems()
+        if (problems == null) {
+            return PicklesHttpResult(
+                200,
+                FeedbackResponse(
+                    requestId = request.requestId!!,
+                    status = "unimplemented",
+                    hasBlockingProblems = false,
+                    summary = FeedbackSummary(
+                        errorCount = 0,
+                        warnCount = 0,
+                        text = "Governance feedback is not implemented yet.",
+                    ),
+                    problems = emptyList(),
+                ),
+            )
+        }
+
         return PicklesHttpResult(
             200,
             FeedbackResponse(
                 requestId = request.requestId!!,
-                status = "unimplemented",
-                hasBlockingProblems = false,
-                summary = FeedbackSummary(
-                    errorCount = 0,
-                    warnCount = 0,
-                    text = "Governance feedback is not implemented yet.",
-                ),
-                problems = emptyList(),
+                status = "ok",
+                hasBlockingProblems = problems.any { it.severity == "ERROR" },
+                summary = feedbackSummary(problems),
+                problems = problems,
             ),
         )
     }
@@ -213,4 +248,20 @@ class PicklesHttpContractHandler(
     private companion object {
         val HOOK_EVENT_NAMES = setOf("SessionStart", "PreToolUse", "PostToolUse", "Stop")
     }
+}
+
+private fun feedbackSummary(problems: List<PicklesProblem>): FeedbackSummary {
+    val errorCount = problems.count { it.severity == "ERROR" }
+    val warnCount = problems.count { it.severity == "WARN" }
+    val text = when {
+        problems.isEmpty() -> "No Pickles governance problems."
+        errorCount > 0 -> "Pickles found $errorCount blocking problem(s) and $warnCount warning(s)."
+        else -> "Pickles found $warnCount warning(s)."
+    }
+
+    return FeedbackSummary(
+        errorCount = errorCount,
+        warnCount = warnCount,
+        text = text,
+    )
 }
