@@ -13,12 +13,6 @@
 
 ## 待讨论项
 
-- [ ] 设计 Tool Window 具体布局
-    - 任务类型：待讨论项
-    - 关联任务：`IntelliJ Plugin`
-    - 决策要求：确认 Tool Window 的区域、列表字段、操作入口和错误状态展示
-    - 重要度：7/10
-
 - [ ] 确定 AGENTS.md 注入块格式、marker 和幂等更新细节
     - 任务类型：待讨论项
     - 关联任务：`AGENTS.md Injection`

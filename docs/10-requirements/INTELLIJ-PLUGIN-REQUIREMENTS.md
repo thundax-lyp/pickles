@@ -69,15 +69,48 @@ IntelliJ Plugin 是 Pickles MVP 的主要产品入口。
 
 插件必须提供嵌入 IntelliJ IDEA 的 Problem Board Tool Window。
 
-MVP 只显示以下字段：
+Tool Window MVP 固定采用：
 
+- Status Header
+- Problems tab
+- Config tab
+
+Problems tab 固定为默认 tab。
+
+Status Header 必须展示：
+
+- HTTP server 状态
+- Runtime 状态
+- Index 状态
+- Problem summary
+
+Status Header 必须提供：
+
+- Refresh
+- Reindex
+- Bind / Unbind
+
+Problem row 必须展示：
+
+- `severity`
 - `title`
 - `type`
 - `message`
+- `file` / `position`
+- `source.rule`
+
+Problem row 排序固定为：
+
+1. `ERROR`
+2. `WARN`
+3. 有 `file` / `position` 的问题
+4. Runtime 返回顺序
 
 每个问题项必须提供删除按钮。
 
 点击问题项时，插件必须跳转到对应文件位置。
+
+Index 正在运行时，Problem Board 必须展示当前结果可能不完整的状态。
 
 ### 7.2 Project Configuration
 
@@ -155,5 +188,4 @@ Hook `SessionStart` 不触发 Runtime 全量索引。
 
 ## 10. Open Items
 
-- Tool Window 具体布局。
 - AGENTS.md 注入块格式、marker 和幂等更新细节。
