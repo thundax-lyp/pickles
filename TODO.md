@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `runtime-stdio-contract`：定义 Runtime stdio 最小协议对象
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-runtime/src/types.ts`、`pickles-runtime/src/stdio.ts`
-    - 处理动作：定义 stdio success / failure response 的代码边界
-    - 验收点：Runtime stdio host 能区分 success response 和 `error.message` response
-    - 重要度：9/10
 - [ ] `pickles-runtime/src/stdio.ts`：实现 Runtime stdio host
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
