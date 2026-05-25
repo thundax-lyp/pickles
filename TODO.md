@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `runtime-stdio-doc-sync`：同步 Runtime stdio 稳定文档
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`docs/30-designs/RUNTIME-DESIGN.md`、`docs/30-designs/INTELLIJ-PLUGIN-DESIGN.md`
-    - 处理动作：只沉淀实现后的稳定 stdio 边界
-    - 验收点：长期设计文档不复制 RUNBOOK 执行步骤
-    - 重要度：7/10
 - [ ] `runtime-stdio-closure`：清理 RUNBOOK 和 TODO
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
