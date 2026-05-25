@@ -53,12 +53,6 @@
 
 ## 待讨论项
 
-- [ ] 确定 Rule plugin package 引用格式
-    - 任务类型：待讨论项
-    - 关联任务：`Pickles Config Contract`
-    - 决策要求：确认可复用 rule package 在 config 中的引用、导入和 MVP 支持边界
-    - 重要度：7/10
-
 - [ ] 设计 external adapter execution
     - 任务类型：待讨论项
     - 关联任务：`External Adapter`
