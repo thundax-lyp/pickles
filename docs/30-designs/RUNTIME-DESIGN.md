@@ -279,11 +279,26 @@ Parser diagnostic 必须包含：
 
 Runtime 必须基于 `ChangedFile` 更新 index。
 
+Workspace Index MVP 固定使用进程内文件级索引。
+
+Workspace Index 必须至少维护：
+
+- `filesByPath`
+- Java `filesByPath`
+- Java `typesByQualifiedName`
+- Java `typeNamesByAnnotation`
+- Java `filePathsByImport`
+- Java `contributionsByPath`
+
+Java `contributionsByPath` 记录每个文件贡献的 qualified type、annotation 和 import 索引 key。
+
+Workspace Index 只保存 Pickles-owned DTO，不保存 raw tree-sitter node 或 tree。
+
 更新规则：
 
-- `added`：解析 after 内容并写入 index。
-- `modified`：解析 after 内容并替换 index。
-- `deleted`：删除 index 项。
+- `added`：解析 after 内容并写入 index 和反向索引。
+- `modified`：先清理旧贡献，再解析 after 内容并替换 index 和反向索引。
+- `deleted`：清理旧贡献并删除 index 项。
 - `unchanged`：不更新 index。
 
 Runtime 不依赖 tree-sitter incremental edit API 完成 MVP。MVP 固定按文件重建语法索引。

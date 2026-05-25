@@ -53,12 +53,6 @@
 
 ## 待讨论项
 
-- [ ] 确定 Incremental Workspace Index 内部结构
-    - 任务类型：待讨论项
-    - 关联任务：`pickles-runtime`
-    - 决策要求：确定文件索引、Java type 索引、annotation/import 查询索引和更新策略
-    - 重要度：9/10
-
 - [ ] 确定问题去重规则
     - 任务类型：待讨论项
     - 关联任务：`Problem Model`

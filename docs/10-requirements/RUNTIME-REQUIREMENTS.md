@@ -361,7 +361,18 @@ Runtime 必须维护进程内 Incremental Workspace Index。
 
 Runtime 必须基于文件变动集更新 workspace index。
 
-MVP index 只服务 workspace 级问题聚合和 repair-oriented summary。
+MVP index 服务 native rule execution、workspace 级问题聚合和 repair-oriented summary。
+
+Workspace Index MVP 固定使用进程内文件级索引。
+
+Workspace Index 必须至少维护：
+
+- `filesByPath`
+- Java `filesByPath`
+- Java `typesByQualifiedName`
+- Java `typeNamesByAnnotation`
+- Java `filePathsByImport`
+- Java `contributionsByPath`
 
 Workspace index 必须支持：
 
@@ -371,6 +382,14 @@ Workspace index 必须支持：
 - 按 qualified type name 查询 Java type declaration。
 - 按 annotation name 查询 Java type declaration。
 - 按 import target 查询 Java file。
+
+Java `contributionsByPath` 必须记录每个文件贡献的 qualified type、annotation 和 import 索引 key。
+
+文件修改或删除时，Runtime 必须先清理该文件旧贡献，再写入新索引。
+
+Workspace Index 不得保存 raw tree-sitter node 或 tree。
+
+Runtime 可以在单次检测过程中使用 parser 内部对象完成 DTO 构建和 syntax query，但不得将 raw parser object 写入 Workspace Index 或暴露给 rule。
 
 Runtime 进程退出后，MVP 不要求保留 index。
 
@@ -541,7 +560,6 @@ MVP 不定义完整 Repair-Oriented Summary 稳定 JSON contract。
 
 ## 10. Open Items
 
-- Incremental Workspace Index 的内部结构。
 - AI-generated rule authoring guide。
 - Repair-Oriented Summary 结构。
 - Runtime 与 Plugin 的进程边界。
