@@ -11,6 +11,7 @@
 当前范围：
 
 - runtime config 文件位置
+- Agent-side skill 生成物位置
 - MVP 固定入口
 - 可编程配置字段
 - 规则配置边界
@@ -29,9 +30,15 @@ Pickles runtime config 固定放在被治理目标工程根目录。
 
 目标工程指 IntelliJ IDEA 当前打开、且 Codex Agent 正在工作的用户项目。Pickles 仓库的 e2e 示例目标工程固定为 `e2e/sample-project/`。
 
-Pickles runtime config 是可提交配置文件。目标工程 `.pickles/` 目录固定承载本地运行时状态文件，例如 `server.json`、hook state 和 cache。
+Pickles runtime config 是可提交配置文件。
+
+目标工程 `.pickles/` 目录固定承载 Pickles 项目本地文件，包括本地运行时状态文件和 Agent-side skill 生成的检测脚本或辅助实现。运行时状态文件包括 `server.json`、hook state 和 cache。
 
 Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-side skills 都围绕该配置协作。
+
+Agent-side skill 生成 native rule 时，默认将规则声明写入 `pickles.config.ts`、`pickles.config.mjs` 或 `pickles.config.js`。当规则需要额外检测脚本或辅助实现时，生成物必须放入目标工程 `.pickles/*`，并由 Pickles runtime config 显式引用。
+
+Runtime 不得自动扫描 `.pickles/` 发现规则。`.pickles/` 不得成为第二个规则真相源。
 
 ## 4. Module Mapping
 
@@ -147,6 +154,9 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - Runtime config 必须可提交到用户工程仓库。
 - Runtime config 不得包含本机端口、进程号、server URL、临时绝对路径或 token。
 - 本地 HTTP 端口固定写入目标工程 `<repo>/.pickles/server.json`。
+- Agent-side skill 生成的检测脚本或辅助实现固定放入目标工程 `<repo>/.pickles/*`。
+- `.pickles/*` 中的检测脚本或辅助实现必须由 Runtime config 显式引用。
+- Runtime 不得自动扫描 `.pickles/` 发现 native rule、external adapter 或检测脚本。
 - `rules` 固定使用数组。
 - Native rules 固定由 Runtime 执行。
 - ArchUnit 与 ESLint 固定作为 external adapter rule。
@@ -268,7 +278,21 @@ MVP 固定 adapter：
 
 External adapter execution 和输出归一化由后续 adapter design 定义。
 
-### 7.4 Config Read Flow
+当 Agent-side skill 为 external adapter 生成检测脚本时，脚本必须放入目标工程 `.pickles/*`。
+
+External adapter rule 必须在 Pickles runtime config 中通过 `command` 显式引用该脚本。
+
+### 7.4 Agent-Side Skill Generated Files
+
+`pickles-rule-authoring-skill` 生成规则时必须遵守以下边界：
+
+- Native rule 声明默认写入 Pickles runtime config。
+- 检测脚本、external adapter wrapper 或较长辅助实现写入目标工程 `.pickles/*`。
+- Pickles runtime config 必须显式引用 `.pickles/*` 中参与检测的文件。
+- Skill 不得要求 Runtime 加载 skill。
+- Skill 不得要求 Runtime 扫描 `.pickles/`。
+
+### 7.5 Config Read Flow
 
 1. IntelliJ Plugin 定位目标工程根目录。
 2. IntelliJ Plugin 展示 Pickles runtime config。
@@ -276,7 +300,7 @@ External adapter execution 和输出归一化由后续 adapter design 定义。
 4. Codex Hook 读取本地运行时状态。
 5. Agent-side skills 基于 Pickles runtime config 提示规则创作或规则检查。
 
-### 7.5 Config Update Flow
+### 7.6 Config Update Flow
 
 1. Plugin 配置界面展示当前 Pickles runtime config。
 2. 用户修改配置。
