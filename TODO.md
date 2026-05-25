@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `plugin-runtime-dto`：对齐 Plugin Runtime DTO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesModels.kt`、`PicklesRuntimeFlow.kt`
-    - 处理动作：补齐 Runtime stdout JSON 映射所需 DTO 字段和 changeType 映射
-    - 验收点：Kotlin DTO 能表达 Runtime Problem contract 和 Runtime ChangedFile
-    - 重要度：8/10
 - [ ] `runtime-locator`：实现 Plugin Runtime root 定位
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`

@@ -86,6 +86,13 @@ class PicklesRuntimeFlowTest {
         assertEquals(emptyList<PicklesProblem>(), problemBoard.problems())
     }
 
+    @Test
+    fun runtimeChangedFileDerivesRuntimeChangeType() {
+        assertEquals("added", RuntimeChangedFile("src/New.java", null, "new").changeType)
+        assertEquals("deleted", RuntimeChangedFile("src/Old.java", "old", null).changeType)
+        assertEquals("modified", RuntimeChangedFile("src/File.java", "old", "new").changeType)
+    }
+
     private class RecordingRuntimeClient(
         val problemsToReturn: List<PicklesProblem>,
     ) : PicklesRuntimeClient {

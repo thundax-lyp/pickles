@@ -4,7 +4,14 @@ data class RuntimeChangedFile(
     val fileName: String,
     val before: String?,
     val after: String?,
-)
+) {
+    val changeType: String
+        get() = when {
+            before == null -> "added"
+            after == null -> "deleted"
+            else -> "modified"
+        }
+}
 
 interface PicklesRuntimeClient {
     fun inspect(files: List<RuntimeChangedFile>): List<PicklesProblem>
