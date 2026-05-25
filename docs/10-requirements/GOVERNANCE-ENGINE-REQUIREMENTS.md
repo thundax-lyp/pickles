@@ -50,6 +50,7 @@ IntelliJ Plugin 负责 UI、IDE 集成和本地 HTTP 入口。Governance Engine 
 ## 6. Global Constraints
 
 - Engine 不拥有 UI。
+- Engine 实现语言固定为 Node.js / TypeScript。
 - Engine 不修改业务代码、测试代码或工程实现代码。
 - Engine 读取目标工程 `.pickles/config.json`。
 - Engine 直接调用 `.pickles/config.json` 中配置的用户工程命令。
@@ -115,7 +116,6 @@ MVP 不定义完整 Repair-Oriented Summary 结构。
 
 ## 10. Open Items
 
-- Engine 实现语言。
 - 命令执行超时时间。
 - ArchUnit 输出解析规则。
 - ESLint 输出解析规则。
