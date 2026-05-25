@@ -53,12 +53,6 @@
 
 ## 待讨论项
 
-- [ ] 定义 Skill-to-rules workflow
-    - 任务类型：待讨论项
-    - 关联任务：`pickles-skills/pickles-rule-authoring-skill`
-    - 决策要求：确认 skill 从用户规则意图到 config、`.pickles/*` 生成物和复检入口的流程
-    - 重要度：10/10
-
 - [ ] 确定 Incremental Workspace Index 内部结构
     - 任务类型：待讨论项
     - 关联任务：`pickles-runtime`

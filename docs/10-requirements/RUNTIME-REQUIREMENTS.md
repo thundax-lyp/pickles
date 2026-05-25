@@ -282,6 +282,21 @@ MVP 不提供 external adapter、ArchUnit、ESLint、TypeScript、Python、auto-
 
 `pickles-rule-authoring-skill` 必须使用规则说明书生成和维护 Pickles rules。
 
+`pickles-rule-authoring-skill` workflow 固定为：
+
+1. 将用户规则意图整理为 rule spec。
+2. 在 file-level native rule、Java syntax query rule 和 workspace-level native rule 模板中选择一个。
+3. 生成或更新 Pickles runtime config、`.pickles/rules/*` 或 rule package。
+4. 对生成物做形态自检。
+5. 将复检交给 Runtime、CLI、MCP 或 Plugin 的稳定检查入口。
+6. 后续维护必须按 rule id 定位并收窄修改。
+
+`pickles-rule-authoring-skill` 不得执行 rule。
+
+`pickles-rule-authoring-skill` 不得自行判断项目是否违规。
+
+`pickles-rule-authoring-skill` 的形态自检只检查生成物是否遵守 Pickles native rule contract，不替代 Runtime 检测。
+
 `pickles-rule-authoring-skill` 生成 native rule 声明时，默认写入 `pickles.config.js`、`pickles.config.mjs` 或 `pickles.config.ts`。
 
 `pickles-rule-authoring-skill` 生成项目本地 native rule module 或辅助实现时，默认写入目标工程 `.pickles/rules/`。
@@ -528,7 +543,6 @@ MVP 不定义完整 Repair-Oriented Summary 稳定 JSON contract。
 
 - Incremental Workspace Index 的内部结构。
 - AI-generated rule authoring guide。
-- Skill-to-rules workflow。
 - Repair-Oriented Summary 结构。
 - Runtime 与 Plugin 的进程边界。
 - Runtime 首次 workspace 全量索引触发时机。
