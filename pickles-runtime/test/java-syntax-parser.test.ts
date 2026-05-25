@@ -212,6 +212,28 @@ public final class App {
     );
 });
 
+test("java syntax parser extracts names from generic type and method declarations", () => {
+    const parser = new JavaSyntaxParser();
+    const file = parser.parse(
+        "src/main/java/com/example/Repository.java",
+        `package com.example;
+
+public class Repository<T extends Entity> {
+    public <R> R map(T input) {
+        return null;
+    }
+}
+`,
+    );
+
+    assert.equal(file.types[0].name, "Repository");
+    assert.equal(file.types[0].qualifiedName, "com.example.Repository");
+    assert.deepEqual(
+        file.types[0].methods?.map((method) => method.name),
+        ["map"],
+    );
+});
+
 test("java syntax parser extracts class extends and implements declarations", () => {
     const parser = new JavaSyntaxParser();
     const file = parser.parse(
