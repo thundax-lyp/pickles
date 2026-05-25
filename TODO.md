@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `scripts`：提供可重复本地 Gradle 执行路径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`scripts/verify-all.sh`、`scripts/verify-intellij-plugin.sh`、`pickles-intellij-plugin/`、相关文档
-    - 处理动作：通过 Gradle wrapper 或明确 fallback 让本地 IntelliJ Plugin 验证路径可重复执行
-    - 验收点：可运行环境中 `scripts/verify-all.sh` 通过或最终说明明确缺失条件
-    - 重要度：7/10
 - [ ] `runtime tree-sitter hardening docs`：同步验证和 Runtime 文档口径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
