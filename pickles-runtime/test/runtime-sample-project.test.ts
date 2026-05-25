@@ -128,6 +128,44 @@ public class Broken {
     );
 });
 
+test("runtime rejects batches with more than 200 changed files", async () => {
+    await assert.rejects(
+        () =>
+            runRuntimeCheck({
+                workspaceRoot: sampleProjectRoot,
+                changedFiles: Array.from({ length: 201 }, (_, index) => ({
+                    path: `src/main/java/com/example/File${index}.java`,
+                    changeType: "modified",
+                    before: null,
+                    after: "package com.example;",
+                })),
+            }),
+        {
+            message: "Runtime changedFiles limit exceeded: received 201, maximum is 200.",
+        },
+    );
+});
+
+test("runtime rejects parse input larger than 2 MiB", async () => {
+    const oversizedContent = " ".repeat(2 * 1024 * 1024 + 1);
+
+    await assert.rejects(
+        () =>
+            runRuntimeCheck({
+                workspaceRoot: sampleProjectRoot,
+                changedFiles: [
+                    {
+                        path: "src/main/java/com/example/Huge.java",
+                        changeType: "modified",
+                        before: null,
+                        after: oversizedContent,
+                    },
+                ],
+            }),
+        /Runtime parse input limit exceeded for src\/main\/java\/com\/example\/Huge\.java: received 2097153 bytes, maximum is 2097152 bytes\./,
+    );
+});
+
 const runRuntimeStdio = (request: unknown) => {
     return spawnSync(process.execPath, ["--import", "tsx", "src/stdio.ts"], {
         cwd: path.join(repoRoot, "pickles-runtime"),

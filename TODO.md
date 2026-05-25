@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：增加 Runtime 输入限制
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
-    - 范围对象：`pickles-runtime/src/**/*.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：实现 2 MiB 单文件限制和 200 changed files 批次限制
-    - 验收点：超大文件和超批次测试通过且错误输出可解释
-    - 重要度：8/10
 - [ ] `pickles-runtime`：补齐 runtime 分层测试和 full-flow 回归
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`

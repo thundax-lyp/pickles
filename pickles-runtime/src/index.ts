@@ -22,12 +22,15 @@ import type {
 } from "./types.ts";
 
 const CONFIG_CANDIDATES = ["pickles.config.ts", "pickles.config.mjs", "pickles.config.js"];
+const MAX_CHANGED_FILES = 200;
+const MAX_PARSE_INPUT_BYTES = 2 * 1024 * 1024;
 
 export const runRuntimeCheck = async (input: RuntimeCheckInput): Promise<RuntimeCheckResult> => {
     const config = await loadRuntimeConfig(input.workspaceRoot);
     validateConfig(config);
 
     const activeChangedFiles = input.changedFiles.filter((file) => file.changeType !== "unchanged");
+    validateRuntimeInput(activeChangedFiles);
     const problems: Problem[] = [];
 
     for (const rule of config.rules) {
@@ -83,6 +86,27 @@ export const runRuntimeCheck = async (input: RuntimeCheckInput): Promise<Runtime
     return {
         problems: dedupeProblems(problems),
     };
+};
+
+const validateRuntimeInput = (changedFiles: ChangedFile[]): void => {
+    if (changedFiles.length > MAX_CHANGED_FILES) {
+        throw new Error(
+            `Runtime changedFiles limit exceeded: received ${changedFiles.length}, maximum is ${MAX_CHANGED_FILES}.`,
+        );
+    }
+
+    for (const file of changedFiles) {
+        if (file.after === null) {
+            continue;
+        }
+
+        const byteLength = Buffer.byteLength(file.after, "utf8");
+        if (byteLength > MAX_PARSE_INPUT_BYTES) {
+            throw new Error(
+                `Runtime parse input limit exceeded for ${file.path}: received ${byteLength} bytes, maximum is ${MAX_PARSE_INPUT_BYTES} bytes.`,
+            );
+        }
+    }
 };
 
 const parserDiagnosticToProblem = (diagnostic: ParserDiagnostic): Problem => {
