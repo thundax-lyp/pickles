@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：增加 parser diagnostic
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
-    - 范围对象：`pickles-runtime/src/**/*.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：把 tree-sitter syntax error 转换为 parser diagnostic 并纳入 Problem aggregation
-    - 验收点：syntax error 返回可展示诊断且同批其他文件继续处理
-    - 重要度：8/10
 - [ ] `pickles-runtime`：增加 Runtime 输入限制
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`

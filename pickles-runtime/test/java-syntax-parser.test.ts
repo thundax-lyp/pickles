@@ -182,3 +182,32 @@ public final class App {
         ],
     );
 });
+
+test("java syntax parser returns diagnostics for syntax errors", () => {
+    const parser = new JavaSyntaxParser();
+    const file = parser.parse(
+        "src/main/java/com/example/Broken.java",
+        `package com.example;
+
+public class Broken {
+    public void run(
+}
+`,
+    );
+
+    assert.equal(file.diagnostics?.length, 1);
+    assert.deepEqual(file.diagnostics?.[0], {
+        message: "Java parser encountered syntax error.",
+        severity: "WARN",
+        file: "src/main/java/com/example/Broken.java",
+        position: {
+            line: 4,
+            column: 5,
+        },
+        source: {
+            tool: "tree-sitter-java",
+            rule: null,
+        },
+        fixHint: null,
+    });
+});

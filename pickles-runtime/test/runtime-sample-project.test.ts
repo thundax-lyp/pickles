@@ -80,6 +80,54 @@ test("runtime stdio host returns an error for an invalid request", () => {
     );
 });
 
+test("runtime returns parser diagnostics and continues native rule execution", async () => {
+    const after = await readFile(path.join(sampleProjectRoot, sampleJavaPath), "utf8");
+
+    const result = await runRuntimeCheck({
+        workspaceRoot: sampleProjectRoot,
+        changedFiles: [
+            {
+                path: "src/main/java/com/example/Broken.java",
+                changeType: "modified",
+                before: null,
+                after: `package com.example;
+
+public class Broken {
+    public void run(
+}
+`,
+            },
+            {
+                path: sampleJavaPath,
+                changeType: "modified",
+                before: null,
+                after,
+            },
+        ],
+    });
+
+    assert.equal(result.problems.length, 2);
+    assert.deepEqual(
+        result.problems.map((problem) => ({
+            type: problem.type,
+            severity: problem.severity,
+            tool: problem.source.tool,
+        })),
+        [
+            {
+                type: "parser",
+                severity: "WARN",
+                tool: "tree-sitter-java",
+            },
+            {
+                type: "architecture",
+                severity: "ERROR",
+                tool: "pickles-native",
+            },
+        ],
+    );
+});
+
 const runRuntimeStdio = (request: unknown) => {
     return spawnSync(process.execPath, ["--import", "tsx", "src/stdio.ts"], {
         cwd: path.join(repoRoot, "pickles-runtime"),

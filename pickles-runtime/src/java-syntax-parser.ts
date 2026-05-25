@@ -7,6 +7,7 @@ import type {
     JavaMethodDeclaration,
     JavaSyntaxFile,
     JavaTypeDeclaration,
+    ParserDiagnostic,
     Position,
     SourceRange,
 } from "./types.ts";
@@ -45,7 +46,32 @@ export class JavaSyntaxParser {
     }
 
     parse(path: string, content: string): JavaSyntaxFile {
-        const tree = this.parser.parse(content);
+        let tree: Parser.Tree;
+
+        try {
+            tree = this.parser.parse(content);
+        } catch (error) {
+            return {
+                path,
+                packageName: null,
+                imports: [],
+                types: [],
+                diagnostics: [
+                    {
+                        message: `Java parser failed: ${error instanceof Error ? error.message : String(error)}`,
+                        severity: "WARN",
+                        file: path,
+                        position: { line: 1, column: 1 },
+                        source: {
+                            tool: "tree-sitter-java",
+                            rule: null,
+                        },
+                        fixHint: null,
+                    },
+                ],
+            };
+        }
+
         const root = tree.rootNode;
         const packageName = parsePackageName(root);
 
@@ -54,13 +80,48 @@ export class JavaSyntaxParser {
             packageName,
             imports: parseImports(root),
             types: parseTopLevelTypes(root, packageName),
-            diagnostics: [],
+            diagnostics: parseDiagnostics(path, root),
         };
     }
 }
 
+const parseDiagnostics = (path: string, root: Parser.SyntaxNode): ParserDiagnostic[] => {
+    const diagnostics: ParserDiagnostic[] = [];
+    collectDiagnostics(path, root, diagnostics);
+
+    return diagnostics;
+};
+
+const collectDiagnostics = (
+    path: string,
+    node: Parser.SyntaxNode,
+    diagnostics: ParserDiagnostic[],
+): void => {
+    if (node.isError || node.isMissing) {
+        diagnostics.push({
+            message: node.isMissing
+                ? `Java parser missing ${node.type}.`
+                : `Java parser encountered syntax error.`,
+            severity: "WARN",
+            file: path,
+            position: toPosition(node.startPosition),
+            source: {
+                tool: "tree-sitter-java",
+                rule: null,
+            },
+            fixHint: null,
+        });
+    }
+
+    for (const child of node.namedChildren) {
+        collectDiagnostics(path, child, diagnostics);
+    }
+};
+
 const parsePackageName = (root: Parser.SyntaxNode): string | null => {
-    const packageDeclaration = root.namedChildren.find((child) => child.type === "package_declaration");
+    const packageDeclaration = root.namedChildren.find(
+        (child) => child.type === "package_declaration",
+    );
     const nameNode = packageDeclaration?.namedChildren[0] ?? null;
 
     return nameNode?.text ?? null;
@@ -148,7 +209,9 @@ const parseFields = (body: Parser.SyntaxNode): JavaFieldDeclaration[] => {
     return body.namedChildren
         .filter((child) => child.type === "field_declaration")
         .flatMap((node) => {
-            const declarators = node.namedChildren.filter((child) => child.type === "variable_declarator");
+            const declarators = node.namedChildren.filter(
+                (child) => child.type === "variable_declarator",
+            );
 
             return declarators.map((declarator) => {
                 return {
@@ -171,7 +234,10 @@ const parseAnnotationNames = (node: Parser.SyntaxNode): string[] => {
 
     return modifiers.namedChildren
         .filter((child) => child.type.endsWith("annotation"))
-        .map((annotation) => annotation.childForFieldName("name")?.text ?? annotation.namedChildren[0]?.text)
+        .map(
+            (annotation) =>
+                annotation.childForFieldName("name")?.text ?? annotation.namedChildren[0]?.text,
+        )
         .filter((name): name is string => name !== undefined);
 };
 

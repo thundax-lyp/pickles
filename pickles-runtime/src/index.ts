@@ -15,6 +15,7 @@ import type {
     PicklesRuntimeConfig,
     Problem,
     ProblemInput,
+    ParserDiagnostic,
     RuleContext,
     RuntimeCheckInput,
     RuntimeCheckResult,
@@ -38,6 +39,11 @@ export const runRuntimeCheck = async (input: RuntimeCheckInput): Promise<Runtime
             matchesAnyGlob(file.path, rule.files),
         );
         const javaIndex = createJavaIndex(ruleChangedFiles);
+        problems.push(
+            ...javaFiles(javaIndex).flatMap((file) =>
+                (file.diagnostics ?? []).map(parserDiagnosticToProblem),
+            ),
+        );
 
         const context: RuleContext = {
             workspaceRoot: input.workspaceRoot,
@@ -76,6 +82,19 @@ export const runRuntimeCheck = async (input: RuntimeCheckInput): Promise<Runtime
 
     return {
         problems: dedupeProblems(problems),
+    };
+};
+
+const parserDiagnosticToProblem = (diagnostic: ParserDiagnostic): Problem => {
+    return {
+        title: "Java parser diagnostic",
+        type: "parser",
+        message: diagnostic.message,
+        severity: diagnostic.severity,
+        source: diagnostic.source,
+        file: diagnostic.file,
+        position: diagnostic.position,
+        fixHint: diagnostic.fixHint,
     };
 };
 
