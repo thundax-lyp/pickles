@@ -26,7 +26,7 @@ Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 - 基于 Codex Hook 捕获的增量文件变动提供治理反馈
 - 在任务完成前向 Codex 暴露 Problem Board 与修复建议
 - 通过 Pickles 管理 `AGENTS.md` 中的治理约束
-- 使用 `.pickles/config.json` 承载项目级治理配置
+- 使用 Pickles runtime config 承载项目级治理配置
 
 ---
 
@@ -49,7 +49,7 @@ Agent 始终是业务代码、测试代码和产品实现的唯一写入者。
 | Incremental Workspace Index | 基于 Agent Hook 上报的增量文件变动，更新 workspace 级工程索引与治理问题              |
 | Agent Hooks                 | 部署在 Codex Runtime 内的生命周期触发点                                              |
 | Plugin Notify Protocol      | Hook 向 IntelliJ Plugin 发送通知的本地协议，MVP 默认使用 Plugin 启动的本地 HTTP 服务 |
-| Project Configuration       | 目标工程 `.pickles/config.json`，作为被治理项目的配置真相源                          |
+| Project Configuration       | 目标工程 Pickles runtime config，作为被治理项目的配置真相源                          |
 
 ---
 
@@ -140,13 +140,13 @@ MVP 检测用户项目，也就是 Agent 工作目录下的项目。
 
 规则属于 Pickles，但检测命令来自用户项目。
 
-ArchUnit 与 ESLint 命令固定由目标工程 `.pickles/config.json` 显式配置。
+ArchUnit 与 ESLint 命令固定由目标工程 Pickles runtime config 显式配置。
 
 IntelliJ Plugin 不通过 IDEA 自动识别 ArchUnit 或 ESLint 命令。
 
-Plugin 配置界面只负责展示和写回 `.pickles/config.json` 中的规则命令。
+Plugin 配置界面只负责展示和写回 Pickles runtime config 中的规则命令。
 
-Governance Server 直接调用 `.pickles/config.json` 中配置的用户工程命令执行检测。
+Governance Server 直接调用 Pickles runtime config 中配置的用户工程命令执行检测。
 
 Plugin 配置界面可以提供规则配置。
 
@@ -163,13 +163,13 @@ Pickles 不在 MVP 中新增独立 severity 体系。
 
 # Project Configuration
 
-Pickles 使用目标工程 `.pickles/config.json` 作为项目级配置文件。
+Pickles 使用目标工程 Pickles runtime config 作为项目级配置文件。
 
 目标工程指 IntelliJ IDEA 当前打开、且 Codex Agent 正在工作的用户项目。对 Pickles 仓库自身的 e2e 场景，示例目标工程固定为 `e2e/sample-project/`。
 
-`.pickles/config.json` 是被治理项目的配置真相源。IntelliJ Plugin、Codex Hook 和 Governance Server 都读取该文件。
+Pickles runtime config 是被治理项目的配置真相源。IntelliJ Plugin 和 Governance Server 都读取该文件。
 
-Plugin 配置界面只负责展示和修改 `.pickles/config.json`，不拥有独立配置真相。
+Plugin 配置界面只负责展示和修改 Pickles runtime config，不拥有独立配置真相。
 
 MVP 最小配置：
 
@@ -201,13 +201,13 @@ MVP 最小配置：
 }
 ```
 
-运行时端口、进程号和 server URL 不写入 `.pickles/config.json`。
+运行时端口、进程号和 server URL 不写入 Pickles runtime config。
 
 本地 HTTP 端口写入目标工程 `<repo>/.pickles/server.json`。
 
 Codex Hook 通过当前 git root 定位目标工程根目录，读取 `.pickles/server.json`，并调用 `http://127.0.0.1:<port>`。
 
-Pickles 插件仓库根目录不放置 `.pickles/config.json`；只有被治理的目标工程 `.pickles/` 目录放置该文件。
+Pickles 插件仓库根目录不放置 Pickles runtime config；被治理的目标工程根目录放置该文件。
 
 ---
 
@@ -283,7 +283,7 @@ MVP 不接入其他规则检测工具或规则语言。
 
 MVP 规则检测对象固定为用户项目，即 Agent 工作目录下的项目。
 
-ArchUnit 与 ESLint 的执行命令固定从目标工程 `.pickles/config.json` 读取。
+ArchUnit 与 ESLint 的执行命令固定从目标工程 Pickles runtime config 读取。
 
 ## Problem Board UI
 
@@ -308,7 +308,7 @@ MVP 只显示以下字段：
 - 增量依赖跟踪
 - Problem Board UI
 - AGENTS.md Bind
-- `.pickles/config.json` 项目配置
+- Pickles runtime config 项目配置
 - Codex Hook
 - Hook 到 Plugin 的本地 HTTP 通知协议
 - 基于 ArchUnit 与 ESLint 的规则检测系统

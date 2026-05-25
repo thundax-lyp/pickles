@@ -31,7 +31,7 @@
   读 `10-requirements/CODEX-HOOKS-REQUIREMENTS.md`
   再读 `20-interfaces/CODEX-HOOKS-OFFICIAL-REFERENCE.md`
   再按需读 `20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`。
-- `.pickles/config.json` 配置读写或 schema 变化：
+- Pickles runtime config 配置读写或 schema 变化：
   读 `20-interfaces/PICKLES-CONFIG-CONTRACT.md`。
 - Problem model 或 Problem Board 数据变化：
   读 `20-interfaces/PROBLEM-MODEL-CONTRACT.md`。

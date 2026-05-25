@@ -1,26 +1,17 @@
 package com.pickles.intellij
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class PicklesModelsTest {
     @Test
-    fun defaultConfigMatchesMvpContract() {
-        val config = PicklesConfig()
+    fun bindStatusUsesProjectFiles() {
+        val status = BindStatus(
+            agentsFileExists = true,
+            hooksFileExists = true,
+        )
 
-        assertEquals(1, config.version)
-        assertEquals("codex", config.agent)
-        assertEquals("AGENTS.md", config.bind.agentsFile)
-        assertFalse(config.bind.enabled)
-        assertEquals("http", config.hook.protocol)
-        assertTrue(config.rules.archunit.enabled)
-        assertEquals("", config.rules.archunit.command)
-        assertTrue(config.rules.eslint.enabled)
-        assertEquals("", config.rules.eslint.command)
-        assertEquals(emptyList<String>(), config.rules.scripts)
-        assertEquals("workspace", config.problemBoard.aggregation)
+        assertEquals(true, status.bound)
     }
 
     @Test

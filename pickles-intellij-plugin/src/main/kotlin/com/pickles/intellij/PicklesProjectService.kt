@@ -2,7 +2,6 @@ package com.pickles.intellij
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonParser
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -51,36 +50,31 @@ class PicklesProjectService(private val project: Project) : Disposable {
         return Disposable { listeners.remove(listener) }
     }
 
-    fun loadConfig(): Result<PicklesConfig> = runCatching {
+    fun loadConfigText(): Result<String> = runCatching {
         val configFile = configPath()
         if (!Files.exists(configFile)) {
-            return Result.success(PicklesConfig())
+            return Result.success(defaultConfigText())
         }
-        Files.newBufferedReader(configFile, StandardCharsets.UTF_8).use { reader ->
-            gson.fromJson(reader, PicklesConfig::class.java) ?: PicklesConfig()
-        }
+        Files.readString(configFile, StandardCharsets.UTF_8)
     }
 
-    fun saveConfig(config: PicklesConfig): Result<Unit> = runCatching {
+    fun saveConfigText(configText: String): Result<Unit> = runCatching {
         val configFile = configPath()
-        Files.createDirectories(configFile.parent)
-        Files.writeString(configFile, gson.toJson(config) + "\n", StandardCharsets.UTF_8)
+        Files.writeString(configFile, configText.trimEnd() + "\n", StandardCharsets.UTF_8)
         updateStatus("Configuration saved.")
     }
 
-    fun bindStatus(config: PicklesConfig = loadConfig().getOrDefault(PicklesConfig())): BindStatus {
+    fun bindStatus(): BindStatus {
         val root = requireProjectRoot()
         return BindStatus(
-            configEnabled = config.bind.enabled,
-            agentsFileExists = Files.exists(root.resolve(config.bind.agentsFile)),
+            agentsFileExists = Files.exists(root.resolve(AGENTS_FILE)),
             hooksFileExists = Files.exists(root.resolve(".codex").resolve("hooks.json")),
         )
     }
 
     fun bind(): Result<Unit> = runCatching {
-        val config = loadConfig().getOrThrow()
         val root = requireProjectRoot()
-        val agentsPath = root.resolve(config.bind.agentsFile)
+        val agentsPath = root.resolve(AGENTS_FILE)
         val hooksPath = root.resolve(".codex").resolve("hooks.json")
 
         Files.createDirectories(agentsPath.parent ?: root)
@@ -93,13 +87,10 @@ class PicklesProjectService(private val project: Project) : Disposable {
             Files.writeString(hooksPath, "{\n}\n", StandardCharsets.UTF_8)
         }
 
-        saveConfig(config.copy(bind = config.bind.copy(enabled = true))).getOrThrow()
         updateStatus("Project bound to Pickles.")
     }
 
     fun unbind(): Result<Unit> = runCatching {
-        val config = loadConfig().getOrThrow()
-        saveConfig(config.copy(bind = config.bind.copy(enabled = false))).getOrThrow()
         updateStatus("Project unbound from Pickles.")
     }
 
@@ -203,7 +194,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
         Files.writeString(serverFile, gson.toJson(mapOf("port" to port)) + "\n", StandardCharsets.UTF_8)
     }
 
-    private fun configPath(): Path = requireProjectRoot().resolve(".pickles").resolve("config.json")
+    private fun configPath(): Path = requireProjectRoot().resolve("pickles.config.ts")
 
     private fun requireProjectRoot(): Path = projectRoot ?: throw IOException("Project root is unavailable.")
 
@@ -222,11 +213,30 @@ class PicklesProjectService(private val project: Project) : Disposable {
             ?.notify(project)
     }
 
-    fun formatConfig(config: PicklesConfig): String = gson.toJson(config)
+    fun defaultConfigText(): String = """
+        export default {
+            agent: "codex",
+            hook: {
+                protocol: "http",
+            },
+            rules: [
+                {
+                    id: "sample-eslint",
+                    title: "Sample TypeScript validation",
+                    type: "external-adapter",
+                    severity: "ERROR",
+                    adapter: "eslint",
+                    command: "npm run lint",
+                },
+            ],
+            problemBoard: {
+                aggregation: "workspace",
+            },
+        };
+    """.trimIndent()
 
-    fun parseConfig(text: String): Result<PicklesConfig> = runCatching {
-        JsonParser.parseString(text)
-        gson.fromJson(text, PicklesConfig::class.java) ?: PicklesConfig()
+    private companion object {
+        const val AGENTS_FILE = "AGENTS.md"
     }
 }
 

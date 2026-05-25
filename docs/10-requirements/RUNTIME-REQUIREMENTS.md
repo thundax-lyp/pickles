@@ -79,7 +79,7 @@ Runtime 不加载 skill。Runtime 只加载 Pickles runtime config、native rule
 
 ## 5. Core Objects
 
-- `PicklesConfig`
+- `PicklesRuntimeConfig`
 - `ChangedFile`
 - `IncrementalWorkspaceIndex`
 - `PicklesRuleConfig`
@@ -144,13 +144,9 @@ Runtime package 必须提供以下脚本：
 
 Runtime 必须读取 Pickles runtime config。
 
-MVP 兼容目标工程 `.pickles/config.json`。
-
 Runtime 必须支持 JS / TS / MJS 可编程配置入口。
 
 可编程配置入口固定命名为 `pickles.config.js`、`pickles.config.mjs` 或 `pickles.config.ts`。
-
-当同时存在 `.pickles/config.json` 和可编程配置入口时，Runtime 必须按设计文档定义加载优先级。
 
 Runtime 必须校验配置加载结果。
 
@@ -335,12 +331,12 @@ Native rule execution 不得依赖 ArchUnit 全量执行。
 
 ### 7.11 External Rule Adapter Execution
 
-Runtime 必须根据 `.pickles/config.json` 执行启用的规则命令。
+Runtime 必须根据 Pickles runtime config 执行启用的 adapter command。
 
 MVP 固定支持：
 
-- `rules.archunit.command`
-- `rules.eslint.command`
+- `adapter: "archunit"`
+- `adapter: "eslint"`
 
 命令为空且对应工具启用时，Runtime 必须返回配置缺失问题。
 
