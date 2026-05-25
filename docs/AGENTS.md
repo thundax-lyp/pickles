@@ -25,8 +25,8 @@
   读 `10-requirements/INTELLIJ-PLUGIN-REQUIREMENTS.md`
   再按需读 `30-designs/INTELLIJ-PLUGIN-DESIGN.md`。
 - Governance Engine / Runtime 实现、修复、重构：
-  读 `10-requirements/GOVERNANCE-ENGINE-REQUIREMENTS.md`
-  再按需读 `30-designs/GOVERNANCE-ENGINE-DESIGN.md`。
+  读 `10-requirements/RUNTIME-REQUIREMENTS.md`
+  再按需读 `30-designs/RUNTIME-DESIGN.md`。
 - Codex Hook 实现、修复、重构：
   读 `10-requirements/CODEX-HOOKS-REQUIREMENTS.md`
   再读 `20-interfaces/CODEX-HOOKS-OFFICIAL-REFERENCE.md`

@@ -1,21 +1,23 @@
-# TypeScript Runtime Tree-Sitter Design
+# Runtime Design
 
 ## 1. Purpose
 
-本文档定义 `pickles-runtime/` 使用 Node.js / TypeScript 接入 `tree-sitter-java` 的完整设计。
+本文档定义 `pickles-runtime/` 的完整设计。
 
-目标是让 Runtime 获得 Java 语法级索引能力，并保持 IntelliJ Plugin、Codex Hook、MCP 与规则声明之间的边界清晰。
+目标是让 Runtime 作为治理执行内核完成配置读取、Java 语法级索引、规则命令执行、Problem 聚合和 repair-oriented summary，并保持 IntelliJ Plugin、Codex Hook、MCP 与规则声明之间的边界清晰。
 
-需求来源固定为 [`../10-requirements/TYPESCRIPT-RUNTIME-TREE-SITTER-REQUIREMENTS.md`](../10-requirements/TYPESCRIPT-RUNTIME-TREE-SITTER-REQUIREMENTS.md)。
+需求来源固定为 [`../10-requirements/RUNTIME-REQUIREMENTS.md`](../10-requirements/RUNTIME-REQUIREMENTS.md)。
 
 ## 2. Scope
 
 当前范围：
 
-- Runtime 实现语言选择。
-- `tree-sitter-java` 接入位置。
+- Runtime project setup。
+- `.pickles/config.json` 读取。
+- Incremental Workspace Index。
 - Java 文件语法解析。
-- Incremental Workspace Index 更新。
+- ArchUnit / ESLint 命令执行。
+- Problem 聚合。
 - Runtime 内部对象边界。
 - Runtime 对 Plugin / Hook / MCP 的公开契约边界。
 - 初始实现顺序和验证入口。
@@ -62,6 +64,7 @@ Runtime 进程入口。
 固定职责：
 
 - 加载 workspace。
+- 读取 `.pickles/config.json`。
 - 接收变动集。
 - 调用 `WorkspaceIndexService`。
 - 调用规则执行器。
@@ -140,7 +143,18 @@ Java 方法或构造器声明。
 
 `kind` 固定为 `method` 或 `constructor`。
 
-### 5.7 `WorkspaceIndexService`
+### 5.7 `RuleCommandRunner`
+
+规则命令执行入口。
+
+固定职责：
+
+- 读取 `.pickles/config.json` 中启用的规则命令。
+- 执行 ArchUnit / ESLint 命令。
+- 捕获 stdout / stderr / exit code。
+- 将命令失败转换为可展示错误或 Problem 输入。
+
+### 5.8 `WorkspaceIndexService`
 
 workspace index 更新入口。
 
@@ -152,7 +166,7 @@ workspace index 更新入口。
 - 保留每个文件最新 `JavaSyntaxFile`。
 - 为规则执行和 summary 生成提供查询能力。
 
-### 5.8 `RuntimeProblemAggregator`
+### 5.9 `RuntimeProblemAggregator`
 
 Problem 聚合入口。
 
@@ -293,6 +307,8 @@ Tree-sitter Java syntax index 固定在命令执行前更新。
 
 Rule command output 仍按既有 Problem 聚合规则处理。
 
+命令为空且对应工具启用时，Runtime 必须返回配置缺失问题。
+
 ### 7.9 Repair-Oriented Summary
 
 Runtime 生成 repair-oriented summary 时可以读取 Java syntax index。
@@ -382,8 +398,10 @@ Plugin 只接收 Problem Board 数据、health 状态和可展示 summary。
 8. 实现 parser diagnostic 转 Problem。
 9. 实现 `WorkspaceIndexService` 文件级更新。
 10. 实现最小 query API。
-11. 将 Runtime 检测入口接入 Plugin 编排。
-12. 将 Runtime 验证接入 `scripts/verify-all.sh`。
+11. 实现 `.pickles/config.json` 读取。
+12. 实现 ArchUnit / ESLint 命令执行入口。
+13. 将 Runtime 检测入口接入 Plugin 编排。
+14. 将 Runtime 验证接入 `scripts/verify-all.sh`。
 
 ## 11. Verification
 
