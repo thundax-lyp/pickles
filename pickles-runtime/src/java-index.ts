@@ -17,13 +17,19 @@ interface JavaIndexContribution {
 
 export class WorkspaceIndexService {
     private readonly parser = new JavaSyntaxParser();
-    private readonly index: JavaIndex = {
-        filesByPath: new Map(),
-        typesByQualifiedName: new Map(),
-        typeNamesByAnnotation: new Map(),
-        filePathsByImport: new Map(),
-        contributionsByPath: new Map(),
-    };
+    private readonly index: JavaIndex;
+
+    constructor(
+        index: JavaIndex = {
+            filesByPath: new Map(),
+            typesByQualifiedName: new Map(),
+            typeNamesByAnnotation: new Map(),
+            filePathsByImport: new Map(),
+            contributionsByPath: new Map(),
+        },
+    ) {
+        this.index = index;
+    }
 
     update(changedFiles: ChangedFile[]): JavaIndex {
         for (const changedFile of changedFiles) {
@@ -45,6 +51,28 @@ export class WorkspaceIndexService {
         }
 
         return this.index;
+    }
+
+    javaFiles(): JavaSyntaxFile[] {
+        return [...this.index.filesByPath.values()];
+    }
+
+    findType(qualifiedName: string): JavaTypeDeclaration | null {
+        return this.index.typesByQualifiedName.get(qualifiedName) ?? null;
+    }
+
+    findTypesByAnnotation(annotationName: string): JavaTypeDeclaration[] {
+        const names = this.index.typeNamesByAnnotation.get(annotationName) ?? new Set<string>();
+        return [...names]
+            .map((name) => this.index.typesByQualifiedName.get(name))
+            .filter((type) => type !== undefined);
+    }
+
+    findFilesByImport(importTarget: string): JavaSyntaxFile[] {
+        const paths = this.index.filePathsByImport.get(importTarget) ?? new Set<string>();
+        return [...paths]
+            .map((path) => this.index.filesByPath.get(path))
+            .filter((file) => file !== undefined);
     }
 
     private addJavaFile(javaFile: JavaSyntaxFile): void {
@@ -134,26 +162,24 @@ const flattenTypes = (types: JavaTypeDeclaration[]): JavaTypeDeclaration[] => {
 };
 
 export const javaFiles = (index: JavaIndex): JavaSyntaxFile[] => {
-    return [...index.filesByPath.values()];
+    return javaIndexServiceFor(index).javaFiles();
 };
 
 export const findType = (index: JavaIndex, qualifiedName: string): JavaTypeDeclaration | null => {
-    return index.typesByQualifiedName.get(qualifiedName) ?? null;
+    return javaIndexServiceFor(index).findType(qualifiedName);
 };
 
 export const findTypesByAnnotation = (
     index: JavaIndex,
     annotationName: string,
 ): JavaTypeDeclaration[] => {
-    const names = index.typeNamesByAnnotation.get(annotationName) ?? new Set<string>();
-    return [...names]
-        .map((name) => index.typesByQualifiedName.get(name))
-        .filter((type) => type !== undefined);
+    return javaIndexServiceFor(index).findTypesByAnnotation(annotationName);
 };
 
 export const findFilesByImport = (index: JavaIndex, importTarget: string): JavaSyntaxFile[] => {
-    const paths = index.filePathsByImport.get(importTarget) ?? new Set<string>();
-    return [...paths]
-        .map((path) => index.filesByPath.get(path))
-        .filter((file) => file !== undefined);
+    return javaIndexServiceFor(index).findFilesByImport(importTarget);
+};
+
+const javaIndexServiceFor = (index: JavaIndex): WorkspaceIndexService => {
+    return new WorkspaceIndexService(index);
 };

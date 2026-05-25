@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：迁移 index query 入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`pickles-runtime/src/java-index.ts`、`pickles-runtime/src/index.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：将 javaFiles、findType、findTypesByAnnotation、findFilesByImport 收敛为 WorkspaceIndexService query
-    - 验收点：`scripts/verify-runtime-sample-project.sh` 通过且 tree-sitter API 只在 JavaSyntaxParser 直接使用
-    - 重要度：8/10
 - [ ] `pickles-runtime`：稳定 parser diagnostic message
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
