@@ -29,6 +29,11 @@ export interface Problem {
     fixHint: string | null;
 }
 
+export interface SourceRange {
+    start: Position;
+    end: Position;
+}
+
 export interface ProblemInput {
     title?: string;
     message: string;
@@ -73,13 +78,47 @@ export interface PicklesNativeRule {
 export interface JavaImportDeclaration {
     name: string;
     position: Position;
+    range?: SourceRange;
 }
 
 export interface JavaTypeDeclaration {
     name: string;
     qualifiedName: string;
     annotations: string[];
+    extendsTypes?: string[];
+    implementsTypes?: string[];
+    modifiers?: string[];
+    methods?: JavaMethodDeclaration[];
+    constructors?: JavaMethodDeclaration[];
+    fields?: JavaFieldDeclaration[];
+    nestedTypes?: JavaTypeDeclaration[];
     position: Position;
+    range?: SourceRange;
+}
+
+export interface JavaMethodDeclaration {
+    name: string;
+    annotations: string[];
+    modifiers: string[];
+    position: Position;
+    range: SourceRange;
+}
+
+export interface JavaFieldDeclaration {
+    name: string;
+    annotations: string[];
+    modifiers: string[];
+    position: Position;
+    range: SourceRange;
+}
+
+export interface ParserDiagnostic {
+    message: string;
+    severity: Severity;
+    file: string;
+    position: Position;
+    source: ProblemSource;
+    fixHint: string | null;
 }
 
 export interface JavaSyntaxFile {
@@ -87,6 +126,7 @@ export interface JavaSyntaxFile {
     packageName: string | null;
     imports: JavaImportDeclaration[];
     types: JavaTypeDeclaration[];
+    diagnostics?: ParserDiagnostic[];
 }
 
 export interface RuleContext {

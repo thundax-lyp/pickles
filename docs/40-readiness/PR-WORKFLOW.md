@@ -84,6 +84,8 @@ IntelliJ Plugin verify 固定执行：
 scripts/verify-intellij-plugin.sh
 ```
 
+执行环境必须提供 Java 17+。脚本默认使用 `pickles-intellij-plugin/gradlew`，也允许通过 `GRADLE_CMD` 指定其他 Gradle 命令。
+
 ### 7.3 e2e Sample Project Verify
 
 e2e sample project verify 固定执行：
@@ -129,7 +131,7 @@ PR 描述固定包含：
 
 1. 开发者打开或更新 Pull Request。
 2. GitHub 触发 `PR Verify` workflow。
-3. workflow 准备 Java、Gradle 和 Node.js 环境。
+3. workflow 准备 Java 17+、Gradle wrapper 可执行权限和 Node.js 环境。
 4. workflow 执行 `scripts/verify-all.sh`。
 5. 所有项目 verify 通过后，PR 才允许进入合并判断。
 
