@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：补齐 runtime 分层测试和 full-flow 回归
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
-    - 范围对象：`pickles-runtime/test/**/*.ts`、`e2e/full-flow/full-flow.test.mjs`
-    - 处理动作：补齐 parser、index、native rule、Problem aggregation 分层验证并回归 full-flow
-    - 验收点：`scripts/verify-runtime-sample-project.sh` 和 `scripts/verify-full-flow.sh` 通过
-    - 重要度：8/10
 - [ ] `runtime parser runbook`：收口文档、TODO 和 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
