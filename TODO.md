@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：建立 JavaSyntaxParser 边界与 DTO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
-    - 范围对象：`pickles-runtime/src/**/*.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：新增 JavaSyntaxParser 适配层和 Runtime 自有 Java syntax DTO
-    - 验收点：最小 parser smoke test 通过且 tree-sitter API 只在 JavaSyntaxParser 直接使用
-    - 重要度：9/10
 - [ ] `pickles-runtime`：解析 Java package、import 和 type
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
