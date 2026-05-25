@@ -31,7 +31,7 @@ MVP 固定使用本地 HTTP 承载 Hook 事件通知与治理反馈拉取。
 
 Codex Hook 部署在 Codex Runtime 环境中。IntelliJ Plugin 在目标工程所在 IDEA 进程内启动本地 HTTP 服务。
 
-Hook 负责通知与拉取反馈。Plugin / Governance Server 负责聚合、分析和展示。
+Hook 负责通知与拉取反馈。Plugin 负责编排与展示，Runtime 负责规则执行、聚合和反馈生成。
 
 MVP 不使用 MCP 或 WebSocket 作为 Hook 通知协议。
 
@@ -94,7 +94,7 @@ Pickles 幂等键固定基于：
 
 没有 changed file 的事件固定使用 `sessionId`、`turnId` 和 `hookEventName` 作为幂等键。
 
-Hook 必须显式发送 `idempotencyKey`。Plugin / Governance Server 必须按 `idempotencyKey` 处理重复通知。
+Hook 必须显式发送 `idempotencyKey`。Plugin / Runtime 编排层必须按 `idempotencyKey` 处理重复通知。
 
 ### 5.3 ChangedFile
 
@@ -160,7 +160,7 @@ MVP 固定允许值：
 - `ok`
 - `unimplemented`
 
-`unimplemented` 固定表示 Plugin 已实现 HTTP contract，但尚未接入 Governance Server。
+`unimplemented` 固定表示 Plugin 已实现 HTTP contract，但当前 workspace 尚未接入 Runtime feedback。
 
 ### 5.8 ApiError
 
@@ -324,18 +324,37 @@ POST /feedback
 {
     "schemaVersion": 1,
     "requestId": "request-id",
-    "status": "unimplemented",
-    "hasBlockingProblems": false,
+    "status": "ok",
+    "hasBlockingProblems": true,
     "summary": {
-        "errorCount": 0,
+        "errorCount": 1,
         "warnCount": 0,
-        "text": "Governance feedback is not implemented yet."
+        "text": "Pickles found 1 blocking problem(s) and 0 warning(s)."
     },
-    "problems": []
+    "problems": [
+        {
+            "title": "Controller must not import repository directly",
+            "type": "architecture",
+            "message": "Controller imports repository directly.",
+            "severity": "ERROR",
+            "source": {
+                "tool": "pickles-native",
+                "rule": "sample-java-no-controller-repository-import"
+            },
+            "file": "src/main/java/com/example/web/OrderController.java",
+            "position": {
+                "line": 3,
+                "column": 1
+            },
+            "fixHint": "Move repository access behind a service."
+        }
+    ]
 }
 ```
 
 `hasBlockingProblems` 固定为是否存在 `severity = "ERROR"` 的 Problem。
+
+`status` 为 `ok` 时，`problems` 固定为当前 workspace Problem array。
 
 `status` 为 `unimplemented` 时，`hasBlockingProblems` 固定为 `false`，`problems` 固定为空 array，`summary.errorCount` 与 `summary.warnCount` 固定为 `0`。
 
@@ -421,9 +440,9 @@ Codex Hook 必须使用 `server.json` 中的 `port` 组装本地地址 `http://1
 
 ### 9.5 Runtime Dispatch
 
-IntelliJ Plugin 收到 Hook 通知后，将变动集交给 Governance Server。
+IntelliJ Plugin 收到 Hook 通知后，将变动集交给 Runtime。
 
-Governance Server 基于变动集增量更新 Incremental Workspace Index。
+Runtime 基于变动集增量更新 Incremental Workspace Index。
 
 ## 10. Key Flows
 
@@ -436,15 +455,15 @@ Governance Server 基于变动集增量更新 Incremental Workspace Index。
 5. Codex Hook 通过 workspace diff 或文件状态扫描确认实际变动文件。
 6. Codex Hook 读取实际变动文件 after 内容。
 7. Hook 通过 `POST /notify` 通知 IntelliJ Plugin。
-8. Plugin 将变动集交给 Governance Server。
-9. Governance Server 更新 workspace index 并执行规则检测。
+8. Plugin 将变动集交给 Runtime。
+9. Runtime 更新 workspace index 并执行 native rules。
 
 ### 10.2 Feedback Flow
 
 1. Codex task 进入 `Stop` 检查点。
 2. Hook flush 未上报的 pending workspace diff。
 3. Hook 通过 `POST /feedback` 请求治理反馈。
-4. Plugin / Governance Server 返回当前 workspace Problem Board。
+4. Plugin 返回当前 workspace Problem Board 与 Runtime feedback summary。
 5. Codex 修复或汇报问题。
 
 ### 10.3 Session Start Flow
@@ -471,7 +490,7 @@ Governance Server 基于变动集增量更新 Incremental Workspace Index。
 - 本地 HTTP 服务只服务当前目标工程。
 - Hook 失败不得修改用户业务代码。
 - 通信失败必须能被 Codex 看到，并允许 Codex 汇报失败原因。
-- Plugin / Governance Server 必须按 Hook event 幂等键处理重复通知。
+- Plugin / Runtime 编排层必须按 Hook event 幂等键处理重复通知。
 
 ## 13. Open Items
 

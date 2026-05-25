@@ -18,7 +18,7 @@
 
 不在范围内：
 
-- 不执行规则命令
+- 不执行 native rules
 - 不实现 Codex Hook
 
 ## 3. Bounded Context

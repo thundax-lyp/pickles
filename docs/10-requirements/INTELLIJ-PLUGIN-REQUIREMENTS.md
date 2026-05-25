@@ -19,7 +19,7 @@
 
 不在范围内：
 
-- 不执行 ArchUnit 或 ESLint 命令
+- 不执行 Pickles native rules、ArchUnit、ESLint 或用户业务命令
 - 不实现 Codex Hook
 - 不定义 AGENTS.md 注入块格式、marker 和幂等更新细节
 
@@ -87,7 +87,7 @@ MVP 只显示以下字段：
 
 插件配置界面必须能写回 Pickles runtime config。
 
-插件不通过 IDEA 自动识别 ArchUnit 或 ESLint 命令。
+插件不通过 IDEA 自动识别 ArchUnit、ESLint 或用户业务命令。
 
 插件配置界面必须能展示和写回 Pickles runtime config。
 

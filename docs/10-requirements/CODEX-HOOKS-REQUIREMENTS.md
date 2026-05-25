@@ -17,7 +17,7 @@
 
 不在范围内：
 
-- 不执行规则命令
+- 不执行 native rules
 - 不展示 Problem Board
 - 不修改业务代码、测试代码或工程实现代码
 - 不定义 HTTP endpoint 细节
@@ -52,7 +52,7 @@ Hook 负责通知与拉取反馈。IntelliJ Plugin / Governance Engine 负责聚
 - Hook event 必须携带 `session_id`。
 - Turn-scoped Hook event 必须携带 `turn_id`。
 - Pickles 幂等键必须绑定到 `session_id` 与 `turn_id`；`SessionStart` 没有 `turn_id` 时绑定到 `session_id`。
-- Hook 不执行 ArchUnit 或 ESLint 命令。
+- Hook 不执行 Pickles native rules、ArchUnit、ESLint 或用户业务命令。
 - Hook 不修改用户工程文件。
 - Hook 不负责 Problem Board UI。
 - Pickles Hook 配置固定使用目标工程 `<repo>/.codex/hooks.json`。

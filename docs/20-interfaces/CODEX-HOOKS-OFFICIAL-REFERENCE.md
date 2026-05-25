@@ -4,7 +4,7 @@
 
 本文档整理 OpenAI 官方 Codex Hooks 文档中与 Pickles MVP 开发相关的用法。
 
-目标是给 `pickles-hooks/`、`pickles-intellij-plugin/` 和 `pickles-runtime/` 后续实现提供稳定参考入口。
+目标是给 `pickles-hooks/`、`pickles-intellij-plugin/` 和 `pickles-runtime/` 实现提供稳定参考入口。
 
 ## 2. Scope
 
@@ -41,7 +41,7 @@
 
 Codex Hooks 是 Codex 生命周期内运行确定性脚本的扩展机制。Pickles MVP 使用 Codex Hook 在 Codex Runtime 中捕获 task 生命周期与文件变动，并通过本地 HTTP 通知 IntelliJ Plugin。
 
-Pickles 不使用 Codex Hook 直接执行规则命令。规则命令由 Governance Engine 调用。
+Pickles 不使用 Codex Hook 直接执行规则。Pickles native rules 固定由 Runtime 执行。
 
 ## 5. Capability Version Map
 
@@ -381,9 +381,9 @@ Pickles 稳定计算 before / after 内容的规则：
 
 删除文件的 after 固定为 `null`。
 
-文件 rename / move 必须表达为旧路径删除与新路径新增，除非后续 HTTP schema 明确定义 rename 结构。
+文件 rename / move 必须表达为旧路径删除与新路径新增，除非 HTTP schema 明确定义 rename 结构。
 
-该流程关闭 Pickles before / after 稳定计算问题。后续实现只能细化 diff 算法，不改变 `tool_name` / `tool_input` 不是最终真相源的约束。
+该流程关闭 Pickles before / after 稳定计算问题。实现只能细化 diff 算法，不改变 `tool_name` / `tool_input` 不是最终真相源的约束。
 
 ### 13.5 UserPromptSubmit
 

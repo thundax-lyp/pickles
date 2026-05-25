@@ -287,7 +287,8 @@ const noControllerToRepository = defineRule({
     id: "java-no-controller-to-repository",
     title: "Controller must not depend on repository",
     message: "Controller classes must not import repository classes directly.",
-    fixHint: "Move repository access behind a service layer and let the controller depend on the service.",
+    fixHint:
+        "Move repository access behind a service layer and let the controller depend on the service.",
     type: "architecture",
     severity: "ERROR",
     language: "java",
@@ -305,7 +306,13 @@ const noControllerToRepository = defineRule({
 
 export default defineConfig({
     agent: "codex",
+    hook: {
+        protocol: "http",
+    },
     rules: [noControllerToRepository],
+    problemBoard: {
+        aggregation: "workspace",
+    },
 });
 ```
 
@@ -317,7 +324,13 @@ import { javaArchitectureRules } from "@pickles/rules-java-architecture";
 
 export default defineConfig({
     agent: "codex",
+    hook: {
+        protocol: "http",
+    },
     rules: [...javaArchitectureRules],
+    problemBoard: {
+        aggregation: "workspace",
+    },
 });
 ```
 
@@ -345,7 +358,7 @@ export default defineConfig({
 1. Plugin 配置界面展示当前 Pickles runtime config。
 2. 用户修改配置。
 3. Plugin 写回 Pickles runtime config。
-4. Runtime 后续检测使用更新后的配置。
+4. Runtime 下一次检测使用更新后的配置。
 
 ## 8. Key Flows
 

@@ -23,7 +23,7 @@
 
 ## 3. Bounded Context
 
-Problem 是 Pickles native rule、parser diagnostic 或 external adapter 结果经过 Runtime 聚合后的最小展示单元。
+Problem 是 Pickles native rule 或 parser diagnostic 经过 Runtime 聚合后的最小展示单元。
 
 Problem Board 按 workspace 聚合。MVP 不按 task 单独保存 Problem Board。
 
