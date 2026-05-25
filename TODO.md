@@ -53,22 +53,22 @@
 
 ## 待讨论项
 
-- [ ] 设计 external adapter execution
-    - 任务类型：待讨论项
-    - 关联任务：`External Adapter`
-    - 决策要求：确定 ArchUnit、ESLint 和 `.pickles/*` 脚本的执行方式、工作目录、超时和失败表达
-    - 重要度：9/10
-
 - [ ] 定义 Pickles native rule authoring contract
     - 任务类型：待讨论项
     - 关联任务：`pickles-rules`
     - 决策要求：确定 `defineRule` 作者侧字段、约束、输入输出和禁止事项
     - 重要度：10/10
 
+- [ ] 设计 external adapter execution
+    - 任务类型：待讨论项
+    - 关联任务：`External Adapter`
+    - 决策要求：确定 ArchUnit、ESLint 和 `.pickles/*` 脚本作为后续兼容能力的执行方式、工作目录、超时和失败表达
+    - 重要度：6/10
+
 - [ ] 设计 Rule templates
     - 任务类型：待讨论项
     - 关联任务：`pickles-rules`
-    - 决策要求：确定 MVP 需要提供的 native rule、external adapter 和 Java syntax query 模板
+    - 决策要求：确定 MVP 需要提供的 native rule 和 Java syntax query 模板
     - 重要度：8/10
 
 - [ ] 定义 Skill-to-rules workflow
