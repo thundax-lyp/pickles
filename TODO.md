@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：解析 class extends / implements
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`pickles-runtime/src/java-syntax-parser.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：让 JavaSyntaxParser 从 class_declaration 输出 extendsTypes 和 implementsTypes
-    - 验收点：parser tests 覆盖 class extends 和 class implements 且 `npm run test` 通过
-    - 重要度：8/10
 - [ ] `pickles-runtime`：解析 interface extends / record implements
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`

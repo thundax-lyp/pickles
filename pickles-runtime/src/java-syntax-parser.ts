@@ -162,8 +162,8 @@ const parseTypeDeclaration = (
         name,
         qualifiedName,
         annotations: parseAnnotationNames(node),
-        extendsTypes: [],
-        implementsTypes: [],
+        extendsTypes: parseExtendsTypes(node),
+        implementsTypes: parseImplementsTypes(node),
         modifiers: parseModifiers(node),
         methods: body === null ? [] : parseMethods(body),
         constructors: body === null ? [] : parseConstructors(body),
@@ -177,6 +177,40 @@ const parseTypeDeclaration = (
         position: toPosition(node.startPosition),
         range: toRange(node),
     };
+};
+
+const parseExtendsTypes = (node: Parser.SyntaxNode): string[] => {
+    const superclass = node.childForFieldName("superclass");
+    if (superclass === null) {
+        return [];
+    }
+
+    return leafTypeTexts(superclass);
+};
+
+const parseImplementsTypes = (node: Parser.SyntaxNode): string[] => {
+    const interfaces = node.childForFieldName("interfaces");
+    if (interfaces === null) {
+        return [];
+    }
+
+    return leafTypeTexts(interfaces);
+};
+
+const leafTypeTexts = (node: Parser.SyntaxNode): string[] => {
+    if (node.namedChildCount === 0) {
+        return [node.text];
+    }
+
+    const directTypes = node.namedChildren.filter(
+        (child) => child.type.endsWith("type_identifier") || child.type === "identifier",
+    );
+
+    if (directTypes.length > 0) {
+        return directTypes.map((child) => child.text);
+    }
+
+    return node.namedChildren.flatMap(leafTypeTexts);
 };
 
 const parseMethods = (body: Parser.SyntaxNode): JavaMethodDeclaration[] => {

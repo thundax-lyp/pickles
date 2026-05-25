@@ -185,6 +185,21 @@ public final class App {
     );
 });
 
+test("java syntax parser extracts class extends and implements declarations", () => {
+    const parser = new JavaSyntaxParser();
+    const file = parser.parse(
+        "src/main/java/com/example/App.java",
+        `package com.example;
+
+public class App extends BaseApp implements Runnable, java.io.Closeable {
+}
+`,
+    );
+
+    assert.deepEqual(file.types[0].extendsTypes, ["BaseApp"]);
+    assert.deepEqual(file.types[0].implementsTypes, ["Runnable", "java.io.Closeable"]);
+});
+
 test("java syntax parser returns diagnostics for syntax errors", () => {
     const parser = new JavaSyntaxParser();
     const file = parser.parse(
