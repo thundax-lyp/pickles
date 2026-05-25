@@ -53,12 +53,6 @@
 
 ## 待讨论项
 
-- [ ] 确定 Config TypeScript 加载器选择
-    - 任务类型：待讨论项
-    - 关联任务：`Pickles Config Contract`
-    - 决策要求：确认 Runtime 加载 `pickles.config.ts` 使用的 TypeScript loader 方案
-    - 重要度：9/10
-
 - [ ] 确定 Rule plugin package 引用格式
     - 任务类型：待讨论项
     - 关联任务：`Pickles Config Contract`
