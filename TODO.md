@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：迁移 index 更新和贡献清理
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`pickles-runtime/src/java-index.ts`、`pickles-runtime/src/**/*.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：将 added、modified、deleted、unchanged 更新和 contributionsByPath 清理迁入 WorkspaceIndexService
-    - 验收点：index contribution tests 通过
-    - 重要度：8/10
 - [ ] `pickles-runtime`：迁移 index query 入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`

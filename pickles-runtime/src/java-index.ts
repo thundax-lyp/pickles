@@ -35,96 +35,98 @@ export class WorkspaceIndexService {
                 continue;
             }
 
-            removePathContributions(this.index, changedFile.path);
+            this.removePathContributions(changedFile.path);
 
             if (changedFile.changeType === "deleted" || changedFile.after === null) {
                 continue;
             }
 
-            addJavaFile(this.index, this.parser.parse(changedFile.path, changedFile.after));
+            this.addJavaFile(this.parser.parse(changedFile.path, changedFile.after));
         }
 
         return this.index;
+    }
+
+    private addJavaFile(javaFile: JavaSyntaxFile): void {
+        const contribution: JavaIndexContribution = {
+            qualifiedTypes: new Set(),
+            annotations: new Set(),
+            imports: new Set(),
+        };
+
+        this.index.filesByPath.set(javaFile.path, javaFile);
+
+        for (const type of flattenTypes(javaFile.types)) {
+            contribution.qualifiedTypes.add(type.qualifiedName);
+            this.index.typesByQualifiedName.set(type.qualifiedName, type);
+
+            for (const annotation of type.annotations) {
+                contribution.annotations.add(annotation);
+                const typeNames =
+                    this.index.typeNamesByAnnotation.get(annotation) ?? new Set<string>();
+                typeNames.add(type.qualifiedName);
+                this.index.typeNamesByAnnotation.set(annotation, typeNames);
+            }
+        }
+
+        for (const javaImport of javaFile.imports) {
+            contribution.imports.add(javaImport.name);
+            const filePaths =
+                this.index.filePathsByImport.get(javaImport.name) ?? new Set<string>();
+            filePaths.add(javaFile.path);
+            this.index.filePathsByImport.set(javaImport.name, filePaths);
+        }
+
+        this.index.contributionsByPath.set(javaFile.path, contribution);
+    }
+
+    private removePathContributions(path: string): void {
+        const contribution = this.index.contributionsByPath.get(path);
+
+        if (contribution === undefined) {
+            this.index.filesByPath.delete(path);
+            return;
+        }
+
+        for (const qualifiedType of contribution.qualifiedTypes) {
+            this.index.typesByQualifiedName.delete(qualifiedType);
+        }
+
+        for (const annotation of contribution.annotations) {
+            const typeNames = this.index.typeNamesByAnnotation.get(annotation);
+            if (typeNames === undefined) {
+                continue;
+            }
+
+            for (const qualifiedType of contribution.qualifiedTypes) {
+                typeNames.delete(qualifiedType);
+            }
+
+            if (typeNames.size === 0) {
+                this.index.typeNamesByAnnotation.delete(annotation);
+            }
+        }
+
+        for (const javaImport of contribution.imports) {
+            const filePaths = this.index.filePathsByImport.get(javaImport);
+            if (filePaths === undefined) {
+                continue;
+            }
+
+            filePaths.delete(path);
+
+            if (filePaths.size === 0) {
+                this.index.filePathsByImport.delete(javaImport);
+            }
+        }
+
+        this.index.filesByPath.delete(path);
+        this.index.contributionsByPath.delete(path);
     }
 }
 
 export const createJavaIndex = (changedFiles: ChangedFile[]): JavaIndex => {
     return new WorkspaceIndexService().update(changedFiles);
-};
-
-const addJavaFile = (index: JavaIndex, javaFile: JavaSyntaxFile): void => {
-    const contribution: JavaIndexContribution = {
-        qualifiedTypes: new Set(),
-        annotations: new Set(),
-        imports: new Set(),
-    };
-
-    index.filesByPath.set(javaFile.path, javaFile);
-
-    for (const type of flattenTypes(javaFile.types)) {
-        contribution.qualifiedTypes.add(type.qualifiedName);
-        index.typesByQualifiedName.set(type.qualifiedName, type);
-
-        for (const annotation of type.annotations) {
-            contribution.annotations.add(annotation);
-            const typeNames = index.typeNamesByAnnotation.get(annotation) ?? new Set<string>();
-            typeNames.add(type.qualifiedName);
-            index.typeNamesByAnnotation.set(annotation, typeNames);
-        }
-    }
-
-    for (const javaImport of javaFile.imports) {
-        contribution.imports.add(javaImport.name);
-        const filePaths = index.filePathsByImport.get(javaImport.name) ?? new Set<string>();
-        filePaths.add(javaFile.path);
-        index.filePathsByImport.set(javaImport.name, filePaths);
-    }
-
-    index.contributionsByPath.set(javaFile.path, contribution);
-};
-
-const removePathContributions = (index: JavaIndex, path: string): void => {
-    const contribution = index.contributionsByPath.get(path);
-
-    if (contribution === undefined) {
-        index.filesByPath.delete(path);
-        return;
-    }
-
-    for (const qualifiedType of contribution.qualifiedTypes) {
-        index.typesByQualifiedName.delete(qualifiedType);
-    }
-
-    for (const annotation of contribution.annotations) {
-        const typeNames = index.typeNamesByAnnotation.get(annotation);
-        if (typeNames === undefined) {
-            continue;
-        }
-
-        for (const qualifiedType of contribution.qualifiedTypes) {
-            typeNames.delete(qualifiedType);
-        }
-
-        if (typeNames.size === 0) {
-            index.typeNamesByAnnotation.delete(annotation);
-        }
-    }
-
-    for (const javaImport of contribution.imports) {
-        const filePaths = index.filePathsByImport.get(javaImport);
-        if (filePaths === undefined) {
-            continue;
-        }
-
-        filePaths.delete(path);
-
-        if (filePaths.size === 0) {
-            index.filePathsByImport.delete(javaImport);
-        }
-    }
-
-    index.filesByPath.delete(path);
-    index.contributionsByPath.delete(path);
 };
 
 const flattenTypes = (types: JavaTypeDeclaration[]): JavaTypeDeclaration[] => {
