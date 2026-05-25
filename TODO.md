@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：解析 Java member、annotation 和 range
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
-    - 范围对象：`pickles-runtime/src/**/*.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：让 JavaSyntaxParser 输出 method、constructor、field、annotation、modifier 和 1-based range
-    - 验收点：parser tests 覆盖 nested type、annotated method、constructor、field 和 range
-    - 重要度：8/10
 - [ ] `pickles-runtime`：将 Java index 接到 parser DTO
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`

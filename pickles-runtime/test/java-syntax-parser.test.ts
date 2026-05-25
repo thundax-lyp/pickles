@@ -91,3 +91,94 @@ test("java syntax parser extracts package imports and top-level type declaration
         ],
     );
 });
+
+test("java syntax parser extracts members annotations modifiers nested types and ranges", () => {
+    const parser = new JavaSyntaxParser();
+    const file = parser.parse(
+        "src/main/java/com/example/App.java",
+        `package com.example;
+
+@Deprecated
+public final class App {
+    private final String id;
+
+    @Inject
+    public App(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return id;
+    }
+
+    static class Nested {
+    }
+}
+`,
+    );
+
+    const app = file.types[0];
+
+    assert.deepEqual(app.annotations, ["Deprecated"]);
+    assert.deepEqual(app.modifiers, ["public", "final"]);
+    assert.deepEqual(app.position, { line: 3, column: 1 });
+    assert.deepEqual(app.range?.start, { line: 3, column: 1 });
+    assert.equal(app.range?.end.line, 19);
+    assert.deepEqual(
+        app.fields?.map((field) => ({
+            name: field.name,
+            modifiers: field.modifiers,
+            rangeStart: field.range.start,
+        })),
+        [
+            {
+                name: "id",
+                modifiers: ["private", "final"],
+                rangeStart: { line: 5, column: 5 },
+            },
+        ],
+    );
+    assert.deepEqual(
+        app.constructors?.map((constructor) => ({
+            name: constructor.name,
+            annotations: constructor.annotations,
+            modifiers: constructor.modifiers,
+        })),
+        [
+            {
+                name: "App",
+                annotations: ["Inject"],
+                modifiers: ["public"],
+            },
+        ],
+    );
+    assert.deepEqual(
+        app.methods?.map((method) => ({
+            name: method.name,
+            annotations: method.annotations,
+            modifiers: method.modifiers,
+        })),
+        [
+            {
+                name: "toString",
+                annotations: ["Override"],
+                modifiers: ["public"],
+            },
+        ],
+    );
+    assert.deepEqual(
+        app.nestedTypes?.map((type) => ({
+            name: type.name,
+            qualifiedName: type.qualifiedName,
+            modifiers: type.modifiers,
+        })),
+        [
+            {
+                name: "Nested",
+                qualifiedName: "com.example.App.Nested",
+                modifiers: ["static"],
+            },
+        ],
+    );
+});

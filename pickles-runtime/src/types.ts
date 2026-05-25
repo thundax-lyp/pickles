@@ -89,6 +89,7 @@ export interface JavaTypeDeclaration {
     methods?: JavaMethodDeclaration[];
     constructors?: JavaMethodDeclaration[];
     fields?: JavaFieldDeclaration[];
+    nestedTypes?: JavaTypeDeclaration[];
     position: Position;
     range?: SourceRange;
 }
