@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：建立 WorkspaceIndexService 边界
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`pickles-runtime/src/java-index.ts`、`pickles-runtime/src/**/*.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：新增 WorkspaceIndexService 并保留 createJavaIndex 兼容 facade
-    - 验收点：RuleContext java query 行为不变且 `npm run test` 通过
-    - 重要度：8/10
 - [ ] `pickles-runtime`：迁移 index 更新和贡献清理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`

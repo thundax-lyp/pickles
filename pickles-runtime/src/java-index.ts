@@ -15,9 +15,9 @@ interface JavaIndexContribution {
     imports: Set<string>;
 }
 
-export const createJavaIndex = (changedFiles: ChangedFile[]): JavaIndex => {
-    const parser = new JavaSyntaxParser();
-    const index: JavaIndex = {
+export class WorkspaceIndexService {
+    private readonly parser = new JavaSyntaxParser();
+    private readonly index: JavaIndex = {
         filesByPath: new Map(),
         typesByQualifiedName: new Map(),
         typeNamesByAnnotation: new Map(),
@@ -25,25 +25,31 @@ export const createJavaIndex = (changedFiles: ChangedFile[]): JavaIndex => {
         contributionsByPath: new Map(),
     };
 
-    for (const changedFile of changedFiles) {
-        if (changedFile.changeType === "unchanged") {
-            continue;
+    update(changedFiles: ChangedFile[]): JavaIndex {
+        for (const changedFile of changedFiles) {
+            if (changedFile.changeType === "unchanged") {
+                continue;
+            }
+
+            if (!changedFile.path.endsWith(".java")) {
+                continue;
+            }
+
+            removePathContributions(this.index, changedFile.path);
+
+            if (changedFile.changeType === "deleted" || changedFile.after === null) {
+                continue;
+            }
+
+            addJavaFile(this.index, this.parser.parse(changedFile.path, changedFile.after));
         }
 
-        if (!changedFile.path.endsWith(".java")) {
-            continue;
-        }
-
-        removePathContributions(index, changedFile.path);
-
-        if (changedFile.changeType === "deleted" || changedFile.after === null) {
-            continue;
-        }
-
-        addJavaFile(index, parser.parse(changedFile.path, changedFile.after));
+        return this.index;
     }
+}
 
-    return index;
+export const createJavaIndex = (changedFiles: ChangedFile[]): JavaIndex => {
+    return new WorkspaceIndexService().update(changedFiles);
 };
 
 const addJavaFile = (index: JavaIndex, javaFile: JavaSyntaxFile): void => {
