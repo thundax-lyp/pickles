@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime/src/stdio.ts`：实现 Runtime stdio host
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-runtime/src/stdio.ts`、`pickles-runtime/package.json`
-    - 处理动作：新增单请求 stdin / stdout Runtime host
-    - 验收点：合法 request 返回 JSON Problem result，非法 request 返回 error JSON 和非 0 exit code
-    - 重要度：10/10
 - [ ] `pickles-runtime/test`：补 Runtime stdio 子进程测试
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
