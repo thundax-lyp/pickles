@@ -1,42 +1,42 @@
 name: PR Verify
 
 on:
-  pull_request:
-    branches:
-      - main
-      - thundax-work
-  workflow_dispatch:
+    pull_request:
+        branches:
+            - main
+            - thundax-work
+    workflow_dispatch:
 
 permissions:
-  contents: read
+    contents: read
 
 jobs:
-  verify:
-    name: Verify Projects
-    runs-on: macos-14
-    timeout-minutes: 30
+    verify:
+        name: Verify Projects
+        runs-on: macos-14
+        timeout-minutes: 30
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: "17"
+            - name: Setup Java 17
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  java-version: "17"
 
-      - name: Setup Gradle 8.13
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: "8.13"
+            - name: Setup Gradle 8.13
+              uses: gradle/actions/setup-gradle@v4
+              with:
+                  gradle-version: "8.13"
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: npm
-          cache-dependency-path: e2e/sample-project/package-lock.json
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+                  cache: npm
+                  cache-dependency-path: e2e/sample-project/package-lock.json
 
-      - name: Verify
-        run: scripts/verify-all.sh
+            - name: Verify
+              run: scripts/verify-all.sh

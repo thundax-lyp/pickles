@@ -8,5 +8,5 @@ echo "==> verify pickles-intellij-plugin"
 
 (
   cd "${ROOT_DIR}/pickles-intellij-plugin"
-  "${GRADLE_CMD}" build
+  "${GRADLE_CMD}" build --no-configuration-cache
 )

@@ -49,10 +49,13 @@ testcase 分层、真实使用全流程和多人开发必测内容固定由 [`E2
 - `pr-verify.yml`
 - `scripts/verify-all.sh`
 - project verify command
+- `.github/pull_request_template.md`
 
 ## 6. Global Constraints
 
 - PR 合并前必须通过统一 verify workflow。
+- PR 标题固定使用 `Type(scope): 中文说明`。
+- PR 描述固定使用 `.github/pull_request_template.md`。
 - PR 必须完成阶段任务对应的文档、TODO 和 RUNBOOK 收口。
 - workflow 不直接散落项目验证细节，项目验证细节固定收敛到 `scripts/verify-all.sh`。
 - 新增项目验证能力时必须同步接入 `scripts/verify-all.sh`。
@@ -104,10 +107,21 @@ scripts/verify-hooks.sh
 - `PLUGIN_HTTP_CONTRACT_UNIT`
 - `E2E_SAMPLE_PROJECT_VERIFY`
 - `HOOK_PLUGIN_CONTRACT`
+- `RUNTIME_SAMPLE_PROJECT`
+- `PLUGIN_RUNTIME_FLOW`
+- `E2E_FULL_FLOW`
 
 `PLUGIN_HTTP_CONTRACT_E2E` 当前为手动 e2e 调试 testcase，不作为 PR 自动必过项。
 
-`RUNTIME_SAMPLE_PROJECT`、`PLUGIN_RUNTIME_FLOW` 和 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
+### 7.6 PR Description
+
+PR 描述固定包含：
+
+- `Summary`: 说明本 PR 完成的阶段性交付。
+- `Scope`: 说明主要改动范围。
+- `Verification`: 记录已运行验证命令和结果。
+- `Documentation And TODO`: 确认文档、TODO 和 RUNBOOK 收口状态。
+- `Risks And Follow-Up`: 说明剩余风险、未自动化验证或后续任务。
 
 ## 8. Key Flows
 

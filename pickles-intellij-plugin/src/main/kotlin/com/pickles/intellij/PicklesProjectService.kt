@@ -2,7 +2,6 @@ package com.pickles.intellij
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonParser
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -32,12 +31,11 @@ class PicklesProjectService(private val project: Project) : Disposable {
     private val executor = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "Pickles Project Service").apply { isDaemon = true }
     }
+    private val runtimeClient: PicklesRuntimeClient = EmptyPicklesRuntimeClient()
+    private val problemBoard = PicklesProblemBoardState()
 
     @Volatile
     private var httpServer: HttpServer? = null
-
-    @Volatile
-    private var currentProblems: List<PicklesProblem> = emptyList()
 
     @Volatile
     var lastStatus: String = "Pickles is idle."
@@ -51,74 +49,77 @@ class PicklesProjectService(private val project: Project) : Disposable {
         return Disposable { listeners.remove(listener) }
     }
 
-    fun loadConfig(): Result<PicklesConfig> = runCatching {
+    fun loadConfigText(): Result<String> = runCatching {
         val configFile = configPath()
         if (!Files.exists(configFile)) {
-            return Result.success(PicklesConfig())
+            return Result.success(defaultConfigText())
         }
-        Files.newBufferedReader(configFile, StandardCharsets.UTF_8).use { reader ->
-            gson.fromJson(reader, PicklesConfig::class.java) ?: PicklesConfig()
-        }
+        Files.readString(configFile, StandardCharsets.UTF_8)
     }
 
-    fun saveConfig(config: PicklesConfig): Result<Unit> = runCatching {
+    fun saveConfigText(configText: String): Result<Unit> = runCatching {
         val configFile = configPath()
-        Files.createDirectories(configFile.parent)
-        Files.writeString(configFile, gson.toJson(config) + "\n", StandardCharsets.UTF_8)
+        Files.writeString(configFile, configText.trimEnd() + "\n", StandardCharsets.UTF_8)
         updateStatus("Configuration saved.")
     }
 
-    fun bindStatus(config: PicklesConfig = loadConfig().getOrDefault(PicklesConfig())): BindStatus {
+    fun bindStatus(): BindStatus {
         val root = requireProjectRoot()
+        val agentsPath = root.resolve(AGENTS_FILE)
         return BindStatus(
-            configEnabled = config.bind.enabled,
-            agentsFileExists = Files.exists(root.resolve(config.bind.agentsFile)),
+            agentsBlockBound = Files.exists(agentsPath) && PicklesAgentsBinding.isBound(Files.readString(agentsPath, StandardCharsets.UTF_8)),
             hooksFileExists = Files.exists(root.resolve(".codex").resolve("hooks.json")),
         )
     }
 
     fun bind(): Result<Unit> = runCatching {
-        val config = loadConfig().getOrThrow()
         val root = requireProjectRoot()
-        val agentsPath = root.resolve(config.bind.agentsFile)
+        val agentsPath = root.resolve(AGENTS_FILE)
         val hooksPath = root.resolve(".codex").resolve("hooks.json")
 
         Files.createDirectories(agentsPath.parent ?: root)
-        if (!Files.exists(agentsPath)) {
-            Files.writeString(agentsPath, "# Project Agents\n", StandardCharsets.UTF_8)
-        }
+        val agentsContent = if (Files.exists(agentsPath)) Files.readString(agentsPath, StandardCharsets.UTF_8) else null
+        Files.writeString(agentsPath, PicklesAgentsBinding.bind(agentsContent), StandardCharsets.UTF_8)
 
         Files.createDirectories(hooksPath.parent)
         if (!Files.exists(hooksPath)) {
             Files.writeString(hooksPath, "{\n}\n", StandardCharsets.UTF_8)
         }
 
-        saveConfig(config.copy(bind = config.bind.copy(enabled = true))).getOrThrow()
         updateStatus("Project bound to Pickles.")
     }
 
     fun unbind(): Result<Unit> = runCatching {
-        val config = loadConfig().getOrThrow()
-        saveConfig(config.copy(bind = config.bind.copy(enabled = false))).getOrThrow()
+        val root = requireProjectRoot()
+        val agentsPath = root.resolve(AGENTS_FILE)
+        if (Files.exists(agentsPath)) {
+            val agentsContent = Files.readString(agentsPath, StandardCharsets.UTF_8)
+            val updatedContent = PicklesAgentsBinding.unbind(agentsContent)
+            if (updatedContent != null) {
+                Files.writeString(agentsPath, updatedContent, StandardCharsets.UTF_8)
+            }
+        }
         updateStatus("Project unbound from Pickles.")
     }
 
-    fun problems(): List<PicklesProblem> = currentProblems
+    fun problems(): List<PicklesProblem> = problemBoard.problems()
 
     fun deleteProblem(problem: PicklesProblem) {
-        currentProblems = currentProblems.filterNot { it == problem }
+        problemBoard.deleteProblem(problem)
         updateStatus("Problem removed from current board.")
     }
 
     fun openProblem(problem: PicklesProblem) {
+        val file = problem.file ?: return
+        val position = problem.position ?: return
         val root = requireProjectRoot()
-        val filePath = root.resolve(problem.file).normalize()
+        val filePath = root.resolve(file).normalize()
         val virtualFile: VirtualFile = LocalFileSystem.getInstance().refreshAndFindFileByNioFile(filePath)
-            ?: return showError("Cannot open ${problem.file}: file does not exist.")
+            ?: return showError("Cannot open $file: file does not exist.")
 
         ApplicationManager.getApplication().invokeLater {
-            val line = (problem.position.line - 1).coerceAtLeast(0)
-            val column = (problem.position.column - 1).coerceAtLeast(0)
+            val line = (position.line - 1).coerceAtLeast(0)
+            val column = (position.column - 1).coerceAtLeast(0)
             OpenFileDescriptor(project, virtualFile, line, column).navigate(true)
         }
     }
@@ -179,14 +180,14 @@ class PicklesProjectService(private val project: Project) : Disposable {
         respond(exchange, contractHandler().health())
     }
 
-    private fun readRequestBody(exchange: HttpExchange): String =
-        exchange.requestBody.use { String(it.readBytes(), StandardCharsets.UTF_8) }
+    private fun readRequestBody(exchange: HttpExchange): String = exchange.requestBody.use { String(it.readBytes(), StandardCharsets.UTF_8) }
 
-    private fun contractHandler(): PicklesHttpContractHandler =
-        PicklesHttpContractHandler(
-            gson = gson,
-            projectRoot = requireProjectRoot(),
-        )
+    private fun contractHandler(): PicklesHttpContractHandler = PicklesHttpContractHandler(
+        gson = gson,
+        projectRoot = requireProjectRoot(),
+        runtimeClient = runtimeClient,
+        problemBoard = problemBoard,
+    )
 
     private fun respond(exchange: HttpExchange, result: PicklesHttpResult) {
         respond(exchange, result.status, gson.toJson(result.body))
@@ -205,10 +206,9 @@ class PicklesProjectService(private val project: Project) : Disposable {
         Files.writeString(serverFile, gson.toJson(mapOf("port" to port)) + "\n", StandardCharsets.UTF_8)
     }
 
-    private fun configPath(): Path = requireProjectRoot().resolve(".pickles").resolve("config.json")
+    private fun configPath(): Path = requireProjectRoot().resolve("pickles.config.ts")
 
-    private fun requireProjectRoot(): Path =
-        projectRoot ?: throw IOException("Project root is unavailable.")
+    private fun requireProjectRoot(): Path = projectRoot ?: throw IOException("Project root is unavailable.")
 
     private fun updateStatus(message: String) {
         lastStatus = message
@@ -225,11 +225,23 @@ class PicklesProjectService(private val project: Project) : Disposable {
             ?.notify(project)
     }
 
-    fun formatConfig(config: PicklesConfig): String = gson.toJson(config)
+    fun defaultConfigText(): String = """
+        import { defineConfig } from "@pickles/runtime/config";
 
-    fun parseConfig(text: String): Result<PicklesConfig> = runCatching {
-        JsonParser.parseString(text)
-        gson.fromJson(text, PicklesConfig::class.java) ?: PicklesConfig()
+        export default defineConfig({
+            agent: "codex",
+            hook: {
+                protocol: "http",
+            },
+            rules: [],
+            problemBoard: {
+                aggregation: "workspace",
+            },
+        });
+    """.trimIndent()
+
+    private companion object {
+        const val AGENTS_FILE = "AGENTS.md"
     }
 }
 

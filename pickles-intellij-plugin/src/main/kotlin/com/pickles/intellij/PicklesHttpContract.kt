@@ -84,6 +84,8 @@ data class PicklesHttpResult(
 class PicklesHttpContractHandler(
     private val gson: Gson,
     private val projectRoot: Path,
+    private val runtimeClient: PicklesRuntimeClient? = null,
+    private val problemBoard: PicklesProblemBoardState? = null,
 ) {
     fun health(): PicklesHttpResult = PicklesHttpResult(200, HealthResponse())
 
@@ -126,7 +128,26 @@ class PicklesHttpContractHandler(
             }
         }
 
-        return PicklesHttpResult(202, NotifyResponse(requestId = request.requestId!!))
+        val runtimeProblems = runtimeClient
+            ?.inspect(
+                files.map { file ->
+                    RuntimeChangedFile(
+                        fileName = file.fileName!!,
+                        before = file.before,
+                        after = file.after,
+                    )
+                },
+            )
+            ?: emptyList()
+        problemBoard?.replaceProblems(runtimeProblems)
+
+        return PicklesHttpResult(
+            202,
+            NotifyResponse(
+                requestId = request.requestId!!,
+                processed = runtimeClient != null,
+            ),
+        )
     }
 
     fun feedback(body: String): PicklesHttpResult {
@@ -143,27 +164,39 @@ class PicklesHttpContractHandler(
         val workspaceError = validateWorkspace(request.workspace, request.requestId)
         if (workspaceError != null) return workspaceError
 
+        val problems = problemBoard?.problems()
+        if (problems == null) {
+            return PicklesHttpResult(
+                200,
+                FeedbackResponse(
+                    requestId = request.requestId!!,
+                    status = "unimplemented",
+                    hasBlockingProblems = false,
+                    summary = FeedbackSummary(
+                        errorCount = 0,
+                        warnCount = 0,
+                        text = "Governance feedback is not implemented yet.",
+                    ),
+                    problems = emptyList(),
+                ),
+            )
+        }
+
         return PicklesHttpResult(
             200,
             FeedbackResponse(
                 requestId = request.requestId!!,
-                status = "unimplemented",
-                hasBlockingProblems = false,
-                summary = FeedbackSummary(
-                    errorCount = 0,
-                    warnCount = 0,
-                    text = "Governance feedback is not implemented yet.",
-                ),
-                problems = emptyList(),
+                status = "ok",
+                hasBlockingProblems = problems.any { it.severity == "ERROR" },
+                summary = feedbackSummary(problems),
+                problems = problems,
             ),
         )
     }
 
-    fun methodNotAllowed(requestId: String? = null): PicklesHttpResult =
-        error(405, requestId, "INVALID_REQUEST", "Method not allowed.")
+    fun methodNotAllowed(requestId: String? = null): PicklesHttpResult = error(405, requestId, "INVALID_REQUEST", "Method not allowed.")
 
-    fun internalError(message: String): PicklesHttpResult =
-        error(500, null, "INTERNAL_ERROR", message)
+    fun internalError(message: String): PicklesHttpResult = error(500, null, "INTERNAL_ERROR", message)
 
     private fun validateCommon(schemaVersion: Int?, requestId: String?): PicklesHttpResult? {
         if (schemaVersion != PICKLES_HTTP_SCHEMA_VERSION) {
@@ -188,34 +221,47 @@ class PicklesHttpContractHandler(
         return null
     }
 
-    private fun error(status: Int, requestId: String?, code: String, message: String): PicklesHttpResult =
-        PicklesHttpResult(
-            status,
-            ApiErrorResponse(
-                requestId = requestId,
-                error = ApiError(
-                    code = code,
-                    message = message,
-                    details = emptyMap(),
-                ),
+    private fun error(status: Int, requestId: String?, code: String, message: String): PicklesHttpResult = PicklesHttpResult(
+        status,
+        ApiErrorResponse(
+            requestId = requestId,
+            error = ApiError(
+                code = code,
+                message = message,
+                details = emptyMap(),
             ),
-        )
+        ),
+    )
 
-    private fun extractRequestId(body: String): String? =
-        runCatching {
-            JsonParser.parseString(body).asJsonObject.get("requestId")?.takeIf { !it.isJsonNull }?.asString
-        }.getOrNull()
+    private fun extractRequestId(body: String): String? = runCatching {
+        JsonParser.parseString(body).asJsonObject.get("requestId")?.takeIf { !it.isJsonNull }?.asString
+    }.getOrNull()
 
-    private fun <T> parseJson(body: String, type: Class<T>): T? =
-        try {
-            gson.fromJson(body, type)
-        } catch (_: JsonParseException) {
-            null
-        } catch (_: IllegalStateException) {
-            null
-        }
+    private fun <T> parseJson(body: String, type: Class<T>): T? = try {
+        gson.fromJson(body, type)
+    } catch (_: JsonParseException) {
+        null
+    } catch (_: IllegalStateException) {
+        null
+    }
 
     private companion object {
         val HOOK_EVENT_NAMES = setOf("SessionStart", "PreToolUse", "PostToolUse", "Stop")
     }
+}
+
+private fun feedbackSummary(problems: List<PicklesProblem>): FeedbackSummary {
+    val errorCount = problems.count { it.severity == "ERROR" }
+    val warnCount = problems.count { it.severity == "WARN" }
+    val text = when {
+        problems.isEmpty() -> "No Pickles governance problems."
+        errorCount > 0 -> "Pickles found $errorCount blocking problem(s) and $warnCount warning(s)."
+        else -> "Pickles found $warnCount warning(s)."
+    }
+
+    return FeedbackSummary(
+        errorCount = errorCount,
+        warnCount = warnCount,
+        text = text,
+    )
 }

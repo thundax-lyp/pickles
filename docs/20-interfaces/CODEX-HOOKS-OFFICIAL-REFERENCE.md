@@ -4,7 +4,7 @@
 
 本文档整理 OpenAI 官方 Codex Hooks 文档中与 Pickles MVP 开发相关的用法。
 
-目标是给 `pickles-hooks/`、`pickles-intellij-plugin/` 和 `pickles-runtime/` 后续实现提供稳定参考入口。
+目标是给 `pickles-hooks/`、`pickles-intellij-plugin/` 和 `pickles-runtime/` 实现提供稳定参考入口。
 
 ## 2. Scope
 
@@ -41,18 +41,18 @@
 
 Codex Hooks 是 Codex 生命周期内运行确定性脚本的扩展机制。Pickles MVP 使用 Codex Hook 在 Codex Runtime 中捕获 task 生命周期与文件变动，并通过本地 HTTP 通知 IntelliJ Plugin。
 
-Pickles 不使用 Codex Hook 直接执行规则命令。规则命令由 Governance Engine 调用。
+Pickles 不使用 Codex Hook 直接执行规则。Pickles native rules 固定由 Runtime 执行。
 
 ## 5. Capability Version Map
 
-| 能力 | 官方状态 / 版本记录 | Pickles 采用口径 |
-|---|---|---|
-| Hooks 稳定能力 | Codex CLI `0.124.0` changelog 写明 Hooks stable，可配置在 `config.toml` 和 managed `requirements.toml`，并可观察 MCP tools、`apply_patch` 与 long-running Bash sessions。 | Pickles Hook MVP 以 Codex CLI `0.124.0+` 作为稳定 Hooks 基线。 |
-| Hooks general availability | 2026-05-14 changelog 写明 Hooks general availability。 | Pickles 文档引用该 GA 状态，但实现仍以当前 Hooks 页行为为准。 |
-| In-app hook trust review | Codex app `26.506` changelog 写明加入 hooks trust review flow，并让 Hooks settings 在完整配置前可见。 | Pickles 不依赖 Codex app trust UI；仅记录用户环境可能需要 trust review。 |
-| Plugin bundled hooks visibility | Codex CLI `0.130.0` changelog 写明 plugin details 显示 bundled hooks。 | Pickles MVP 不使用 plugin-bundled hooks。 |
-| Plugin workflow / hooks evolution | Codex CLI `0.131.0` changelog 写明 plugin workflows 包含 default-enabled plugin hooks 等变化。 | 当前 Hooks 页仍写明 plugin-bundled hooks 在本 release 中 opt-in，需要 `[features].plugin_hooks = true`。Pickles 以当前 Hooks 页为准。 |
-| MCP tools in hooks | Codex CLI `0.124.0` changelog 写明 hooks 可观察 MCP tools。 | Pickles MVP 不用 MCP 作为 Hook 通知协议，但需要知道 matcher 可匹配 MCP tool names。 |
+| 能力                              | 官方状态 / 版本记录                                                                                                                                                       | Pickles 采用口径                                                                                                                      |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Hooks 稳定能力                    | Codex CLI `0.124.0` changelog 写明 Hooks stable，可配置在 `config.toml` 和 managed `requirements.toml`，并可观察 MCP tools、`apply_patch` 与 long-running Bash sessions。 | Pickles Hook MVP 以 Codex CLI `0.124.0+` 作为稳定 Hooks 基线。                                                                        |
+| Hooks general availability        | 2026-05-14 changelog 写明 Hooks general availability。                                                                                                                    | Pickles 文档引用该 GA 状态，但实现仍以当前 Hooks 页行为为准。                                                                         |
+| In-app hook trust review          | Codex app `26.506` changelog 写明加入 hooks trust review flow，并让 Hooks settings 在完整配置前可见。                                                                     | Pickles 不依赖 Codex app trust UI；仅记录用户环境可能需要 trust review。                                                              |
+| Plugin bundled hooks visibility   | Codex CLI `0.130.0` changelog 写明 plugin details 显示 bundled hooks。                                                                                                    | Pickles MVP 不使用 plugin-bundled hooks。                                                                                             |
+| Plugin workflow / hooks evolution | Codex CLI `0.131.0` changelog 写明 plugin workflows 包含 default-enabled plugin hooks 等变化。                                                                            | 当前 Hooks 页仍写明 plugin-bundled hooks 在本 release 中 opt-in，需要 `[features].plugin_hooks = true`。Pickles 以当前 Hooks 页为准。 |
+| MCP tools in hooks                | Codex CLI `0.124.0` changelog 写明 hooks 可观察 MCP tools。                                                                                                               | Pickles MVP 不用 MCP 作为 Hook 通知协议，但需要知道 matcher 可匹配 MCP tool names。                                                   |
 
 ## 6. Hook Enablement
 
@@ -112,44 +112,44 @@ JSON 示例结构：
 
 ```json
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup|resume",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.codex/hooks/session_start.py",
-            "statusMessage": "Loading session notes"
-          }
+    "hooks": {
+        "SessionStart": [
+            {
+                "matcher": "startup|resume",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "python3 ~/.codex/hooks/session_start.py",
+                        "statusMessage": "Loading session notes"
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/post_tool_use_review.py\"",
+                        "timeout": 30,
+                        "statusMessage": "Reviewing Bash output"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/stop_continue.py\"",
+                        "timeout": 30
+                    }
+                ]
+            }
         ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/post_tool_use_review.py\"",
-            "timeout": 30,
-            "statusMessage": "Reviewing Bash output"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "/usr/bin/python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/stop_continue.py\"",
-            "timeout": 30
-          }
-        ]
-      }
-    ]
-  }
+    }
 }
 ```
 
@@ -176,14 +176,14 @@ JSON 示例结构：
 
 当前支持 matcher 的事件：
 
-| Event | matcher 过滤对象 |
-|---|---|
-| `PermissionRequest` | tool name |
-| `PostToolUse` | tool name |
-| `PreToolUse` | tool name |
-| `SessionStart` | start source |
-| `UserPromptSubmit` | 不支持 matcher，配置会被忽略 |
-| `Stop` | 不支持 matcher，配置会被忽略 |
+| Event               | matcher 过滤对象             |
+| ------------------- | ---------------------------- |
+| `PermissionRequest` | tool name                    |
+| `PostToolUse`       | tool name                    |
+| `PreToolUse`        | tool name                    |
+| `SessionStart`      | start source                 |
+| `UserPromptSubmit`  | 不支持 matcher，配置会被忽略 |
+| `Stop`              | 不支持 matcher，配置会被忽略 |
 
 工具名 matcher 支持：
 
@@ -226,10 +226,10 @@ Pickles 必须使用 `session_id` 与 `turn_id` 作为 Hook event identity。`Se
 
 ```json
 {
-  "continue": true,
-  "stopReason": "optional",
-  "systemMessage": "optional",
-  "suppressOutput": false
+    "continue": true,
+    "stopReason": "optional",
+    "systemMessage": "optional",
+    "suppressOutput": false
 }
 ```
 
@@ -354,11 +354,11 @@ Pickles 在 `PostToolUse` 中必须读取：
 
 Pickles 使用以下规则提取文件名：
 
-| tool_name | 文件名来源 | Pickles 处理规则 |
-|---|---|---|
+| tool_name     | 文件名来源                               | Pickles 处理规则                                                      |
+| ------------- | ---------------------------------------- | --------------------------------------------------------------------- |
 | `apply_patch` | `tool_input.command` 中的 raw patch body | 解析 patch header，提取 add / update / delete / move 涉及的文件路径。 |
-| `Bash` | `tool_input.command` 中的 shell command | 只能作为候选线索，不得作为最终变动文件列表。 |
-| `mcp__*` | 具体 MCP tool 的参数 schema | 按 tool-specific adapter 提取；没有 adapter 时只能作为候选线索。 |
+| `Bash`        | `tool_input.command` 中的 shell command  | 只能作为候选线索，不得作为最终变动文件列表。                          |
+| `mcp__*`      | 具体 MCP tool 的参数 schema              | 按 tool-specific adapter 提取；没有 adapter 时只能作为候选线索。      |
 
 OpenAI Codex pull request `18391` 显示，`apply_patch` hook 会把 raw patch body 放入 `tool_input.command`，并且 hook stdin 使用 canonical `tool_name` `apply_patch`。Pickles 以此作为 `apply_patch` 文件路径解析依据。
 
@@ -381,9 +381,9 @@ Pickles 稳定计算 before / after 内容的规则：
 
 删除文件的 after 固定为 `null`。
 
-文件 rename / move 必须表达为旧路径删除与新路径新增，除非后续 HTTP schema 明确定义 rename 结构。
+文件 rename / move 必须表达为旧路径删除与新路径新增，除非 HTTP schema 明确定义 rename 结构。
 
-该流程关闭 Pickles before / after 稳定计算问题。后续实现只能细化 diff 算法，不改变 `tool_name` / `tool_input` 不是最终真相源的约束。
+该流程关闭 Pickles before / after 稳定计算问题。实现只能细化 diff 算法，不改变 `tool_name` / `tool_input` 不是最终真相源的约束。
 
 ### 13.5 UserPromptSubmit
 
@@ -424,15 +424,15 @@ Pickles MVP 应使用 `Stop` 作为任务完成前请求治理反馈的关键事
 
 ## 14. Pickles MVP Mapping
 
-| Pickles 需要 | Codex Hooks 对应能力 | 采用方式 |
-|---|---|---|
-| Session 初始化 | `SessionStart` | 用于读取 `.pickles/config.json`、检查本地 Plugin 可用性并向 Codex 暴露启动上下文。 |
-| 捕获 Codex task 生命周期 | `SessionStart`、`PreToolUse`、`PostToolUse`、`Stop`、turn-scoped `turn_id`、公共 `session_id` | `SessionStart` 用于启动初始化；`PreToolUse` / `PostToolUse` 用于变动捕获；`Stop` 用于任务完成前治理反馈。 |
-| 捕获文件变动线索 | `PreToolUse` before `apply_patch` / `Bash`; `PostToolUse` after `apply_patch` / `Bash` | `PreToolUse` 提取候选文件并读取 before 内容；`PostToolUse` 根据 `tool_name` / `tool_input` 选择解析策略，并触发向 Plugin 上报。 |
-| 在完成前阻止或继续 | `Stop` 的 `decision: "block"` 会创建 continuation prompt | ERROR 存在时，Stop hook 可要求 Codex 继续修复。 |
-| 向 Codex 增加上下文 | `additionalContext` / `systemMessage` | WARN 或诊断信息可作为上下文返回。 |
-| 处理 approval | `PermissionRequest` | MVP 不依赖。 |
-| 本地通知 Plugin | command hook 内自行发起 HTTP 请求 | Codex Hooks 本身不提供 Pickles HTTP 协议；Pickles Hook script 调用本地 HTTP。 |
+| Pickles 需要             | Codex Hooks 对应能力                                                                          | 采用方式                                                                                                                        |
+| ------------------------ | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Session 初始化           | `SessionStart`                                                                                | 用于检查本地 Plugin 可用性并向 Codex 暴露启动上下文。                                                                           |
+| 捕获 Codex task 生命周期 | `SessionStart`、`PreToolUse`、`PostToolUse`、`Stop`、turn-scoped `turn_id`、公共 `session_id` | `SessionStart` 用于启动初始化；`PreToolUse` / `PostToolUse` 用于变动捕获；`Stop` 用于任务完成前治理反馈。                       |
+| 捕获文件变动线索         | `PreToolUse` before `apply_patch` / `Bash`; `PostToolUse` after `apply_patch` / `Bash`        | `PreToolUse` 提取候选文件并读取 before 内容；`PostToolUse` 根据 `tool_name` / `tool_input` 选择解析策略，并触发向 Plugin 上报。 |
+| 在完成前阻止或继续       | `Stop` 的 `decision: "block"` 会创建 continuation prompt                                      | ERROR 存在时，Stop hook 可要求 Codex 继续修复。                                                                                 |
+| 向 Codex 增加上下文      | `additionalContext` / `systemMessage`                                                         | WARN 或诊断信息可作为上下文返回。                                                                                               |
+| 处理 approval            | `PermissionRequest`                                                                           | MVP 不依赖。                                                                                                                    |
+| 本地通知 Plugin          | command hook 内自行发起 HTTP 请求                                                             | Codex Hooks 本身不提供 Pickles HTTP 协议；Pickles Hook script 调用本地 HTTP。                                                   |
 
 ## 15. Implementation Notes For Pickles
 

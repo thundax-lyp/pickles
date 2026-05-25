@@ -13,24 +13,19 @@ import java.awt.FlowLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.JButton
-import javax.swing.JCheckBox
 import javax.swing.JComponent
 import javax.swing.JPanel
-import javax.swing.JTextField
 
 class PicklesToolWindowPanel(
     private val project: com.intellij.openapi.project.Project,
     private val service: PicklesProjectService,
-) : JPanel(BorderLayout()), Disposable {
+) : JPanel(BorderLayout()),
+    Disposable {
     private val statusLabel = JBLabel()
     private val bindButton = JButton("Bind")
     private val unbindButton = JButton("Unbind")
     private val refreshButton = JButton("Refresh")
     private val saveButton = JButton("Save Config")
-    private val archunitEnabled = JCheckBox("ArchUnit")
-    private val eslintEnabled = JCheckBox("ESLint")
-    private val archunitCommand = JTextField()
-    private val eslintCommand = JTextField()
     private val configText = JBTextArea(10, 40)
     private val problemsPanel = JPanel()
     private var listenerDisposable: Disposable? = null
@@ -95,28 +90,12 @@ class PicklesToolWindowPanel(
 
         c.gridx = 0
         c.gridy = 0
-        c.weightx = 0.0
-        panel.add(archunitEnabled, c)
-        c.gridx = 1
-        c.weightx = 1.0
-        panel.add(archunitCommand, c)
-
-        c.gridx = 0
-        c.gridy = 1
-        c.weightx = 0.0
-        panel.add(eslintEnabled, c)
-        c.gridx = 1
-        c.weightx = 1.0
-        panel.add(eslintCommand, c)
-
-        c.gridx = 0
-        c.gridy = 2
-        c.gridwidth = 2
         c.fill = GridBagConstraints.BOTH
+        c.weightx = 1.0
         c.weighty = 1.0
         panel.add(JBScrollPane(configText), c)
 
-        c.gridy = 3
+        c.gridy = 1
         c.fill = GridBagConstraints.HORIZONTAL
         c.weighty = 0.0
         panel.add(saveButton, c)
@@ -126,8 +105,8 @@ class PicklesToolWindowPanel(
     private fun refresh() {
         ApplicationManager.getApplication().executeOnPooledThread {
             val result = runCatching {
-                val config = service.loadConfig().getOrThrow()
-                config to service.bindStatus(config)
+                val config = service.loadConfigText().getOrThrow()
+                config to service.bindStatus()
             }
 
             ApplicationManager.getApplication().invokeLater {
@@ -136,16 +115,12 @@ class PicklesToolWindowPanel(
                     return@invokeLater
                 }
 
-                val (config, bindStatus) = result.getOrThrow()
+                val (configTextValue, bindStatus) = result.getOrThrow()
                 bindButton.isEnabled = !bindStatus.bound
                 unbindButton.isEnabled = bindStatus.bound
                 statusLabel.text = service.lastStatus
 
-                archunitEnabled.isSelected = config.rules.archunit.enabled
-                eslintEnabled.isSelected = config.rules.eslint.enabled
-                archunitCommand.text = config.rules.archunit.command
-                eslintCommand.text = config.rules.eslint.command
-                configText.text = service.formatConfig(config)
+                configText.text = configTextValue
 
                 refreshProblems()
             }
@@ -194,23 +169,7 @@ class PicklesToolWindowPanel(
     }
 
     private fun saveConfig() {
-        val parsed = service.parseConfig(configText.text).getOrElse {
-            Messages.showErrorDialog(project, "Config JSON is invalid: ${it.message}", "Pickles")
-            return
-        }
-        val updated = parsed.copy(
-            rules = parsed.rules.copy(
-                archunit = parsed.rules.archunit.copy(
-                    enabled = archunitEnabled.isSelected,
-                    command = archunitCommand.text,
-                ),
-                eslint = parsed.rules.eslint.copy(
-                    enabled = eslintEnabled.isSelected,
-                    command = eslintCommand.text,
-                ),
-            ),
-        )
-        runAndRefresh("Save failed") { service.saveConfig(updated) }
+        runAndRefresh("Save failed") { service.saveConfigText(configText.text) }
     }
 
     private fun runAndRefresh(title: String, action: () -> Result<Unit>) {

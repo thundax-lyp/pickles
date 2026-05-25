@@ -27,6 +27,7 @@
 - MCP server、MCP tool、MCP resource 和 MCP 协议适配固定放在 `pickles-mcp/`。
 - 规则、策略、规范和共享规则声明固定放在 `pickles-rules/`。
 - 规则运行、加载、解析、执行和运行时支撑固定放在 `pickles-runtime/`。
+- Agent-side skill 固定放在 `pickles-skills/`。
 - AI 读取路由、治理规则、需求、设计、提示词和人类材料固定放在 `docs/`。
 
 ## 4. Documentation Placement
