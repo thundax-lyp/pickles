@@ -47,6 +47,8 @@
 - 模块目录名保持现有 `pickles-*` 前缀。
 - 新增目录名必须表达稳定职责，不使用临时任务名。
 - 新增文件名必须优先表达对象职责，不使用实现过程或个人偏好命名。
+- TypeScript 函数声明固定使用箭头函数形式。
+- TypeScript 文件不得新增 `function` 声明。
 
 ## 6. Shared Capability Rule
 

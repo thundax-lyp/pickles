@@ -26,11 +26,11 @@ const SCENARIOS: OrderDraft[] = [
     },
 ];
 
-export function summarizeScenarios(): string[] {
+export const summarizeScenarios = (): string[] => {
     return SCENARIOS.map((scenario) => {
         const summary = buildCheckoutSummary(scenario);
         return `${summary.orderId}: ${summary.channelLabel} payable=${summary.payableCents}`;
     });
-}
+};
 
 console.log(summarizeScenarios().join("\n"));

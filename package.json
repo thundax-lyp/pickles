@@ -4,8 +4,9 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "lint": "node scripts/lint-ts-arrow-functions.mjs",
         "format": "npm run format:prettier && npm run format:kotlin",
-        "format:check": "npm run format:prettier:check && npm run format:kotlin:check",
+        "format:check": "npm run format:prettier:check && npm run format:kotlin:check && npm run lint",
         "format:prettier": "prettier --write \"**/*.{js,mjs,ts,json,md,yml,yaml}\"",
         "format:prettier:check": "prettier --check \"**/*.{js,mjs,ts,json,md,yml,yaml}\"",
         "format:kotlin": "gradle -p pickles-intellij-plugin spotlessApply --no-configuration-cache",

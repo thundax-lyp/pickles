@@ -20,15 +20,15 @@ const DISCOUNT_MATRIX: DiscountMatrix = {
     },
 };
 
-export function calculateSubtotalCents(order: OrderDraft): number {
+export const calculateSubtotalCents = (order: OrderDraft): number => {
     return order.lines.reduce((total, line) => {
         return total + line.quantity * line.unitPriceCents;
     }, 0);
-}
+};
 
-export function calculateDiscountCents(order: OrderDraft): number {
+export const calculateDiscountCents = (order: OrderDraft): number => {
     const subtotal = calculateSubtotalCents(order);
     const discountRate = DISCOUNT_MATRIX[order.channel][order.customerTier];
     const couponBonus = order.couponCode === "PICKLES10" ? 0.1 : 0;
     return Math.floor(subtotal * Math.min(discountRate + couponBonus, 0.3));
-}
+};
