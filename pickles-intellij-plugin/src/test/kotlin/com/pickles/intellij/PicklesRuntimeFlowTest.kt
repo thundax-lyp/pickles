@@ -2,10 +2,12 @@ package com.pickles.intellij
 
 import com.google.gson.GsonBuilder
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import java.io.IOException
 
 class PicklesRuntimeFlowTest {
     @get:Rule
@@ -113,6 +115,83 @@ class PicklesRuntimeFlowTest {
         withSystemProperty("pickles.runtime.dir", "") {
             assertEquals(null, PicklesRuntimeLocator.find(projectRoot))
         }
+    }
+
+    @Test
+    fun runtimeResponseParserParsesSuccessProblems() {
+        val problems = NodePicklesRuntimeResponseParser.parse(
+            stdout = """
+            {
+              "problems": [
+                {
+                  "title": "Problem",
+                  "type": "architecture",
+                  "message": "Message",
+                  "severity": "ERROR",
+                  "source": {
+                    "tool": "pickles-native",
+                    "rule": "sample-rule"
+                  },
+                  "file": "src/File.java",
+                  "position": {
+                    "line": 1,
+                    "column": 2
+                  },
+                  "fixHint": "Fix it."
+                }
+              ]
+            }
+            """.trimIndent(),
+            stderr = "",
+            exitCode = 0,
+            gson = gson,
+        )
+
+        assertEquals(1, problems.size)
+        assertEquals("sample-rule", problems.single().source.rule)
+        assertEquals("Fix it.", problems.single().fixHint)
+    }
+
+    @Test
+    fun runtimeResponseParserFailsOnRuntimeError() {
+        val error = assertThrows(IOException::class.java) {
+            NodePicklesRuntimeResponseParser.parse(
+                stdout = """{"error":{"message":"Config failed."}}""",
+                stderr = "",
+                exitCode = 1,
+                gson = gson,
+            )
+        }
+
+        assertEquals("Config failed.", error.message)
+    }
+
+    @Test
+    fun runtimeResponseParserFailsOnInvalidJson() {
+        val error = assertThrows(IOException::class.java) {
+            NodePicklesRuntimeResponseParser.parse(
+                stdout = "not-json",
+                stderr = "",
+                exitCode = 0,
+                gson = gson,
+            )
+        }
+
+        assertEquals("Pickles Runtime returned invalid JSON.", error.message)
+    }
+
+    @Test
+    fun runtimeResponseParserFailsOnEmptyStdout() {
+        val error = assertThrows(IOException::class.java) {
+            NodePicklesRuntimeResponseParser.parse(
+                stdout = "",
+                stderr = "",
+                exitCode = 0,
+                gson = gson,
+            )
+        }
+
+        assertEquals("Pickles Runtime returned an empty response.", error.message)
     }
 
     private class RecordingRuntimeClient(

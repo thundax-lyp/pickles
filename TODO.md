@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `node-runtime-client-response`：实现 Node Runtime response 解析
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesRuntimeFlow.kt`、`PicklesRuntimeFlowTest.kt`
-    - 处理动作：解析 success、runtime error、invalid JSON 和 empty stdout
-    - 验收点：Runtime stdout 四类 response 均有测试覆盖
-    - 重要度：9/10
 - [ ] `plugin-service-runtime-client`：接入 ProjectService Runtime client
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`

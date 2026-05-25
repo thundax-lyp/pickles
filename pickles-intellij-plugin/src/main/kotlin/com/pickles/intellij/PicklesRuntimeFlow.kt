@@ -2,6 +2,7 @@ package com.pickles.intellij
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonSyntaxException
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -57,11 +58,12 @@ class NodePicklesRuntimeClient(
 
         val stdout = process.inputStream.readAllBytes().toString(StandardCharsets.UTF_8)
         val stderr = process.errorStream.readAllBytes().toString(StandardCharsets.UTF_8)
-        if (process.exitValue() != 0) {
-            throw IOException(stderr.trim().ifEmpty { stdout.trim().ifEmpty { "Pickles Runtime failed." } })
-        }
-
-        return parseProblems(stdout)
+        return NodePicklesRuntimeResponseParser.parse(
+            stdout = stdout,
+            stderr = stderr,
+            exitCode = process.exitValue(),
+            gson = gson,
+        )
     }
 
     private fun RuntimeChangedFile.toRuntimeFile(): RuntimeCheckFile = RuntimeCheckFile(
@@ -70,11 +72,6 @@ class NodePicklesRuntimeClient(
         before = before,
         after = after,
     )
-
-    private fun parseProblems(stdout: String): List<PicklesProblem> {
-        val response = gson.fromJson(stdout, RuntimeCheckResponse::class.java)
-        return response.problems ?: throw IOException("Pickles Runtime returned an invalid response.")
-    }
 
     private data class RuntimeCheckRequest(
         val workspaceRoot: String,
@@ -88,14 +85,45 @@ class NodePicklesRuntimeClient(
         val after: String?,
     )
 
-    private data class RuntimeCheckResponse(
-        val problems: List<PicklesProblem>?,
-    )
-
     private companion object {
         const val NODE_PATH_PROPERTY = "pickles.node.path"
         const val DEFAULT_TIMEOUT_SECONDS = 30L
     }
+}
+
+object NodePicklesRuntimeResponseParser {
+    fun parse(
+        stdout: String,
+        stderr: String,
+        exitCode: Int,
+        gson: Gson = GsonBuilder().serializeNulls().create(),
+    ): List<PicklesProblem> {
+        if (stdout.isBlank()) {
+            throw IOException(stderr.trim().ifEmpty { "Pickles Runtime returned an empty response." })
+        }
+
+        val response = try {
+            gson.fromJson(stdout, RuntimeCheckResponse::class.java)
+        } catch (_: JsonSyntaxException) {
+            throw IOException("Pickles Runtime returned invalid JSON.")
+        }
+
+        val errorMessage = response.error?.message
+        if (exitCode != 0 || errorMessage != null) {
+            throw IOException(errorMessage ?: stderr.trim().ifEmpty { "Pickles Runtime failed." })
+        }
+
+        return response.problems ?: throw IOException("Pickles Runtime returned an invalid response.")
+    }
+
+    private data class RuntimeCheckResponse(
+        val problems: List<PicklesProblem>?,
+        val error: RuntimeCheckError?,
+    )
+
+    private data class RuntimeCheckError(
+        val message: String?,
+    )
 }
 
 object PicklesRuntimeLocator {
