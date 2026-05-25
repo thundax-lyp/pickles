@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/10-requirements/RUNTIME-REQUIREMENTS.md`：核对 Runtime config 加载优先级是否仍为未决项
-    - 任务类型：执行任务
-    - 依据文档：`docs/10-requirements/RUNTIME-REQUIREMENTS.md`
-    - 范围对象：`docs/10-requirements/RUNTIME-REQUIREMENTS.md`、`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
-    - 处理动作：对齐 Runtime Requirements 与 Pickles Config Contract 中 config 加载优先级的状态
-    - 验收点：已关闭则删除 Open Item，未关闭则补齐待决问题
-    - 重要度：8/10
-
 - [ ] `pickles-rules`：编写 AI-generated rule authoring guide
     - 任务类型：执行任务
     - 依据文档：`docs/10-requirements/RUNTIME-REQUIREMENTS.md`

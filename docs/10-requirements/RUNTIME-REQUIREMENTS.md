@@ -162,6 +162,8 @@ Runtime 必须支持 JS / TS / MJS 可编程配置入口。
 
 可编程配置入口固定命名为 `pickles.config.js`、`pickles.config.mjs` 或 `pickles.config.ts`。
 
+配置加载优先级固定为 `pickles.config.ts`、`pickles.config.mjs`、`pickles.config.js`。
+
 Runtime 固定使用自身依赖的 `tsx` 加载 `pickles.config.ts`。
 
 目标工程不需要安装 `tsx`。
