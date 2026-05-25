@@ -31,11 +31,13 @@ class PicklesProjectService(private val project: Project) : Disposable {
     private val executor = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "Pickles Project Service").apply { isDaemon = true }
     }
-    private val runtimeClient: PicklesRuntimeClient = EmptyPicklesRuntimeClient()
     private val problemBoard = PicklesProblemBoardState()
 
     @Volatile
     private var httpServer: HttpServer? = null
+
+    @Volatile
+    private var runtimeClient: PicklesRuntimeClient? = null
 
     @Volatile
     var lastStatus: String = "Pickles is idle."
@@ -182,12 +184,29 @@ class PicklesProjectService(private val project: Project) : Disposable {
 
     private fun readRequestBody(exchange: HttpExchange): String = exchange.requestBody.use { String(it.readBytes(), StandardCharsets.UTF_8) }
 
-    private fun contractHandler(): PicklesHttpContractHandler = PicklesHttpContractHandler(
-        gson = gson,
-        projectRoot = requireProjectRoot(),
-        runtimeClient = runtimeClient,
-        problemBoard = problemBoard,
-    )
+    private fun contractHandler(): PicklesHttpContractHandler {
+        val client = runtimeClient()
+        return PicklesHttpContractHandler(
+            gson = gson,
+            projectRoot = requireProjectRoot(),
+            runtimeClient = client,
+            problemBoard = if (client == null) null else problemBoard,
+        )
+    }
+
+    private fun runtimeClient(): PicklesRuntimeClient? {
+        runtimeClient?.let { return it }
+
+        val root = projectRoot ?: return null
+        val runtimeRoot = PicklesRuntimeLocator.find(root) ?: return null
+        val client = NodePicklesRuntimeClient(
+            workspaceRoot = root,
+            runtimeRoot = runtimeRoot,
+            gson = gson,
+        )
+        runtimeClient = client
+        return client
+    }
 
     private fun respond(exchange: HttpExchange, result: PicklesHttpResult) {
         respond(exchange, result.status, gson.toJson(result.body))

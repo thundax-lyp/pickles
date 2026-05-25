@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `plugin-service-runtime-client`：接入 ProjectService Runtime client
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesProjectService.kt`
-    - 处理动作：用可定位的 Node Runtime client 替换默认空 client
-    - 验收点：Runtime 可用时 handler 获得 client，Runtime 不可用时保持未接入状态
-    - 重要度：10/10
 - [ ] `notify-runtime-error`：补 `/notify` Runtime failure 映射
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
