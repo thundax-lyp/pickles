@@ -53,12 +53,6 @@
 
 ## 待讨论项
 
-- [ ] 定义 Repair-Oriented Summary 稳定 JSON contract
-    - 任务类型：待讨论项
-    - 关联任务：`Repair-Oriented Summary`
-    - 决策要求：确定 summary 的字段、序列化形态和 MCP 接入前稳定边界
-    - 重要度：8/10
-
 - [ ] 确定 Runtime 与 Plugin 的进程边界
     - 任务类型：待讨论项
     - 关联任务：`Runtime-Plugin Boundary`

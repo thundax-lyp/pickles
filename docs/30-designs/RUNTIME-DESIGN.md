@@ -330,15 +330,36 @@ Runtime MVP 不执行 ArchUnit / ESLint 命令。
 
 Runtime 生成 repair-oriented summary 时可以读取 Java syntax index。
 
+Summary 固定使用 `pickles.repairSummary.v1` JSON contract。
+
+固定字段：
+
+- `schemaVersion`
+- `changedFiles`
+- `changedJavaFiles`
+- `affectedTypes`
+- `affectedMethods`
+- `problems`
+- `problemStats`
+- `repairHints`
+
+`changedFiles` 来自本次 detection input。
+
+`changedJavaFiles` 来自 Java syntax index。
+
+`affectedTypes` 和 `affectedMethods` 来自 Java syntax index 与当前变动文件。
+
+`problems` 使用去重后的 Problem。
+
+`problemStats` 由 Problem severity 统计生成。
+
+`repairHints` 从 Problem 的 `source.rule`、`title`、`message`、`fixHint`、`file` 和 `position` 派生。
+
 Summary 中不得包含 tree-sitter 原生节点结构。
 
-Summary 必须面向 Agent 修复任务表达：
+Summary 中不得包含 raw parser object。
 
-- 变动 Java 文件。
-- 受影响 type。
-- 受影响 method。
-- parser diagnostic。
-- 当前 native rule 返回的 Problem。
+Summary 中的文件路径固定使用目标工程相对路径。
 
 ### 7.10 Plugin Integration
 

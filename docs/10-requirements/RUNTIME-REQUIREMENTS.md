@@ -34,7 +34,6 @@
 - 不保存全量语义持久化数据
 - 不从 ArchUnit Java tests 反向读取规则
 - 不把 ArchUnit 作为增量反馈的唯一规则来源
-- 不定义完整 Repair-Oriented Summary 稳定 JSON contract
 
 ## 3. Bounded Context
 
@@ -494,18 +493,44 @@ Runtime 必须向 Codex 提供 Repair-Oriented Summary。
 
 Runtime 必须能基于 workspace index 和 Problem 生成面向 Agent 的修复摘要。
 
-摘要必须包含：
+Repair-Oriented Summary 必须是 JSON-serializable object。
 
-- 变动文件。
-- 变动 Java 文件。
-- 受影响 Java type。
-- 受影响 Java method。
-- parser diagnostic。
-- 当前 native rule 返回的 Problem。
+Repair-Oriented Summary 的 `schemaVersion` 固定为 `pickles.repairSummary.v1`。
+
+Repair-Oriented Summary 固定字段：
+
+- `schemaVersion`
+- `changedFiles`
+- `changedJavaFiles`
+- `affectedTypes`
+- `affectedMethods`
+- `problems`
+- `problemStats`
+- `repairHints`
+
+`changedFiles` 必须包含本次检测涉及的文件路径、变更类型和语言。
+
+`changedJavaFiles` 必须包含 Java 文件路径、package name、top-level type names 和 parser diagnostic 数量。
+
+`affectedTypes` 必须包含 type name、qualified name、kind、file 和 range。
+
+`affectedMethods` 必须包含 owner qualified name、method name、kind、file 和 range。
+
+`problems` 必须使用 `PROBLEM-MODEL-CONTRACT.md` 定义的去重后 Problem。
+
+`problemStats` 必须包含 `errorCount` 和 `warnCount`。
+
+`repairHints` 必须从 Problem 的 `source.rule`、`title`、`message`、`fixHint`、`file` 和 `position` 派生。
 
 摘要不得包含 tree-sitter 原生节点结构。
 
-MVP 不定义完整 Repair-Oriented Summary 稳定 JSON contract。
+摘要不得包含 raw parser object。
+
+摘要不得包含未结构化 source。
+
+摘要中的文件路径固定使用目标工程相对路径。
+
+Hook `/feedback` 的 `FeedbackSummary.text` 可以由 Repair-Oriented Summary 派生，但不替代该稳定 JSON contract。
 
 ## 8. Key Flows
 
@@ -561,6 +586,5 @@ MVP 不定义完整 Repair-Oriented Summary 稳定 JSON contract。
 ## 10. Open Items
 
 - AI-generated rule authoring guide。
-- Repair-Oriented Summary 结构。
 - Runtime 与 Plugin 的进程边界。
 - Runtime 首次 workspace 全量索引触发时机。
