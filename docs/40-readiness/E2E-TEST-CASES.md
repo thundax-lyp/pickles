@@ -340,19 +340,25 @@ scripts/verify-intellij-plugin.sh
 
 ### 7.7 E2E_FULL_FLOW
 
-状态：待实现。
+状态：已自动化。
 
 目标：覆盖真实用户流程的完整闭环。
 
+固定命令：
+
+```bash
+scripts/verify-full-flow.sh
+```
+
 固定流程：
 
-1. 启动 IntelliJ Plugin 并打开 `e2e/sample-project/`。
+1. 启动测试内 Plugin HTTP / Problem Board harness。
 2. Plugin 写入 `.pickles/server.json`。
 3. 模拟 Codex `SessionStart`。
 4. 模拟一次文件修改。
 5. Hook 在 `PostToolUse` 上报 before / after。
 6. Plugin 接收 `/notify`。
-7. Runtime 执行 sample project lint。
+7. Runtime 执行 sample project native rule。
 8. Runtime 生成 Problem。
 9. Plugin 更新 Problem Board。
 10. Hook 在 `Stop` 调用 `/feedback`。
@@ -370,6 +376,7 @@ scripts/verify-intellij-plugin.sh
 
 - 全流程必须体现 Hook、Plugin、Runtime 三者边界。
 - 任一模块不得越界替代其他模块职责。
+- 该自动化不启动真实 IntelliJ UI；真实 IDE 启动由 Plugin 验证入口覆盖。
 
 ## 8. Key Flows
 
@@ -390,9 +397,10 @@ scripts/verify-intellij-plugin.sh
 2. `scripts/verify-sample-project.sh`
 3. `scripts/verify-hooks.sh`
 4. `scripts/verify-runtime-sample-project.sh`
-5. `scripts/verify-all.sh`
+5. `scripts/verify-full-flow.sh`
+6. `scripts/verify-all.sh`
 
-待 `E2E_FULL_FLOW` 自动化后，必须接入 `scripts/verify-all.sh`。
+完整验证入口固定为 `scripts/verify-all.sh`。
 
 ## 9. Non-Functional Requirements
 

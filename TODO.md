@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `E2E_FULL_FLOW`：自动化 full flow testcase
-    - 任务类型：执行任务
-    - 依据文档：`docs/40-readiness/E2E-TEST-CASES.md`
-    - 范围对象：`E2E_FULL_FLOW`
-    - 处理动作：实现 Hook、Plugin、Runtime 和 Problem Board 的端到端自动化验证
-    - 验收点：testcase 可作为阶段 PR 完整验证入口
-    - 重要度：7/10
-
 ## 待讨论项
 
 - [ ] 确定首次 workspace 全量索引触发时机
