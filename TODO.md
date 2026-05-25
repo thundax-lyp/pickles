@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `node-runtime-client-process`：实现 Node Runtime 子进程调用
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesRuntimeFlow.kt`
-    - 处理动作：实现 `NodePicklesRuntimeClient` 的 ProcessBuilder 调用和超时处理
-    - 验收点：Runtime client 可向 stdio host 写入 request 并读取 stdout / stderr
-    - 重要度：10/10
 - [ ] `node-runtime-client-response`：实现 Node Runtime response 解析
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
