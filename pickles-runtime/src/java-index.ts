@@ -6,6 +6,13 @@ interface JavaIndex {
     typesByQualifiedName: Map<string, JavaTypeDeclaration>;
     typeNamesByAnnotation: Map<string, Set<string>>;
     filePathsByImport: Map<string, Set<string>>;
+    contributionsByPath: Map<string, JavaIndexContribution>;
+}
+
+interface JavaIndexContribution {
+    qualifiedTypes: Set<string>;
+    annotations: Set<string>;
+    imports: Set<string>;
 }
 
 export const createJavaIndex = (changedFiles: ChangedFile[]): JavaIndex => {
@@ -15,38 +22,103 @@ export const createJavaIndex = (changedFiles: ChangedFile[]): JavaIndex => {
         typesByQualifiedName: new Map(),
         typeNamesByAnnotation: new Map(),
         filePathsByImport: new Map(),
+        contributionsByPath: new Map(),
     };
 
     for (const changedFile of changedFiles) {
-        if (changedFile.changeType === "unchanged" || changedFile.changeType === "deleted") {
+        if (changedFile.changeType === "unchanged") {
             continue;
         }
 
-        if (!changedFile.path.endsWith(".java") || changedFile.after === null) {
+        if (!changedFile.path.endsWith(".java")) {
             continue;
         }
 
-        const javaFile = parser.parse(changedFile.path, changedFile.after);
-        index.filesByPath.set(javaFile.path, javaFile);
+        removePathContributions(index, changedFile.path);
 
-        for (const type of flattenTypes(javaFile.types)) {
-            index.typesByQualifiedName.set(type.qualifiedName, type);
-
-            for (const annotation of type.annotations) {
-                const typeNames = index.typeNamesByAnnotation.get(annotation) ?? new Set<string>();
-                typeNames.add(type.qualifiedName);
-                index.typeNamesByAnnotation.set(annotation, typeNames);
-            }
+        if (changedFile.changeType === "deleted" || changedFile.after === null) {
+            continue;
         }
 
-        for (const javaImport of javaFile.imports) {
-            const filePaths = index.filePathsByImport.get(javaImport.name) ?? new Set<string>();
-            filePaths.add(javaFile.path);
-            index.filePathsByImport.set(javaImport.name, filePaths);
-        }
+        addJavaFile(index, parser.parse(changedFile.path, changedFile.after));
     }
 
     return index;
+};
+
+const addJavaFile = (index: JavaIndex, javaFile: JavaSyntaxFile): void => {
+    const contribution: JavaIndexContribution = {
+        qualifiedTypes: new Set(),
+        annotations: new Set(),
+        imports: new Set(),
+    };
+
+    index.filesByPath.set(javaFile.path, javaFile);
+
+    for (const type of flattenTypes(javaFile.types)) {
+        contribution.qualifiedTypes.add(type.qualifiedName);
+        index.typesByQualifiedName.set(type.qualifiedName, type);
+
+        for (const annotation of type.annotations) {
+            contribution.annotations.add(annotation);
+            const typeNames = index.typeNamesByAnnotation.get(annotation) ?? new Set<string>();
+            typeNames.add(type.qualifiedName);
+            index.typeNamesByAnnotation.set(annotation, typeNames);
+        }
+    }
+
+    for (const javaImport of javaFile.imports) {
+        contribution.imports.add(javaImport.name);
+        const filePaths = index.filePathsByImport.get(javaImport.name) ?? new Set<string>();
+        filePaths.add(javaFile.path);
+        index.filePathsByImport.set(javaImport.name, filePaths);
+    }
+
+    index.contributionsByPath.set(javaFile.path, contribution);
+};
+
+const removePathContributions = (index: JavaIndex, path: string): void => {
+    const contribution = index.contributionsByPath.get(path);
+
+    if (contribution === undefined) {
+        index.filesByPath.delete(path);
+        return;
+    }
+
+    for (const qualifiedType of contribution.qualifiedTypes) {
+        index.typesByQualifiedName.delete(qualifiedType);
+    }
+
+    for (const annotation of contribution.annotations) {
+        const typeNames = index.typeNamesByAnnotation.get(annotation);
+        if (typeNames === undefined) {
+            continue;
+        }
+
+        for (const qualifiedType of contribution.qualifiedTypes) {
+            typeNames.delete(qualifiedType);
+        }
+
+        if (typeNames.size === 0) {
+            index.typeNamesByAnnotation.delete(annotation);
+        }
+    }
+
+    for (const javaImport of contribution.imports) {
+        const filePaths = index.filePathsByImport.get(javaImport);
+        if (filePaths === undefined) {
+            continue;
+        }
+
+        filePaths.delete(path);
+
+        if (filePaths.size === 0) {
+            index.filePathsByImport.delete(javaImport);
+        }
+    }
+
+    index.filesByPath.delete(path);
+    index.contributionsByPath.delete(path);
 };
 
 const flattenTypes = (types: JavaTypeDeclaration[]): JavaTypeDeclaration[] => {

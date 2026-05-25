@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：实现 index 增删改贡献清理
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
-    - 范围对象：`pickles-runtime/src/java-index.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：实现 added、modified、deleted、unchanged 的 index 更新和反向索引贡献清理
-    - 验收点：index tests 覆盖四种 change type 且重复修改不会留下旧索引
-    - 重要度：8/10
 - [ ] `pickles-runtime`：增加 parser diagnostic
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
