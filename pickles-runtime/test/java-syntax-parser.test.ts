@@ -200,6 +200,26 @@ public class App extends BaseApp implements Runnable, java.io.Closeable {
     assert.deepEqual(file.types[0].implementsTypes, ["Runnable", "java.io.Closeable"]);
 });
 
+test("java syntax parser extracts interface extends and record implements declarations", () => {
+    const parser = new JavaSyntaxParser();
+    const file = parser.parse(
+        "src/main/java/com/example/Types.java",
+        `package com.example;
+
+interface OrderService extends BaseService, java.io.Closeable {
+}
+
+record OrderSummary(String id) implements Identified, java.io.Serializable {
+}
+`,
+    );
+
+    assert.deepEqual(file.types[0].extendsTypes, ["BaseService", "java.io.Closeable"]);
+    assert.deepEqual(file.types[0].implementsTypes, []);
+    assert.deepEqual(file.types[1].extendsTypes, []);
+    assert.deepEqual(file.types[1].implementsTypes, ["Identified", "java.io.Serializable"]);
+});
+
 test("java syntax parser returns diagnostics for syntax errors", () => {
     const parser = new JavaSyntaxParser();
     const file = parser.parse(

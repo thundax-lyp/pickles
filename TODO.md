@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：解析 interface extends / record implements
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`pickles-runtime/src/java-syntax-parser.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：让 JavaSyntaxParser 从 interface_declaration 和 record_declaration 输出继承声明 DTO
-    - 验收点：parser tests 覆盖 interface extends 和 record implements 且 `npm run test` 通过
-    - 重要度：8/10
 - [ ] `pickles-runtime`：覆盖 Java import 变体
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`

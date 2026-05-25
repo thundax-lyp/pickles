@@ -181,11 +181,18 @@ const parseTypeDeclaration = (
 
 const parseExtendsTypes = (node: Parser.SyntaxNode): string[] => {
     const superclass = node.childForFieldName("superclass");
-    if (superclass === null) {
-        return [];
+    if (superclass !== null) {
+        return leafTypeTexts(superclass);
     }
 
-    return leafTypeTexts(superclass);
+    const extendsInterfaces = node.namedChildren.find(
+        (child) => child.type === "extends_interfaces",
+    );
+    if (extendsInterfaces !== undefined) {
+        return leafTypeTexts(extendsInterfaces);
+    }
+
+    return [];
 };
 
 const parseImplementsTypes = (node: Parser.SyntaxNode): string[] => {
