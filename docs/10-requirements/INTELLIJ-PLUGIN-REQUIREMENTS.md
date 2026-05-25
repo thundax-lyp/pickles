@@ -21,7 +21,6 @@
 
 - 不执行 Pickles native rules、ArchUnit、ESLint 或用户业务命令
 - 不实现 Codex Hook
-- 不定义 AGENTS.md 注入块格式、marker 和幂等更新细节
 
 ## 3. Bounded Context
 
@@ -128,14 +127,39 @@ Index 正在运行时，Problem Board 必须展示当前结果可能不完整的
 
 插件必须检测当前目标工程是否已绑定 Pickles 治理约束。
 
+插件在 Bind 时必须管理目标工程 `AGENTS.md` 中的单个 Pickles 注入块。
+
+Pickles 注入块 marker 固定为：
+
+```md
+<!-- PICKLES:BEGIN -->
+<!-- PICKLES:END -->
+```
+
+Pickles 注入块只承载 Agent 行为提示，不承载规则真相。
+
+规则真相固定保留在 Pickles runtime config。
+
+Bind 规则固定为：
+
+- `AGENTS.md` 不存在时创建文件。
+- marker 不存在时，在文件末尾追加 Pickles 注入块。
+- 存在一组完整 marker 时，替换 marker 内内容。
+- marker 外内容永不修改。
+
+Unbind 规则固定为：
+
+- 只删除 Pickles marker 包围的注入块。
+- 不删除 `AGENTS.md` 文件本身。
+- marker 不存在时视为已解绑。
+- marker 不成对、重复或嵌套时不得自动修复，必须展示可理解冲突状态。
+
 插件在 Bind 检测时必须同时检查目标工程 `<repo>/.codex/hooks.json`。
 
 插件不得读取、修改或依赖用户全局 `~/.codex` 目录。
 
 - 未绑定时显示绑定按钮。
 - 已绑定时显示解除绑定按钮。
-
-Bind / Unbind 的具体注入块格式、marker 和幂等更新细节在 MVP 暂不定义。
 
 ### 7.4 Local HTTP Server
 
@@ -188,4 +212,4 @@ Hook `SessionStart` 不触发 Runtime 全量索引。
 
 ## 10. Open Items
 
-- AGENTS.md 注入块格式、marker 和幂等更新细节。
+无

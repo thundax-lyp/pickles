@@ -21,7 +21,7 @@
 
 - 不定义 Plugin UI 的具体交互控件
 - 不定义 `.pickles/server.json` 的完整 schema
-- 不定义 AGENTS.md 注入块格式
+- 不承载 AGENTS.md 注入块内容
 - 不定义 Runtime 内部实现类型
 
 ## 3. Bounded Context
@@ -35,6 +35,8 @@ Pickles runtime config 是可提交配置文件。
 目标工程 `.pickles/` 目录固定承载 Pickles 项目本地文件，包括本地运行时状态文件和 Agent-side skill 生成的项目本地 rule module。运行时状态文件包括 `server.json`、hook state 和 cache。
 
 Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-side skills 都围绕该配置协作。
+
+目标工程 `AGENTS.md` 注入块只承载 Agent 行为提示，不得成为规则真相源。
 
 Agent-side skill 生成 native rule 时，默认将规则声明写入 `pickles.config.ts`、`pickles.config.mjs` 或 `pickles.config.js`。当规则需要独立 rule module 或辅助实现时，生成物默认放入目标工程 `.pickles/rules/`，并由 Pickles runtime config 显式 import。
 
