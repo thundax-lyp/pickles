@@ -98,10 +98,9 @@ const collectDiagnostics = (
     diagnostics: ParserDiagnostic[],
 ): void => {
     if (node.isError || node.isMissing) {
+        const kind = node.isMissing ? "missing" : "error";
         diagnostics.push({
-            message: node.isMissing
-                ? `Java parser missing ${node.type}.`
-                : `Java parser encountered syntax error.`,
+            message: `Java parser ${kind} at ${node.type}.`,
             severity: "WARN",
             file: path,
             position: toPosition(node.startPosition),

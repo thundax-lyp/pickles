@@ -322,7 +322,7 @@ public class Broken {
 
     assert.equal(file.diagnostics?.length, 1);
     assert.deepEqual(file.diagnostics?.[0], {
-        message: "Java parser encountered syntax error.",
+        message: "Java parser error at ERROR.",
         severity: "WARN",
         file: "src/main/java/com/example/Broken.java",
         position: {
