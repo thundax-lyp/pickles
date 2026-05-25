@@ -23,7 +23,13 @@
 
 ## 3. Bounded Context
 
-Plugin 运行在 IntelliJ IDEA 中。Plugin 负责接收 Codex Hook 通知、调用 Governance Server、展示 Problem Board，并管理治理绑定。
+Plugin 运行在 IntelliJ IDEA 中。Plugin 负责接收 Codex Hook 通知、管理 Runtime 子进程、展示 Problem Board，并管理治理绑定。
+
+Plugin 固定作为 Runtime lifecycle owner。
+
+Plugin 与 Runtime 固定通过 stdio JSON request / response 通信。
+
+Runtime MVP 不暴露 HTTP server。
 
 Plugin 实现语言固定为 Kotlin。
 
@@ -31,8 +37,8 @@ Plugin 不修改业务代码、测试代码或工程实现代码。Plugin 可以
 
 ## 4. Module Mapping
 
-- `pickles-intellij-plugin/`: Plugin UI、Tool Window、配置界面、本地 HTTP 服务。
-- `pickles-runtime/`: Governance Server。
+- `pickles-intellij-plugin/`: Plugin UI、Tool Window、配置界面、本地 HTTP 服务和 Runtime 子进程管理。
+- `pickles-runtime/`: Node.js Runtime 子进程。
 - `pickles-hooks/`: Codex Hook。
 
 ## 5. Core Objects
@@ -97,12 +103,26 @@ Plugin 将本地 HTTP 服务端口写入目标工程 `<repo>/.pickles/server.jso
 
 HTTP endpoint 与 request / response schema 固定由 [`../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md`](../20-interfaces/HOOK-PLUGIN-HTTP-CONTRACT.md) 定义。
 
+### 7.6 Runtime Process
+
+Plugin 启动独立 Node.js Runtime 子进程。
+
+Runtime 子进程生命周期跟随目标工程。
+
+Plugin 通过 stdio JSON request / response 调用 Runtime。
+
+Runtime stdout 固定用于 JSON response。
+
+Runtime stderr 固定用于日志。
+
+Runtime 子进程异常退出时，Plugin 必须展示可理解错误，并可以尝试重启。
+
 ## 8. Key Flows
 
 ### 8.1 Problem Display Flow
 
 1. Plugin 接收 Hook 通知。
-2. Plugin 调用 Governance Server。
+2. Plugin 通过 stdio 调用 Runtime 子进程。
 3. Plugin 接收 Problem Board 数据。
 4. Tool Window 刷新问题列表。
 

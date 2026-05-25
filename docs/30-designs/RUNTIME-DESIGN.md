@@ -38,7 +38,17 @@
 
 Node.js / TypeScript Runtime 负责读取目标工程文件内容、解析 Java 语法结构、更新 workspace index、执行 Pickles native rules 并聚合 Problem。
 
-IntelliJ Plugin 负责 IDE 集成、Problem Board 展示和本地 HTTP 入口。Plugin 只调用 Runtime 的稳定入口，不依赖 tree-sitter API。
+IntelliJ Plugin 负责 IDE 集成、Problem Board 展示、本地 HTTP 入口和 Runtime 子进程生命周期。Plugin 只调用 Runtime 的稳定入口，不依赖 tree-sitter API。
+
+MVP 中 Runtime 固定作为独立 Node.js 子进程运行。
+
+Plugin 与 Runtime 固定通过 stdio JSON request / response 通信。
+
+Runtime 不暴露 HTTP server。
+
+Runtime stdout 固定只承载 JSON response。
+
+Runtime stderr 固定承载日志。
 
 Codex Hook 负责捕获 before / after 文件变动并通知 Plugin 或 Runtime。Hook 不解析 Java。
 
@@ -69,6 +79,10 @@ Runtime 进程入口。
 - 调用 `WorkspaceIndexService`。
 - 调用规则执行器。
 - 返回 Problem 与 repair-oriented summary。
+
+RuntimeHost 固定通过 stdio 接收 JSON request，并通过 stdout 写回 JSON response。
+
+RuntimeHost 日志固定写入 stderr。
 
 ### 5.2 `ChangedFile`
 
@@ -365,6 +379,14 @@ Summary 中的文件路径固定使用目标工程相对路径。
 
 Plugin 固定通过稳定 Runtime 入口触发检测。
 
+Plugin 固定启动并管理 Runtime Node.js 子进程。
+
+Plugin 关闭目标工程时必须关闭对应 Runtime 子进程。
+
+Runtime 子进程异常退出时，Plugin 必须展示可理解错误，并可以尝试重启。
+
+Runtime MVP 不监听 HTTP 端口。
+
 Plugin 不直接调用 `JavaSyntaxParser`。
 
 Plugin 不读取 Runtime 内部 index。
@@ -464,6 +486,4 @@ Plugin 只接收 Problem Board 数据、health 状态和可展示 summary。
 
 ## 12. Open Items
 
-- Runtime 与 Plugin 的进程边界：同进程调用 TypeScript bundle、独立 Node 子进程、本地 HTTP server 三者必须在实现前确定。
 - Runtime 首次 workspace 全量索引触发时机必须在 Plugin 编排设计中确定。
-- Repair-oriented summary 的稳定 JSON contract 必须在 MCP 接入前单独定义。

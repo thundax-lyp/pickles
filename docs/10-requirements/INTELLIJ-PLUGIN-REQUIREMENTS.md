@@ -57,7 +57,11 @@ IntelliJ Plugin 是 Pickles MVP 的主要产品入口。
 - 插件负责启动本地 HTTP 服务。
 - 插件负责接收 Codex Hook 的增量文件变动通知。
 - 插件负责调用 Governance Engine。
-- 插件不得执行规则命令；规则命令由 Governance Engine 执行。
+- 插件负责启动并管理独立 Node.js Runtime 子进程。
+- 插件与 Runtime 固定通过 stdio JSON request / response 通信。
+- Runtime MVP 不暴露 HTTP server。
+- Codex Hook 不直接调用 Runtime。
+- 插件不得执行 native rule；native rule 由 Runtime 执行。
 
 ## 7. Functional Requirements
 

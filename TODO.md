@@ -53,12 +53,6 @@
 
 ## 待讨论项
 
-- [ ] 确定 Runtime 与 Plugin 的进程边界
-    - 任务类型：待讨论项
-    - 关联任务：`Runtime-Plugin Boundary`
-    - 决策要求：在同进程调用 TypeScript bundle、独立 Node 子进程、本地 HTTP server 中确定 MVP 方案
-    - 重要度：10/10
-
 - [ ] 确定首次 workspace 全量索引触发时机
     - 任务类型：待讨论项
     - 关联任务：`Runtime-Plugin Boundary`
