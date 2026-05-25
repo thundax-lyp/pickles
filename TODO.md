@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：增加 parser diagnostic 去重和数量上限
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`
-    - 范围对象：`pickles-runtime/src/java-syntax-parser.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：为 parser diagnostic 增加稳定去重和数量上限
-    - 验收点：diagnostic 去重和数量上限测试通过
-    - 重要度：7/10
 - [ ] `scripts`：明确 verify-intellij-plugin 的 Gradle 解析
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-HARDENING.md`

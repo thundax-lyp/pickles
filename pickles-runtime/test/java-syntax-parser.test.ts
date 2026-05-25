@@ -336,3 +336,29 @@ public class Broken {
         fixHint: null,
     });
 });
+
+test("java syntax parser dedupes diagnostics and caps diagnostic count", () => {
+    const parser = new JavaSyntaxParser();
+    const file = parser.parse(
+        "src/main/java/com/example/VeryBroken.java",
+        Array.from({ length: 60 }, (_, index) => `class Broken${index} { public void run( }`).join(
+            "\n",
+        ),
+    );
+    const diagnostics = file.diagnostics ?? [];
+    const diagnosticKeys = new Set(
+        diagnostics.map((diagnostic) =>
+            [
+                diagnostic.message,
+                diagnostic.file,
+                diagnostic.position.line,
+                diagnostic.position.column,
+                diagnostic.source.tool,
+                diagnostic.source.rule,
+            ].join("\u0000"),
+        ),
+    );
+
+    assert.equal(diagnostics.length, 20);
+    assert.equal(diagnosticKeys.size, diagnostics.length);
+});

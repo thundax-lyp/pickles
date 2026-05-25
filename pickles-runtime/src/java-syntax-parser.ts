@@ -36,6 +36,7 @@ const MODIFIER_NODES = new Set([
     "sealed",
     "non-sealed",
 ]);
+const MAX_DIAGNOSTICS_PER_FILE = 20;
 
 export class JavaSyntaxParser {
     private readonly parser: Parser;
@@ -89,7 +90,32 @@ const parseDiagnostics = (path: string, root: Parser.SyntaxNode): ParserDiagnost
     const diagnostics: ParserDiagnostic[] = [];
     collectDiagnostics(path, root, diagnostics);
 
-    return diagnostics;
+    return dedupeDiagnostics(diagnostics).slice(0, MAX_DIAGNOSTICS_PER_FILE);
+};
+
+const dedupeDiagnostics = (diagnostics: ParserDiagnostic[]): ParserDiagnostic[] => {
+    const seen = new Set<string>();
+    const deduped: ParserDiagnostic[] = [];
+
+    for (const diagnostic of diagnostics) {
+        const key = [
+            diagnostic.message,
+            diagnostic.file,
+            diagnostic.position.line,
+            diagnostic.position.column,
+            diagnostic.source.tool,
+            diagnostic.source.rule,
+        ].join("\u0000");
+
+        if (seen.has(key)) {
+            continue;
+        }
+
+        seen.add(key);
+        deduped.push(diagnostic);
+    }
+
+    return deduped;
 };
 
 const collectDiagnostics = (
