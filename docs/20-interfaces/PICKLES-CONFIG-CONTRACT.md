@@ -4,7 +4,7 @@
 
 本文档定义目标工程 Pickles runtime config 的 MVP 配置契约。
 
-目标是让 IntelliJ Plugin、Codex Hook、Runtime 和 Agent-side skills 使用同一个项目级配置真相源。
+目标是让 IntelliJ Plugin、Runtime 和 Agent-side skills 使用同一个项目级配置真相源。
 
 ## 2. Scope
 
@@ -38,7 +38,7 @@ Pickles runtime config 是配置真相源。IntelliJ Plugin、Runtime 和 Agent-
 - `pickles-intellij-plugin/`: 展示和更新 Pickles runtime config。
 - `pickles-runtime/`: 加载 Pickles runtime config、native rules 和 external adapters。
 - `pickles-hooks/`: 读取本地运行时状态。
-- `pickles-rules/`: 提供可复用规则说明书、规则模板和 plugin rule package。
+- `pickles-rules/`: 提供 native rule authoring contract、规则说明书、规则模板和 plugin rule package。
 - `pickles-skills/`: 基于规则说明书生成配置或提示 Agent 运行检查。
 - `e2e/sample-project/`: 保存示例 `pickles.config.ts`。
 
@@ -159,7 +159,7 @@ MVP 固定 adapter：
 - `archunit`
 - `eslint`
 
-Runtime 必须捕获 external adapter 的 stdout、stderr、exit code 和 timeout。
+External adapter execution 和输出归一化由后续 adapter design 定义。
 
 ### 7.4 Config Read Flow
 
@@ -186,13 +186,6 @@ Runtime 必须捕获 external adapter 的 stdout、stderr、exit code 和 timeou
 4. Runtime 执行 native rule。
 5. Runtime 将 rule result 归一化为 Problem。
 
-### 8.2 External Adapter Flow
-
-1. Runtime 加载 Pickles runtime config。
-2. Runtime 读取 external adapter rule。
-3. Runtime 执行 adapter command。
-4. Runtime 将 adapter 输出归一化为 Problem。
-
 ## 9. Non-Functional Requirements
 
 - 配置读取失败时，Plugin 必须在 Problem Board 或配置界面展示可理解错误。
@@ -205,3 +198,4 @@ Runtime 必须捕获 external adapter 的 stdout、stderr、exit code 和 timeou
 - Native rule API 的完整 TypeScript 类型。
 - Rule plugin package 引用格式。
 - Config TypeScript 加载器选择。
+- External adapter execution design。
