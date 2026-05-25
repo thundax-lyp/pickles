@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：增加 parser 依赖装配
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
-    - 范围对象：`pickles-runtime/package.json`、`pickles-runtime/package-lock.json`
-    - 处理动作：增加 `tree-sitter` 与 `tree-sitter-java` 依赖并锁定版本
-    - 验收点：`npm run typecheck` 和 `npm run test` 通过且 Runtime 行为不变
-    - 重要度：9/10
 - [ ] `pickles-runtime`：建立 JavaSyntaxParser 边界与 DTO
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
