@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `runtime-locator`：实现 Plugin Runtime root 定位
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`
-    - 范围对象：`pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesRuntimeFlow.kt`
-    - 处理动作：新增 Runtime root 定位能力和系统属性覆盖入口
-    - 验收点：Runtime 可定位和不可定位路径均可测试
-    - 重要度：8/10
 - [ ] `node-runtime-client-process`：实现 Node Runtime 子进程调用
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-STDIO.md`

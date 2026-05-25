@@ -93,6 +93,28 @@ class PicklesRuntimeFlowTest {
         assertEquals("modified", RuntimeChangedFile("src/File.java", "old", "new").changeType)
     }
 
+    @Test
+    fun runtimeLocatorFindsConfiguredRuntimeRoot() {
+        val projectRoot = temporaryFolder.newFolder("workspace").toPath()
+        val runtimeRoot = temporaryFolder.newFolder("runtime").toPath()
+        runtimeRoot.resolve("src").toFile().mkdirs()
+        runtimeRoot.resolve("package.json").toFile().writeText("{}")
+        runtimeRoot.resolve("src").resolve("stdio.ts").toFile().writeText("")
+
+        withSystemProperty("pickles.runtime.dir", runtimeRoot.toString()) {
+            assertEquals(runtimeRoot.toAbsolutePath().normalize(), PicklesRuntimeLocator.find(projectRoot))
+        }
+    }
+
+    @Test
+    fun runtimeLocatorReturnsNullWhenRuntimeRootIsUnavailable() {
+        val projectRoot = temporaryFolder.newFolder("workspace").toPath()
+
+        withSystemProperty("pickles.runtime.dir", "") {
+            assertEquals(null, PicklesRuntimeLocator.find(projectRoot))
+        }
+    }
+
     private class RecordingRuntimeClient(
         val problemsToReturn: List<PicklesProblem>,
     ) : PicklesRuntimeClient {
@@ -102,6 +124,20 @@ class PicklesRuntimeFlowTest {
         override fun inspect(files: List<RuntimeChangedFile>): List<PicklesProblem> {
             receivedFiles = files
             return problemsToReturn
+        }
+    }
+
+    private fun withSystemProperty(name: String, value: String, action: () -> Unit) {
+        val previous = System.getProperty(name)
+        try {
+            System.setProperty(name, value)
+            action()
+        } finally {
+            if (previous == null) {
+                System.clearProperty(name)
+            } else {
+                System.setProperty(name, previous)
+            }
         }
     }
 }
