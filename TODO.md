@@ -11,13 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime`：将 Java index 接到 parser DTO
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
-    - 范围对象：`pickles-runtime/src/java-index.ts`、`pickles-runtime/src/types.ts`、`pickles-runtime/test/**/*.ts`
-    - 处理动作：将 Java index 更新为消费 JavaSyntaxParser 输出并停止使用内部正则解析
-    - 验收点：现有 native rule sample 测试和 `scripts/verify-runtime-sample-project.sh` 通过
-    - 重要度：9/10
 - [ ] `pickles-runtime`：实现 index 增删改贡献清理
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-RUNTIME-TREE-SITTER-PARSER.md`
