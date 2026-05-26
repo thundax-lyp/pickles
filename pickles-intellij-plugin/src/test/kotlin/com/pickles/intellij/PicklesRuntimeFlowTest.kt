@@ -119,6 +119,32 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun statusTextShowsRuntimeQueueState() {
+        val text = PicklesStatusText.format(
+            PicklesServiceStatusSnapshot(
+                httpServerStatus = PicklesHttpServerStatus.RUNNING,
+                runtimeStatus = PicklesRuntimeStatus.AVAILABLE,
+                indexStatus = PicklesIndexStatus.RUNNING,
+                runtimeQueue = RuntimeQueueSnapshot(
+                    running = true,
+                    pending = true,
+                    currentInvalidated = true,
+                ),
+                problemSummary = PicklesProblemSummary(
+                    totalCount = 2,
+                    errorCount = 1,
+                    warnCount = 1,
+                    text = "Pickles found 1 blocking problem(s) and 1 warning(s).",
+                ),
+                message = "Workspace indexing is running.",
+            ),
+        )
+
+        assertTrue(text.contains("Queue: stale"))
+        assertTrue(text.contains("Problems: 2 (1 error, 1 warn)"))
+    }
+
+    @Test
     fun runtimeChangedFileDerivesRuntimeChangeType() {
         assertEquals("added", RuntimeChangedFile("src/New.java", null, "new").changeType)
         assertEquals("deleted", RuntimeChangedFile("src/Old.java", "old", null).changeType)

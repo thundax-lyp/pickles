@@ -124,6 +124,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
         httpServerStatus = httpServerStatus,
         runtimeStatus = runtimeStatus,
         indexStatus = indexStatus,
+        runtimeQueue = runtimeQueue.snapshot(),
         problemSummary = problemBoard.summary(),
         message = lastStatus,
     )

@@ -487,6 +487,24 @@ data class PicklesServiceStatusSnapshot(
     val httpServerStatus: PicklesHttpServerStatus,
     val runtimeStatus: PicklesRuntimeStatus,
     val indexStatus: PicklesIndexStatus,
+    val runtimeQueue: RuntimeQueueSnapshot,
     val problemSummary: PicklesProblemSummary,
     val message: String,
 )
+
+object PicklesStatusText {
+    fun format(status: PicklesServiceStatusSnapshot): String {
+        val queueText = when {
+            status.runtimeQueue.currentInvalidated -> "stale"
+            status.runtimeQueue.pending -> "pending"
+            status.runtimeQueue.running -> "running"
+            else -> "idle"
+        }
+
+        return "HTTP: ${status.httpServerStatus}  Runtime: ${status.runtimeStatus}  " +
+            "Index: ${status.indexStatus}  Queue: $queueText  " +
+            "Problems: ${status.problemSummary.totalCount} " +
+            "(${status.problemSummary.errorCount} error, ${status.problemSummary.warnCount} warn)  " +
+            status.message
+    }
+}

@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-intellij-plugin/`：补充队列状态展示
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`
-    - 范围对象：`PicklesServiceStatusSnapshot`、`PicklesToolWindowPanel`
-    - 处理动作：让 Header 状态表达 Runtime queue running、pending 和 stale 结果状态
-    - 验收点：测试覆盖队列运行或 pending 时状态可见，UI 仍能展示 Problem summary
-    - 重要度：8/10
-
 - [ ] `docs/40-readiness/E2E-TEST-CASES.md`：同步 Reindex / notify 队列验证口径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`
