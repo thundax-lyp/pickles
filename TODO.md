@@ -11,12 +11,36 @@
 
 ## 待审阅任务项
 
-- [ ] `workspace.ignore`：新增 Pickles 专属忽略配置契约
-    - 任务类型：拆解任务
+- [ ] `docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`：定义 `workspace.ignore` 配置契约
+    - 任务类型：执行任务
     - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
-    - 范围对象：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`、`pickles-runtime/`、`pickles-intellij-plugin/`
-    - 处理动作：拆解 `workspace.ignore` 配置契约、Runtime 过滤职责和 Plugin Reindex 调用边界
-    - 验收点：形成经审阅的执行 TODO，明确 Plugin 不直接解析 `pickles.config.ts`
+    - 范围对象：`PicklesRuntimeConfig`、`WorkspaceConfig`
+    - 处理动作：新增 `workspace.ignore` 字段口径、默认值、pattern 语义和 Plugin / Runtime 职责边界
+    - 验收点：文档明确 Runtime 拥有 ignore 解析与过滤，Plugin 不直接解析 `pickles.config.ts`
     - 重要度：8/10
+
+- [ ] `pickles-runtime/src/types.ts`：增加 `workspace.ignore` 类型与配置校验
+    - 任务类型：执行任务
+    - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
+    - 范围对象：`PicklesRuntimeConfig`、`defineConfig`、Runtime config validation
+    - 处理动作：在 Runtime 类型和 config validation 中支持可选 `workspace.ignore: string[]`
+    - 验收点：测试覆盖缺省配置通过、合法 ignore 通过、非 string array 配置报可理解错误
+    - 重要度：8/10
+
+- [ ] `pickles-runtime/`：在 Runtime workspace 输入处理中应用 `workspace.ignore`
+    - 任务类型：执行任务
+    - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
+    - 范围对象：`runRuntimeCheck`、changed files filtering、sample project tests
+    - 处理动作：Runtime 读取 config 后过滤被 `workspace.ignore` 命中的 changed files，再执行 parser 和 native rules
+    - 验收点：测试覆盖 ignored Java 文件不产生 parser diagnostic、不进入 native rule changed files
+    - 重要度：9/10
+
+- [ ] `pickles-intellij-plugin/`：调整 Reindex 与 Runtime ignore 的职责边界
+    - 任务类型：执行任务
+    - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
+    - 范围对象：`PicklesWorkspaceInspection`、`PicklesRuntimeClient`、readiness 文档
+    - 处理动作：保留 Plugin 的 `.gitignore` 和内置扫描兜底过滤，确认 Pickles 专属 `workspace.ignore` 只由 Runtime 应用
+    - 验收点：Plugin 测试不解析 `pickles.config.ts`，readiness 文档记录 Reindex 与 Runtime ignore 的边界
+    - 重要度：7/10
 
 ## 待讨论项
