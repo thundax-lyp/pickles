@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesProjectService.kt`：实现 Runtime 主动检查入口
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`
-    - 范围对象：`PicklesProjectService`、`PicklesRuntimeClient`、`RuntimeChangedFile`
-    - 处理动作：增加后台收集 repo-relative Java 文件并调用 Runtime stdio 的主动检查方法
-    - 验收点：测试覆盖主动检查调用 Runtime、写入 Problem Board、失败时保留旧 Problem Board
-    - 重要度：10/10
-
 - [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesStartupActivity.kt`：接入首次 workspace 检查
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`

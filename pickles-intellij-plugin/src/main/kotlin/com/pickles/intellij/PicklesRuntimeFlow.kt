@@ -8,14 +8,17 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.relativeTo
 
 data class RuntimeChangedFile(
     val fileName: String,
     val before: String?,
     val after: String?,
+    private val explicitChangeType: String? = null,
 ) {
     val changeType: String
-        get() = when {
+        get() = explicitChangeType ?: when {
             before == null -> "added"
             after == null -> "deleted"
             else -> "modified"
@@ -28,6 +31,41 @@ interface PicklesRuntimeClient {
 
 class EmptyPicklesRuntimeClient : PicklesRuntimeClient {
     override fun inspect(files: List<RuntimeChangedFile>): List<PicklesProblem> = emptyList()
+}
+
+object PicklesWorkspaceInspection {
+    fun collectJavaFiles(workspaceRoot: Path): List<RuntimeChangedFile> {
+        val normalizedRoot = workspaceRoot.toAbsolutePath().normalize()
+        if (!Files.isDirectory(normalizedRoot)) {
+            return emptyList()
+        }
+
+        return Files.walk(normalizedRoot).use { paths ->
+            paths
+                .filter { it.isRegularFile() }
+                .filter { it.fileName.toString().endsWith(".java") }
+                .sorted()
+                .map { file ->
+                    RuntimeChangedFile(
+                        fileName = file.relativeTo(normalizedRoot).toString(),
+                        before = null,
+                        after = Files.readString(file, StandardCharsets.UTF_8),
+                        explicitChangeType = "modified",
+                    )
+                }
+                .toList()
+        }
+    }
+
+    fun inspect(
+        workspaceRoot: Path,
+        runtimeClient: PicklesRuntimeClient,
+        problemBoard: PicklesProblemBoardState,
+    ): List<PicklesProblem> {
+        val problems = runtimeClient.inspect(collectJavaFiles(workspaceRoot))
+        problemBoard.replaceProblems(problems)
+        return problems
+    }
 }
 
 class NodePicklesRuntimeClient(

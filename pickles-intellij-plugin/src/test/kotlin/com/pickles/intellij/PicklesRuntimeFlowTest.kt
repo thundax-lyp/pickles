@@ -138,6 +138,71 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun workspaceInspectionCollectsRepoRelativeJavaFilesAsModifiedInputs() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        val javaFile = root.resolve("src/main/java/com/example/App.java")
+        val ignoredFile = root.resolve("src/main/resources/app.txt")
+        javaFile.parent.toFile().mkdirs()
+        ignoredFile.parent.toFile().mkdirs()
+        javaFile.toFile().writeText("class App {}\n")
+        ignoredFile.toFile().writeText("ignored")
+
+        val files = PicklesWorkspaceInspection.collectJavaFiles(root)
+
+        assertEquals(1, files.size)
+        assertEquals("src/main/java/com/example/App.java", files.single().fileName)
+        assertEquals(null, files.single().before)
+        assertEquals("class App {}\n", files.single().after)
+        assertEquals("modified", files.single().changeType)
+    }
+
+    @Test
+    fun workspaceInspectionCallsRuntimeAndStoresProblemBoardData() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        val javaFile = root.resolve("src/main/java/com/example/App.java")
+        javaFile.parent.toFile().mkdirs()
+        javaFile.toFile().writeText("class App {}\n")
+        val problem = PicklesProblem(
+            title = "Problem",
+            type = "architecture",
+            message = "Message.",
+            severity = "WARN",
+            file = "src/main/java/com/example/App.java",
+        )
+        val runtime = RecordingRuntimeClient(listOf(problem))
+        val problemBoard = PicklesProblemBoardState()
+
+        val problems = PicklesWorkspaceInspection.inspect(root, runtime, problemBoard)
+
+        assertEquals(listOf(problem), problems)
+        assertEquals(listOf(problem), problemBoard.problems())
+        assertEquals(1, runtime.receivedFiles.size)
+        assertEquals("src/main/java/com/example/App.java", runtime.receivedFiles.single().fileName)
+    }
+
+    @Test
+    fun workspaceInspectionFailureKeepsExistingProblemBoardData() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        val javaFile = root.resolve("src/main/java/com/example/App.java")
+        javaFile.parent.toFile().mkdirs()
+        javaFile.toFile().writeText("class App {}\n")
+        val existingProblem = PicklesProblem(
+            title = "Existing",
+            type = "architecture",
+            message = "Existing problem.",
+            severity = "ERROR",
+        )
+        val problemBoard = PicklesProblemBoardState()
+        problemBoard.replaceProblems(listOf(existingProblem))
+
+        assertThrows(IOException::class.java) {
+            PicklesWorkspaceInspection.inspect(root, FailingRuntimeClient(), problemBoard)
+        }
+
+        assertEquals(listOf(existingProblem), problemBoard.problems())
+    }
+
+    @Test
     fun runtimeLocatorFindsConfiguredRuntimeRoot() {
         val projectRoot = temporaryFolder.newFolder("workspace").toPath()
         val runtimeRoot = temporaryFolder.newFolder("runtime").toPath()

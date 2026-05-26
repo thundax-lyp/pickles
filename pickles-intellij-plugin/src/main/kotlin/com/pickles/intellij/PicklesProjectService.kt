@@ -128,6 +128,12 @@ class PicklesProjectService(private val project: Project) : Disposable {
         updateStatus("Problem removed from current board.")
     }
 
+    fun reindexWorkspace() {
+        executor.execute {
+            runWorkspaceInspection()
+        }
+    }
+
     fun openProblem(problem: PicklesProblem) {
         val file = problem.file ?: return
         val position = problem.position ?: return
@@ -230,6 +236,35 @@ class PicklesProjectService(private val project: Project) : Disposable {
         runtimeClient = client
         runtimeStatus = PicklesRuntimeStatus.AVAILABLE
         return client
+    }
+
+    private fun runWorkspaceInspection() {
+        indexStatus = PicklesIndexStatus.RUNNING
+        updateStatus("Workspace indexing is running.")
+
+        val client = runtimeClient()
+        if (client == null) {
+            indexStatus = PicklesIndexStatus.FAILED
+            runtimeStatus = PicklesRuntimeStatus.UNAVAILABLE
+            updateStatus("Pickles Runtime is unavailable.")
+            return
+        }
+
+        runCatching {
+            PicklesWorkspaceInspection.inspect(
+                workspaceRoot = requireProjectRoot(),
+                runtimeClient = client,
+                problemBoard = problemBoard,
+            )
+        }.onSuccess { problems ->
+            runtimeStatus = PicklesRuntimeStatus.AVAILABLE
+            indexStatus = PicklesIndexStatus.SUCCEEDED
+            updateStatus("Workspace indexing completed with ${problems.size} problem(s).")
+        }.onFailure { failure ->
+            runtimeStatus = PicklesRuntimeStatus.UNAVAILABLE
+            indexStatus = PicklesIndexStatus.FAILED
+            updateStatus(failure.message ?: "Pickles Runtime failed.")
+        }
     }
 
     private fun respond(exchange: HttpExchange, result: PicklesHttpResult) {
