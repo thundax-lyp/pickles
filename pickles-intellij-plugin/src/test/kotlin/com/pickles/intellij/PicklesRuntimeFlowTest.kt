@@ -219,6 +219,64 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun runtimeQueueRunnerAppliesCurrentResultToProblemBoard() {
+        val queue = PicklesRuntimeQueue()
+        val run = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))!!
+        val problem = PicklesProblem(
+            title = "Reindex",
+            type = "architecture",
+            message = "Reindex problem.",
+            severity = "WARN",
+        )
+        val problemBoard = PicklesProblemBoardState()
+
+        val result = PicklesRuntimeQueueRunner.run(
+            queue = queue,
+            run = run,
+            runtimeClient = RecordingRuntimeClient(listOf(problem)),
+            problemBoard = problemBoard,
+        )
+
+        assertTrue(result.completion.shouldApplyResult)
+        assertEquals(listOf(problem), problemBoard.problems())
+    }
+
+    @Test
+    fun runtimeQueueRunnerDoesNotApplyInvalidatedResultToProblemBoard() {
+        val queue = PicklesRuntimeQueue()
+        val run = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))!!
+        queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/App.java", "notify")))
+        val existingProblem = PicklesProblem(
+            title = "Existing",
+            type = "architecture",
+            message = "Existing problem.",
+            severity = "ERROR",
+        )
+        val problemBoard = PicklesProblemBoardState()
+        problemBoard.replaceProblems(listOf(existingProblem))
+
+        val result = PicklesRuntimeQueueRunner.run(
+            queue = queue,
+            run = run,
+            runtimeClient = RecordingRuntimeClient(
+                listOf(
+                    PicklesProblem(
+                        title = "Stale",
+                        type = "architecture",
+                        message = "Stale problem.",
+                        severity = "WARN",
+                    ),
+                ),
+            ),
+            problemBoard = problemBoard,
+        )
+
+        assertEquals(false, result.completion.shouldApplyResult)
+        assertEquals(listOf(existingProblem), problemBoard.problems())
+        assertEquals("notify", result.completion.nextRun?.request?.files?.single()?.after)
+    }
+
+    @Test
     fun problemOrderingSortsBySeverityLocationAndRuntimeOrder() {
         val warnWithLocation = PicklesProblem(
             title = "Warn with location",

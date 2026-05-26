@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesProjectService.kt`：将 Reindex 接入 Runtime 队列
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`
-    - 范围对象：`reindexWorkspace`、`runWorkspaceInspection`、`PicklesProblemBoardState`
-    - 处理动作：让 Reindex 收集文件后入队，由队列驱动 Runtime 调用和结果落板
-    - 验收点：测试覆盖 Reindex 入队会调用 Runtime，失效 Reindex 结果不会替换 Problem Board
-    - 重要度：10/10
-
 - [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesHttpContract.kt`：将 Hook notify 接入 Runtime 队列
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`

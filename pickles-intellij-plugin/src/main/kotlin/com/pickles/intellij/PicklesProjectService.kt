@@ -32,7 +32,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
         Thread(runnable, "Pickles Project Service").apply { isDaemon = true }
     }
     private val problemBoard = PicklesProblemBoardState()
-    private val indexGate = PicklesWorkspaceIndexGate()
+    private val runtimeQueue = PicklesRuntimeQueue()
 
     @Volatile
     private var httpServer: HttpServer? = null
@@ -130,17 +130,18 @@ class PicklesProjectService(private val project: Project) : Disposable {
     }
 
     fun reindexWorkspace() {
-        if (!indexGate.tryStart()) {
-            updateStatus("Workspace indexing is already running.")
-            return
-        }
-
         executor.execute {
-            try {
-                runWorkspaceInspection()
-            } finally {
-                indexGate.finish()
+            val run = runtimeQueue.enqueue(
+                RuntimeQueueRequest(
+                    source = RuntimeQueueSource.REINDEX,
+                    files = PicklesWorkspaceInspection.collectJavaFiles(requireProjectRoot()),
+                ),
+            )
+            if (run == null) {
+                updateStatus("Workspace indexing is queued.")
+                return@execute
             }
+            runRuntimeQueue(run)
         }
     }
 
@@ -249,32 +250,50 @@ class PicklesProjectService(private val project: Project) : Disposable {
         return client
     }
 
-    private fun runWorkspaceInspection() {
+    private fun runRuntimeQueue(run: RuntimeQueueRun) {
         indexStatus = PicklesIndexStatus.RUNNING
         updateStatus("Workspace indexing is running.")
 
         val client = runtimeClient()
         if (client == null) {
+            val completion = runtimeQueue.complete(run.version)
             indexStatus = PicklesIndexStatus.FAILED
             runtimeStatus = PicklesRuntimeStatus.UNAVAILABLE
             updateStatus("Pickles Runtime is unavailable.")
+            completion.nextRun?.let { nextRun ->
+                runRuntimeQueue(nextRun)
+            }
             return
         }
 
         runCatching {
-            PicklesWorkspaceInspection.inspect(
-                workspaceRoot = requireProjectRoot(),
+            PicklesRuntimeQueueRunner.run(
+                queue = runtimeQueue,
+                run = run,
                 runtimeClient = client,
                 problemBoard = problemBoard,
             )
-        }.onSuccess { problems ->
+        }.onSuccess { result ->
             runtimeStatus = PicklesRuntimeStatus.AVAILABLE
+            if (result.completion.shouldApplyResult) {
+                updateStatus("Workspace indexing completed with ${result.problems.size} problem(s).")
+            } else {
+                updateStatus("Workspace indexing result was superseded.")
+            }
+            result.completion.nextRun?.let { nextRun ->
+                runRuntimeQueue(nextRun)
+                return
+            }
             indexStatus = PicklesIndexStatus.SUCCEEDED
-            updateStatus("Workspace indexing completed with ${problems.size} problem(s).")
         }.onFailure { failure ->
+            val completion = runtimeQueue.complete(run.version)
             runtimeStatus = PicklesRuntimeStatus.UNAVAILABLE
-            indexStatus = PicklesIndexStatus.FAILED
             updateStatus(failure.message ?: "Pickles Runtime failed.")
+            completion.nextRun?.let { nextRun ->
+                runRuntimeQueue(nextRun)
+                return
+            }
+            indexStatus = PicklesIndexStatus.FAILED
         }
     }
 

@@ -70,6 +70,11 @@ data class RuntimeQueueCompletion(
     val nextRun: RuntimeQueueRun?,
 )
 
+data class RuntimeQueueRunResult(
+    val problems: List<PicklesProblem>,
+    val completion: RuntimeQueueCompletion,
+)
+
 data class RuntimeQueueSnapshot(
     val running: Boolean,
     val pending: Boolean,
@@ -167,6 +172,25 @@ class PicklesRuntimeQueue {
             version = version,
             request = request,
             invalidated = invalidated,
+        )
+    }
+}
+
+object PicklesRuntimeQueueRunner {
+    fun run(
+        queue: PicklesRuntimeQueue,
+        run: RuntimeQueueRun,
+        runtimeClient: PicklesRuntimeClient,
+        problemBoard: PicklesProblemBoardState,
+    ): RuntimeQueueRunResult {
+        val problems = runtimeClient.inspect(run.request.files)
+        val completion = queue.complete(run.version)
+        if (completion.shouldApplyResult) {
+            problemBoard.replaceProblems(problems)
+        }
+        return RuntimeQueueRunResult(
+            problems = problems,
+            completion = completion,
         )
     }
 }
