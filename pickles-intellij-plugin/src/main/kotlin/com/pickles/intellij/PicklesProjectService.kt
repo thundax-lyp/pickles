@@ -40,6 +40,15 @@ class PicklesProjectService(private val project: Project) : Disposable {
     private var runtimeClient: PicklesRuntimeClient? = null
 
     @Volatile
+    private var httpServerStatus: PicklesHttpServerStatus = PicklesHttpServerStatus.STOPPED
+
+    @Volatile
+    private var runtimeStatus: PicklesRuntimeStatus = PicklesRuntimeStatus.UNKNOWN
+
+    @Volatile
+    private var indexStatus: PicklesIndexStatus = PicklesIndexStatus.IDLE
+
+    @Volatile
     var lastStatus: String = "Pickles is idle."
         private set
 
@@ -106,6 +115,14 @@ class PicklesProjectService(private val project: Project) : Disposable {
 
     fun problems(): List<PicklesProblem> = problemBoard.problems()
 
+    fun statusSnapshot(): PicklesServiceStatusSnapshot = PicklesServiceStatusSnapshot(
+        httpServerStatus = httpServerStatus,
+        runtimeStatus = runtimeStatus,
+        indexStatus = indexStatus,
+        problemSummary = problemBoard.summary(),
+        message = lastStatus,
+    )
+
     fun deleteProblem(problem: PicklesProblem) {
         problemBoard.deleteProblem(problem)
         updateStatus("Problem removed from current board.")
@@ -139,6 +156,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
                 server.executor = executor
                 server.start()
                 httpServer = server
+                httpServerStatus = PicklesHttpServerStatus.RUNNING
                 writeServerFile(server.address.port)
                 updateStatus("Local HTTP server started on port ${server.address.port}.")
             }.onFailure {
@@ -151,6 +169,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
     override fun dispose() {
         runCatching { httpServer?.stop(0) }
         httpServer = null
+        httpServerStatus = PicklesHttpServerStatus.STOPPED
         executor.shutdownNow()
     }
 
@@ -198,13 +217,18 @@ class PicklesProjectService(private val project: Project) : Disposable {
         runtimeClient?.let { return it }
 
         val root = projectRoot ?: return null
-        val runtimeRoot = PicklesRuntimeLocator.find(root) ?: return null
+        val runtimeRoot = PicklesRuntimeLocator.find(root)
+            ?: run {
+                runtimeStatus = PicklesRuntimeStatus.UNAVAILABLE
+                return null
+            }
         val client = NodePicklesRuntimeClient(
             workspaceRoot = root,
             runtimeRoot = runtimeRoot,
             gson = gson,
         )
         runtimeClient = client
+        runtimeStatus = PicklesRuntimeStatus.AVAILABLE
         return client
     }
 

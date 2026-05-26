@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesProjectService.kt`：收敛 Problem Board 状态模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`
-    - 范围对象：`PicklesProjectService`、`PicklesProblemBoardState`
-    - 处理动作：增加可测试的 HTTP server、Runtime、Index 和 Problem summary 状态模型
-    - 验收点：单元测试能断言空问题、ERROR、WARN summary，Runtime 失败时旧 Problem Board 不被清空
-    - 重要度：9/10
-
 - [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesProjectService.kt`：实现 Runtime 主动检查入口
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`

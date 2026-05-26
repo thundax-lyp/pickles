@@ -89,6 +89,48 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun problemBoardSummaryCountsEmptyErrorAndWarnProblems() {
+        val problemBoard = PicklesProblemBoardState()
+
+        assertEquals(
+            PicklesProblemSummary(
+                totalCount = 0,
+                errorCount = 0,
+                warnCount = 0,
+                text = "No Pickles governance problems.",
+            ),
+            problemBoard.summary(),
+        )
+
+        problemBoard.replaceProblems(
+            listOf(
+                PicklesProblem(
+                    title = "Blocking",
+                    type = "architecture",
+                    message = "Blocking problem.",
+                    severity = "ERROR",
+                ),
+                PicklesProblem(
+                    title = "Warning",
+                    type = "maintainability",
+                    message = "Warning problem.",
+                    severity = "WARN",
+                ),
+            ),
+        )
+
+        assertEquals(
+            PicklesProblemSummary(
+                totalCount = 2,
+                errorCount = 1,
+                warnCount = 1,
+                text = "Pickles found 1 blocking problem(s) and 1 warning(s).",
+            ),
+            problemBoard.summary(),
+        )
+    }
+
+    @Test
     fun runtimeChangedFileDerivesRuntimeChangeType() {
         assertEquals("added", RuntimeChangedFile("src/New.java", null, "new").changeType)
         assertEquals("deleted", RuntimeChangedFile("src/Old.java", "old", null).changeType)

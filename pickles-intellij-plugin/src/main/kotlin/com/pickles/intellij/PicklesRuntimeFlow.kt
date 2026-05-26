@@ -155,6 +155,8 @@ class PicklesProblemBoardState {
 
     fun problems(): List<PicklesProblem> = currentProblems
 
+    fun summary(): PicklesProblemSummary = PicklesProblemSummary.from(currentProblems)
+
     fun replaceProblems(problems: List<PicklesProblem>) {
         currentProblems = problems
     }
@@ -163,3 +165,56 @@ class PicklesProblemBoardState {
         currentProblems = currentProblems.filterNot { it == problem }
     }
 }
+
+enum class PicklesHttpServerStatus {
+    STOPPED,
+    RUNNING,
+}
+
+enum class PicklesRuntimeStatus {
+    UNKNOWN,
+    AVAILABLE,
+    UNAVAILABLE,
+}
+
+enum class PicklesIndexStatus {
+    IDLE,
+    RUNNING,
+    SUCCEEDED,
+    FAILED,
+}
+
+data class PicklesProblemSummary(
+    val totalCount: Int,
+    val errorCount: Int,
+    val warnCount: Int,
+    val text: String,
+) {
+    companion object {
+        fun from(problems: List<PicklesProblem>): PicklesProblemSummary {
+            val errorCount = problems.count { it.severity == "ERROR" }
+            val warnCount = problems.count { it.severity == "WARN" }
+            val totalCount = problems.size
+            val text = when {
+                totalCount == 0 -> "No Pickles governance problems."
+                errorCount > 0 -> "Pickles found $errorCount blocking problem(s) and $warnCount warning(s)."
+                else -> "Pickles found $warnCount warning(s)."
+            }
+
+            return PicklesProblemSummary(
+                totalCount = totalCount,
+                errorCount = errorCount,
+                warnCount = warnCount,
+                text = text,
+            )
+        }
+    }
+}
+
+data class PicklesServiceStatusSnapshot(
+    val httpServerStatus: PicklesHttpServerStatus,
+    val runtimeStatus: PicklesRuntimeStatus,
+    val indexStatus: PicklesIndexStatus,
+    val problemSummary: PicklesProblemSummary,
+    val message: String,
+)
