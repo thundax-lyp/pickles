@@ -380,6 +380,9 @@ cd pickles-intellij-plugin
 - 手动 `Reindex` 入口会复用同一条 workspace 检查路径。
 - workspace 检查只向 Runtime 传入 repo-relative `.java` 文件。
 - workspace 检查传入 Runtime 的 changed file 使用 `modified` change type。
+- Plugin workspace 检查可以应用 `.gitignore` 和内置目录兜底过滤。
+- Plugin workspace 检查不得解析 `pickles.config.ts` 读取 `workspace.ignore`。
+- Runtime 负责统一应用 Pickles runtime config 中的 `workspace.ignore`。
 - Runtime 成功返回后 Problem Board 被替换为最新 Problems。
 - Runtime 失败时旧 Problem Board 不被清空。
 - Problem Board Header 展示 HTTP server、Runtime、Index 和 Problem summary 状态。
@@ -390,6 +393,7 @@ cd pickles-intellij-plugin
 - Plugin 不执行 native rules。
 - Plugin 不直接读取 Runtime 内部状态。
 - Plugin 不修改用户业务代码。
+- Plugin 不直接解析 Pickles runtime config 的可执行 TS 入口。
 - Reindex 不改变 Hook HTTP contract。
 
 ### 7.8 E2E_FULL_FLOW

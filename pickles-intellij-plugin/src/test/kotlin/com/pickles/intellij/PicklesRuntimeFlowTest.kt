@@ -233,6 +233,27 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun workspaceInspectionDoesNotParsePicklesConfigIgnore() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        root.resolve("pickles.config.ts").toFile().writeText(
+            """
+            export default {
+                workspace: {
+                    ignore: ["generated/"],
+                },
+            };
+            """.trimIndent(),
+        )
+        val generatedFile = root.resolve("generated/Ignored.java")
+        generatedFile.parent.toFile().mkdirs()
+        generatedFile.toFile().writeText("class Ignored {}\n")
+
+        val files = PicklesWorkspaceInspection.collectJavaFiles(root)
+
+        assertEquals(listOf("generated/Ignored.java"), files.map { it.fileName })
+    }
+
+    @Test
     fun workspaceInspectionCallsRuntimeAndStoresProblemBoardData() {
         val root = temporaryFolder.newFolder("workspace").toPath()
         val javaFile = root.resolve("src/main/java/com/example/App.java")
