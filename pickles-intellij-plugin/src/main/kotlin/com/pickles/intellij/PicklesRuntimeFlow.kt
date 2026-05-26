@@ -81,6 +81,25 @@ object PicklesWorkspaceInspection {
     }
 }
 
+object PicklesProblemOrdering {
+    fun sorted(problems: List<PicklesProblem>): List<PicklesProblem> = problems
+        .withIndex()
+        .sortedWith(
+            compareBy<IndexedValue<PicklesProblem>> { severityRank(it.value.severity) }
+                .thenBy { locationRank(it.value) }
+                .thenBy { it.index },
+        )
+        .map { it.value }
+
+    private fun severityRank(severity: String): Int = when (severity) {
+        "ERROR" -> 0
+        "WARN" -> 1
+        else -> 2
+    }
+
+    private fun locationRank(problem: PicklesProblem): Int = if (problem.file != null || problem.position != null) 0 else 1
+}
+
 class NodePicklesRuntimeClient(
     private val workspaceRoot: Path,
     private val runtimeRoot: Path,

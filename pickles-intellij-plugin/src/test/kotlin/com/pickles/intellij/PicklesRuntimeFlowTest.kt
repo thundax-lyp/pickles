@@ -152,6 +152,45 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun problemOrderingSortsBySeverityLocationAndRuntimeOrder() {
+        val warnWithLocation = PicklesProblem(
+            title = "Warn with location",
+            type = "maintainability",
+            message = "Warn.",
+            severity = "WARN",
+            file = "src/Warn.java",
+            position = ProblemPosition(line = 1, column = 1),
+        )
+        val errorWithoutLocation = PicklesProblem(
+            title = "Error without location",
+            type = "architecture",
+            message = "Error.",
+            severity = "ERROR",
+        )
+        val errorWithLocation = PicklesProblem(
+            title = "Error with location",
+            type = "architecture",
+            message = "Error.",
+            severity = "ERROR",
+            file = "src/Error.java",
+            position = ProblemPosition(line = 1, column = 1),
+        )
+        val warnWithoutLocation = PicklesProblem(
+            title = "Warn without location",
+            type = "maintainability",
+            message = "Warn.",
+            severity = "WARN",
+        )
+
+        assertEquals(
+            listOf(errorWithLocation, errorWithoutLocation, warnWithLocation, warnWithoutLocation),
+            PicklesProblemOrdering.sorted(
+                listOf(warnWithoutLocation, warnWithLocation, errorWithoutLocation, errorWithLocation),
+            ),
+        )
+    }
+
+    @Test
     fun workspaceInspectionCollectsRepoRelativeJavaFilesAsModifiedInputs() {
         val root = temporaryFolder.newFolder("workspace").toPath()
         val javaFile = root.resolve("src/main/java/com/example/App.java")

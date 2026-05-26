@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesToolWindowPanel.kt`：对齐 Problem Board UI
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`
-    - 范围对象：`PicklesToolWindowPanel`、Problem row rendering
-    - 处理动作：增加 `Reindex` 入口、Header 状态展示、`Problems` / `Config` tab 和 Problem row 排序展示
-    - 验收点：测试覆盖 Problem 排序，手动验证能看到 tabs、header、problem rows 和 config editor
-    - 重要度：9/10
-
 - [ ] `docs/40-readiness/E2E-TEST-CASES.md`：同步主动检查验证口径
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`

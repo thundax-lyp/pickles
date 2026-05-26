@@ -15,6 +15,7 @@ import java.awt.GridBagLayout
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.JTabbedPane
 
 class PicklesToolWindowPanel(
     private val project: com.intellij.openapi.project.Project,
@@ -25,6 +26,7 @@ class PicklesToolWindowPanel(
     private val bindButton = JButton("Bind")
     private val unbindButton = JButton("Unbind")
     private val refreshButton = JButton("Refresh")
+    private val reindexButton = JButton("Reindex")
     private val saveButton = JButton("Save Config")
     private val configText = JBTextArea(10, 40)
     private val problemsPanel = JPanel()
@@ -38,6 +40,10 @@ class PicklesToolWindowPanel(
         bindButton.addActionListener { runAndRefresh("Bind failed") { service.bind() } }
         unbindButton.addActionListener { runAndRefresh("Unbind failed") { service.unbind() } }
         refreshButton.addActionListener { refresh() }
+        reindexButton.addActionListener {
+            service.reindexWorkspace()
+            refresh()
+        }
         saveButton.addActionListener { saveConfig() }
 
         listenerDisposable = service.addListener { refresh() }
@@ -54,30 +60,18 @@ class PicklesToolWindowPanel(
         actions.add(bindButton)
         actions.add(unbindButton)
         actions.add(refreshButton)
+        actions.add(reindexButton)
         panel.add(actions, BorderLayout.WEST)
         panel.add(statusLabel, BorderLayout.CENTER)
         return panel
     }
 
     private fun buildBody(): JComponent {
-        val root = JPanel(GridBagLayout())
-        val constraints = GridBagConstraints().apply {
-            fill = GridBagConstraints.BOTH
-            weightx = 1.0
-            insets = JBUI.insets(6)
-            gridx = 0
-        }
-
-        constraints.gridy = 0
-        constraints.weighty = 0.0
-        root.add(buildConfigPanel(), constraints)
-
-        constraints.gridy = 1
-        constraints.weighty = 1.0
         problemsPanel.layout = GridBagLayout()
-        root.add(JBScrollPane(problemsPanel), constraints)
-
-        return root
+        return JTabbedPane().apply {
+            addTab("Problems", JBScrollPane(problemsPanel))
+            addTab("Config", buildConfigPanel())
+        }
     }
 
     private fun buildConfigPanel(): JComponent {
@@ -118,7 +112,9 @@ class PicklesToolWindowPanel(
                 val (configTextValue, bindStatus) = result.getOrThrow()
                 bindButton.isEnabled = !bindStatus.bound
                 unbindButton.isEnabled = bindStatus.bound
-                statusLabel.text = service.lastStatus
+                val statusSnapshot = service.statusSnapshot()
+                reindexButton.isEnabled = statusSnapshot.indexStatus != PicklesIndexStatus.RUNNING
+                statusLabel.text = formatStatus(statusSnapshot)
 
                 configText.text = configTextValue
 
@@ -141,7 +137,7 @@ class PicklesToolWindowPanel(
             c.gridy = 0
             problemsPanel.add(JBLabel("No current problems."), c)
         } else {
-            problems.forEachIndexed { index, problem ->
+            PicklesProblemOrdering.sorted(problems).forEachIndexed { index, problem ->
                 c.gridy = index
                 problemsPanel.add(problemRow(problem), c)
             }
@@ -158,7 +154,10 @@ class PicklesToolWindowPanel(
         val title = StringUtil.escapeXmlEntities(problem.title)
         val type = StringUtil.escapeXmlEntities(problem.type)
         val message = StringUtil.escapeXmlEntities(problem.message)
-        val text = JButton("<html><b>$title</b> [$type]<br>$message</html>")
+        val severity = StringUtil.escapeXmlEntities(problem.severity)
+        val location = StringUtil.escapeXmlEntities(formatLocation(problem))
+        val rule = StringUtil.escapeXmlEntities(problem.source.rule ?: "-")
+        val text = JButton("<html><b>$severity</b> $title [$type]<br>$message<br>$location - rule: $rule</html>")
         text.horizontalAlignment = JButton.LEFT
         text.addActionListener { service.openProblem(problem) }
         val delete = JButton("Delete")
@@ -170,6 +169,17 @@ class PicklesToolWindowPanel(
 
     private fun saveConfig() {
         runAndRefresh("Save failed") { service.saveConfigText(configText.text) }
+    }
+
+    private fun formatStatus(status: PicklesServiceStatusSnapshot): String = "HTTP: ${status.httpServerStatus}  Runtime: ${status.runtimeStatus}  " +
+        "Index: ${status.indexStatus}  Problems: ${status.problemSummary.totalCount} " +
+        "(${status.problemSummary.errorCount} error, ${status.problemSummary.warnCount} warn)  " +
+        status.message
+
+    private fun formatLocation(problem: PicklesProblem): String {
+        val file = problem.file ?: "workspace"
+        val position = problem.position ?: return file
+        return "$file:${position.line}:${position.column}"
     }
 
     private fun runAndRefresh(title: String, action: () -> Result<Unit>) {
