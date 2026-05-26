@@ -159,6 +159,20 @@ const validateConfig = (config: PicklesRuntimeConfig): void => {
         throw new Error("Pickles config rules must be an array");
     }
 
+    if (config.workspace !== undefined) {
+        if (typeof config.workspace !== "object" || config.workspace === null) {
+            throw new Error("Pickles config workspace must be an object");
+        }
+
+        if (
+            config.workspace.ignore !== undefined &&
+            (!Array.isArray(config.workspace.ignore) ||
+                config.workspace.ignore.some((pattern) => typeof pattern !== "string"))
+        ) {
+            throw new Error("Pickles config workspace.ignore must be a string array");
+        }
+    }
+
     for (const rule of config.rules) {
         for (const field of [
             "id",

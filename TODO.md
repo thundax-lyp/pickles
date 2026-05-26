@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime/src/types.ts`：增加 `workspace.ignore` 类型与配置校验
-    - 任务类型：执行任务
-    - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
-    - 范围对象：`PicklesRuntimeConfig`、`defineConfig`、Runtime config validation
-    - 处理动作：在 Runtime 类型和 config validation 中支持可选 `workspace.ignore: string[]`
-    - 验收点：测试覆盖缺省配置通过、合法 ignore 通过、非 string array 配置报可理解错误
-    - 重要度：8/10
-
 - [ ] `pickles-runtime/`：在 Runtime workspace 输入处理中应用 `workspace.ignore`
     - 任务类型：执行任务
     - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
