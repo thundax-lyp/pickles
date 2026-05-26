@@ -142,6 +142,76 @@ test("runtime rejects non string array workspace ignore", async () => {
     );
 });
 
+test("runtime applies workspace ignore before parser diagnostics and native rules", async () => {
+    const workspaceRoot = createConfigWorkspace(`
+        export default {
+            agent: "codex",
+            hook: { protocol: "http" },
+            workspace: { ignore: ["ignored/", "*.generated.java"] },
+            rules: [
+                {
+                    id: "report-changed-java",
+                    title: "Report changed Java",
+                    message: "Changed Java file.",
+                    type: "maintainability",
+                    severity: "WARN",
+                    language: "java",
+                    files: ["**/*.java"],
+                    rule(ctx) {
+                        return ctx.changedFiles.map((file) =>
+                            ctx.problem({
+                                message: file.path,
+                                file: file.path,
+                                position: null,
+                            }),
+                        );
+                    },
+                },
+            ],
+            problemBoard: { aggregation: "workspace" },
+        };
+    `);
+
+    const result = await runRuntimeCheck({
+        workspaceRoot,
+        changedFiles: [
+            {
+                path: "ignored/Broken.java",
+                changeType: "modified",
+                before: null,
+                after: "public class Broken {",
+            },
+            {
+                path: "src/main/java/com/example/App.generated.java",
+                changeType: "modified",
+                before: null,
+                after: "public class Generated {}",
+            },
+            {
+                path: "src/main/java/com/example/App.java",
+                changeType: "modified",
+                before: null,
+                after: "public class App {}",
+            },
+        ],
+    });
+
+    assert.deepEqual(
+        result.problems.map((problem) => ({
+            type: problem.type,
+            message: problem.message,
+            file: problem.file,
+        })),
+        [
+            {
+                type: "maintainability",
+                message: "src/main/java/com/example/App.java",
+                file: "src/main/java/com/example/App.java",
+            },
+        ],
+    );
+});
+
 test("runtime returns parser diagnostics and continues native rule execution", async () => {
     const after = await readFile(path.join(sampleProjectRoot, sampleJavaPath), "utf8");
 

@@ -29,7 +29,9 @@ export const runRuntimeCheck = async (input: RuntimeCheckInput): Promise<Runtime
     const config = await loadRuntimeConfig(input.workspaceRoot);
     validateConfig(config);
 
-    const activeChangedFiles = input.changedFiles.filter((file) => file.changeType !== "unchanged");
+    const activeChangedFiles = input.changedFiles
+        .filter((file) => file.changeType !== "unchanged")
+        .filter((file) => !matchesAnyIgnore(file.path, config.workspace?.ignore ?? []));
     validateRuntimeInput(activeChangedFiles);
     const problems: Problem[] = [];
 
@@ -266,6 +268,48 @@ const matchesAnyGlob = (filePath: string, patterns: string[]): boolean => {
 
         return false;
     });
+};
+
+const matchesAnyIgnore = (filePath: string, patterns: string[]): boolean => {
+    return patterns.some((pattern) => matchesIgnorePattern(filePath, pattern));
+};
+
+const matchesIgnorePattern = (filePath: string, pattern: string): boolean => {
+    const normalizedPath = normalizeRepoPath(filePath);
+    const normalizedPattern = normalizeRepoPath(pattern);
+
+    if (normalizedPattern.length === 0) {
+        return false;
+    }
+
+    if (normalizedPattern.endsWith("/")) {
+        return normalizedPath.startsWith(normalizedPattern);
+    }
+
+    if (normalizedPattern.startsWith("*.")) {
+        return normalizedPath.substring(normalizedPath.lastIndexOf("/") + 1).endsWith(
+            normalizedPattern.slice(1),
+        );
+    }
+
+    if (normalizedPattern.includes("*")) {
+        return globToRegex(normalizedPattern).test(normalizedPath);
+    }
+
+    return normalizedPath === normalizedPattern || normalizedPath.endsWith(`/${normalizedPattern}`);
+};
+
+const normalizeRepoPath = (value: string): string => {
+    return value.replaceAll("\\", "/").replace(/^\/+/, "");
+};
+
+const globToRegex = (pattern: string): RegExp => {
+    const escaped = pattern
+        .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+        .replaceAll("**", "\u0000")
+        .replaceAll("*", "[^/]*")
+        .replaceAll("\u0000", ".*");
+    return new RegExp(`^${escaped}$`);
 };
 
 const unsupportedQuery = (): never => {

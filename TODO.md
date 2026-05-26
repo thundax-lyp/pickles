@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-runtime/`：在 Runtime workspace 输入处理中应用 `workspace.ignore`
-    - 任务类型：执行任务
-    - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
-    - 范围对象：`runRuntimeCheck`、changed files filtering、sample project tests
-    - 处理动作：Runtime 读取 config 后过滤被 `workspace.ignore` 命中的 changed files，再执行 parser 和 native rules
-    - 验收点：测试覆盖 ignored Java 文件不产生 parser diagnostic、不进入 native rule changed files
-    - 重要度：9/10
-
 - [ ] `pickles-intellij-plugin/`：调整 Reindex 与 Runtime ignore 的职责边界
     - 任务类型：执行任务
     - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
