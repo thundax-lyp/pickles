@@ -84,7 +84,7 @@ data class PicklesHttpResult(
 class PicklesHttpContractHandler(
     private val gson: Gson,
     private val projectRoot: Path,
-    private val runtimeClient: PicklesRuntimeClient? = null,
+    private val notifyQueue: ((List<RuntimeChangedFile>) -> Unit)? = null,
     private val problemBoard: PicklesProblemBoardState? = null,
 ) {
     fun health(): PicklesHttpResult = PicklesHttpResult(200, HealthResponse())
@@ -128,33 +128,21 @@ class PicklesHttpContractHandler(
             }
         }
 
-        val runtimeProblems = runtimeClient?.let { client ->
-            runCatching {
-                client.inspect(
-                    files.map { file ->
-                        RuntimeChangedFile(
-                            fileName = file.fileName!!,
-                            before = file.before,
-                            after = file.after,
-                        )
-                    },
+        notifyQueue?.invoke(
+            files.map { file ->
+                RuntimeChangedFile(
+                    fileName = file.fileName!!,
+                    before = file.before,
+                    after = file.after,
                 )
-            }.getOrElse { failure ->
-                return error(
-                    500,
-                    request.requestId,
-                    "INTERNAL_ERROR",
-                    failure.message ?: "Pickles Runtime failed.",
-                )
-            }
-        } ?: emptyList()
-        problemBoard?.replaceProblems(runtimeProblems)
+            },
+        )
 
         return PicklesHttpResult(
             202,
             NotifyResponse(
                 requestId = request.requestId!!,
-                processed = runtimeClient != null,
+                processed = notifyQueue != null,
             ),
         )
     }

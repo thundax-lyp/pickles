@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesHttpContract.kt`：将 Hook notify 接入 Runtime 队列
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`
-    - 范围对象：`PicklesHttpContractHandler.notify`、`PicklesProjectService.handleNotify`
-    - 处理动作：将 Runtime 调用移出 HTTP contract handler，notify 校验成功后由 service 入队并立即返回 `202 accepted`
-    - 验收点：测试覆盖 notify 校验失败仍返回错误、成功后不等待 Runtime 完成、与 Reindex 重叠时旧结果失效并补跑 notify
-    - 重要度：10/10
-
 - [ ] `pickles-intellij-plugin/`：补充队列状态展示
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`

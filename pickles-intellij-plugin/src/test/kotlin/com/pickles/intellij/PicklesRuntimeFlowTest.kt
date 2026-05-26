@@ -16,26 +16,14 @@ class PicklesRuntimeFlowTest {
     private val gson = GsonBuilder().serializeNulls().create()
 
     @Test
-    fun notifyCallsRuntimeAndStoresProblemBoardData() {
+    fun notifyQueuesRuntimeFilesWithoutUpdatingProblemBoard() {
         val root = temporaryFolder.newFolder("workspace").toPath()
-        val runtime = RecordingRuntimeClient(
-            listOf(
-                PicklesProblem(
-                    title = "Controller must not import repository directly",
-                    type = "architecture",
-                    message = "Controller imports repository directly.",
-                    severity = "ERROR",
-                    source = ProblemSource(tool = "pickles-native", rule = "sample-rule"),
-                    file = "src/main/java/com/example/web/OrderController.java",
-                    position = ProblemPosition(line = 3, column = 1),
-                ),
-            ),
-        )
+        var queuedFiles: List<RuntimeChangedFile> = emptyList()
         val problemBoard = PicklesProblemBoardState()
         val handler = PicklesHttpContractHandler(
             gson = gson,
             projectRoot = root,
-            runtimeClient = runtime,
+            notifyQueue = { files -> queuedFiles = files },
             problemBoard = problemBoard,
         )
 
@@ -67,9 +55,9 @@ class PicklesRuntimeFlowTest {
         assertTrue(body.processed)
         assertEquals(
             listOf(RuntimeChangedFile("src/main/java/com/example/web/OrderController.java", "old", "new")),
-            runtime.receivedFiles,
+            queuedFiles,
         )
-        assertEquals(runtime.problemsToReturn, problemBoard.problems())
+        assertEquals(emptyList<PicklesProblem>(), problemBoard.problems())
     }
 
     @Test
@@ -521,55 +509,6 @@ class PicklesRuntimeFlowTest {
         }
 
         assertEquals("Pickles Runtime returned an empty response.", error.message)
-    }
-
-    @Test
-    fun notifyReturnsInternalErrorWhenRuntimeFailsWithoutClearingProblemBoard() {
-        val root = temporaryFolder.newFolder("workspace").toPath()
-        val existingProblem = PicklesProblem(
-            title = "Existing",
-            type = "architecture",
-            message = "Existing problem.",
-            severity = "ERROR",
-        )
-        val problemBoard = PicklesProblemBoardState()
-        problemBoard.replaceProblems(listOf(existingProblem))
-        val handler = PicklesHttpContractHandler(
-            gson = gson,
-            projectRoot = root,
-            runtimeClient = FailingRuntimeClient(),
-            problemBoard = problemBoard,
-        )
-
-        val result = handler.notify(
-            """
-            {
-              "schemaVersion": 1,
-              "requestId": "req-runtime-error",
-              "event": {
-                "sessionId": "session-1",
-                "turnId": "turn-1",
-                "hookEventName": "PostToolUse",
-                "workspace": "${root.toAbsolutePath()}",
-                "idempotencyKey": "session-1:turn-1:PostToolUse:src/main/java/com/example/web/OrderController.java"
-              },
-              "files": [
-                {
-                  "fileName": "src/main/java/com/example/web/OrderController.java",
-                  "before": "old",
-                  "after": "new"
-                }
-              ]
-            }
-            """.trimIndent(),
-        )
-        val body = result.body as ApiErrorResponse
-
-        assertEquals(500, result.status)
-        assertEquals("req-runtime-error", body.requestId)
-        assertEquals("INTERNAL_ERROR", body.error.code)
-        assertEquals("Runtime unavailable.", body.error.message)
-        assertEquals(listOf(existingProblem), problemBoard.problems())
     }
 
     private class RecordingRuntimeClient(
