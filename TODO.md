@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/40-readiness/E2E-TEST-CASES.md`：同步主动检查验证口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`
-    - 范围对象：`docs/40-readiness/E2E-TEST-CASES.md`
-    - 处理动作：记录首次 workspace 检查、手动 Reindex 和 Problem Board 状态的验证入口
-    - 验收点：文档包含可执行验证命令和手动验证断言，不改变既有 Hook / Runtime 边界
-    - 重要度：7/10
-
 - [ ] `docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`：完成任务收口并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`

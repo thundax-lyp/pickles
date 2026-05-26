@@ -350,7 +350,49 @@ scripts/verify-intellij-plugin.sh
 - Plugin 不把 Problem Board 按 task 单独保存。
 - Plugin 不从 Runtime 内部状态读取临时数据。
 
-### 7.7 E2E_FULL_FLOW
+### 7.7 PLUGIN_WORKSPACE_REINDEX
+
+状态：已实现，已接入 `scripts/verify-intellij-plugin.sh`。
+
+目标：验证 IntelliJ Plugin 能在 IDE 侧主动构造 workspace Java 文件输入，调用 Runtime，并刷新 Problem Board 状态。
+
+覆盖模块：
+
+- `pickles-intellij-plugin/`
+- `pickles-runtime/`
+
+固定命令：
+
+```bash
+scripts/verify-intellij-plugin.sh
+```
+
+手动调试入口：
+
+```bash
+cd pickles-intellij-plugin
+../scripts/run-intellij-gradle.sh -p . runIde --no-configuration-cache
+```
+
+固定断言：
+
+- Plugin HTTP server 启动后会触发首次 workspace 检查。
+- 手动 `Reindex` 入口会复用同一条 workspace 检查路径。
+- workspace 检查只向 Runtime 传入 repo-relative `.java` 文件。
+- workspace 检查传入 Runtime 的 changed file 使用 `modified` change type。
+- Runtime 成功返回后 Problem Board 被替换为最新 Problems。
+- Runtime 失败时旧 Problem Board 不被清空。
+- Problem Board Header 展示 HTTP server、Runtime、Index 和 Problem summary 状态。
+- Problem row 按 `ERROR`、`WARN`、有 file / position、Runtime 返回顺序排序。
+
+防漂移点：
+
+- Plugin 不执行 native rules。
+- Plugin 不直接读取 Runtime 内部状态。
+- Plugin 不修改用户业务代码。
+- Reindex 不改变 Hook HTTP contract。
+
+### 7.8 E2E_FULL_FLOW
 
 状态：已自动化。
 
@@ -398,8 +440,9 @@ scripts/verify-full-flow.sh
 2. 修改 Hook 脚本：必须运行 `HOOK_PLUGIN_CONTRACT`。
 3. 修改 Runtime 规则执行或 Problem 聚合：必须运行 `RUNTIME_SAMPLE_PROJECT`。
 4. 修改 Plugin 到 Runtime 编排：必须运行 `PLUGIN_RUNTIME_FLOW`。
-5. 修改跨模块闭环：必须运行 `E2E_FULL_FLOW`。
-6. 修改 e2e sample project：必须运行 `E2E_SAMPLE_PROJECT_VERIFY`。
+5. 修改 Plugin 主动检查或 Reindex：必须运行 `PLUGIN_WORKSPACE_REINDEX`。
+6. 修改跨模块闭环：必须运行 `E2E_FULL_FLOW`。
+7. 修改 e2e sample project：必须运行 `E2E_SAMPLE_PROJECT_VERIFY`。
 
 ### 8.2 PR 必测流
 
