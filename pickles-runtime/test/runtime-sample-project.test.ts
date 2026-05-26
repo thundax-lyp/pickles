@@ -3,6 +3,8 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import test from "node:test";
 
 import { runRuntimeCheck } from "../src/index.ts";
@@ -77,6 +79,136 @@ test("runtime stdio host returns an error for an invalid request", () => {
     assert.equal(
         response.error.message,
         "Runtime stdio request workspaceRoot must be a non-empty string.",
+    );
+});
+
+test("runtime accepts configs without workspace ignore", async () => {
+    const workspaceRoot = createConfigWorkspace(`
+        export default {
+            agent: "codex",
+            hook: { protocol: "http" },
+            rules: [],
+            problemBoard: { aggregation: "workspace" },
+        };
+    `);
+
+    const result = await runRuntimeCheck({
+        workspaceRoot,
+        changedFiles: [],
+    });
+
+    assert.deepEqual(result, { problems: [] });
+});
+
+test("runtime accepts configs with workspace ignore", async () => {
+    const workspaceRoot = createConfigWorkspace(`
+        export default {
+            agent: "codex",
+            hook: { protocol: "http" },
+            workspace: { ignore: ["generated/", "*.generated.java"] },
+            rules: [],
+            problemBoard: { aggregation: "workspace" },
+        };
+    `);
+
+    const result = await runRuntimeCheck({
+        workspaceRoot,
+        changedFiles: [],
+    });
+
+    assert.deepEqual(result, { problems: [] });
+});
+
+test("runtime rejects non string array workspace ignore", async () => {
+    const workspaceRoot = createConfigWorkspace(`
+        export default {
+            agent: "codex",
+            hook: { protocol: "http" },
+            workspace: { ignore: ["generated/", 1] },
+            rules: [],
+            problemBoard: { aggregation: "workspace" },
+        };
+    `);
+
+    await assert.rejects(
+        () =>
+            runRuntimeCheck({
+                workspaceRoot,
+                changedFiles: [],
+            }),
+        {
+            message: "Pickles config workspace.ignore must be a string array",
+        },
+    );
+});
+
+test("runtime applies workspace ignore before parser diagnostics and native rules", async () => {
+    const workspaceRoot = createConfigWorkspace(`
+        export default {
+            agent: "codex",
+            hook: { protocol: "http" },
+            workspace: { ignore: ["ignored/", "*.generated.java"] },
+            rules: [
+                {
+                    id: "report-changed-java",
+                    title: "Report changed Java",
+                    message: "Changed Java file.",
+                    type: "maintainability",
+                    severity: "WARN",
+                    language: "java",
+                    files: ["**/*.java"],
+                    rule(ctx) {
+                        return ctx.changedFiles.map((file) =>
+                            ctx.problem({
+                                message: file.path,
+                                file: file.path,
+                                position: null,
+                            }),
+                        );
+                    },
+                },
+            ],
+            problemBoard: { aggregation: "workspace" },
+        };
+    `);
+
+    const result = await runRuntimeCheck({
+        workspaceRoot,
+        changedFiles: [
+            {
+                path: "ignored/Broken.java",
+                changeType: "modified",
+                before: null,
+                after: "public class Broken {",
+            },
+            {
+                path: "src/main/java/com/example/App.generated.java",
+                changeType: "modified",
+                before: null,
+                after: "public class Generated {}",
+            },
+            {
+                path: "src/main/java/com/example/App.java",
+                changeType: "modified",
+                before: null,
+                after: "public class App {}",
+            },
+        ],
+    });
+
+    assert.deepEqual(
+        result.problems.map((problem) => ({
+            type: problem.type,
+            message: problem.message,
+            file: problem.file,
+        })),
+        [
+            {
+                type: "maintainability",
+                message: "src/main/java/com/example/App.java",
+                file: "src/main/java/com/example/App.java",
+            },
+        ],
     );
 });
 
@@ -172,4 +304,10 @@ const runRuntimeStdio = (request: unknown) => {
         input: JSON.stringify(request),
         encoding: "utf8",
     });
+};
+
+const createConfigWorkspace = (configSource: string): string => {
+    const workspaceRoot = mkdtempSync(path.join(tmpdir(), "pickles-config-"));
+    writeFileSync(path.join(workspaceRoot, "pickles.config.mjs"), configSource, "utf8");
+    return workspaceRoot;
 };

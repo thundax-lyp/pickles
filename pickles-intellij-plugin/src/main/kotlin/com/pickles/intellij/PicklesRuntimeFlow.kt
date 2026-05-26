@@ -8,14 +8,18 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.relativeTo
 
 data class RuntimeChangedFile(
     val fileName: String,
     val before: String?,
     val after: String?,
+    private val explicitChangeType: String? = null,
 ) {
     val changeType: String
-        get() = when {
+        get() = explicitChangeType ?: when {
             before == null -> "added"
             after == null -> "deleted"
             else -> "modified"
@@ -28,6 +32,125 @@ interface PicklesRuntimeClient {
 
 class EmptyPicklesRuntimeClient : PicklesRuntimeClient {
     override fun inspect(files: List<RuntimeChangedFile>): List<PicklesProblem> = emptyList()
+}
+
+class PicklesWorkspaceIndexGate {
+    private val running = AtomicBoolean(false)
+
+    fun tryStart(): Boolean = running.compareAndSet(false, true)
+
+    fun finish() {
+        running.set(false)
+    }
+
+    fun isRunning(): Boolean = running.get()
+}
+
+object PicklesWorkspaceInspection {
+    fun collectJavaFiles(workspaceRoot: Path): List<RuntimeChangedFile> {
+        val normalizedRoot = workspaceRoot.toAbsolutePath().normalize()
+        if (!Files.isDirectory(normalizedRoot)) {
+            return emptyList()
+        }
+        val ignoreMatcher = PicklesWorkspaceIgnoreMatcher.load(normalizedRoot)
+
+        return Files.walk(normalizedRoot).use { paths ->
+            paths
+                .filter { it.isRegularFile() }
+                .filter { it.fileName.toString().endsWith(".java") }
+                .filter { !ignoreMatcher.ignores(it.relativeTo(normalizedRoot).toString()) }
+                .sorted()
+                .map { file ->
+                    RuntimeChangedFile(
+                        fileName = file.relativeTo(normalizedRoot).toString(),
+                        before = null,
+                        after = Files.readString(file, StandardCharsets.UTF_8),
+                        explicitChangeType = "modified",
+                    )
+                }
+                .toList()
+        }
+    }
+
+    fun inspect(
+        workspaceRoot: Path,
+        runtimeClient: PicklesRuntimeClient,
+        problemBoard: PicklesProblemBoardState,
+    ): List<PicklesProblem> {
+        val problems = runtimeClient.inspect(collectJavaFiles(workspaceRoot))
+        problemBoard.replaceProblems(problems)
+        return problems
+    }
+}
+
+class PicklesWorkspaceIgnoreMatcher private constructor(
+    private val directoryPatterns: Set<String>,
+    private val fileNamePatterns: Set<String>,
+) {
+    fun ignores(relativePath: String): Boolean {
+        val normalized = relativePath.replace('\\', '/').trimStart('/')
+        val segments = normalized.split('/').filter { it.isNotEmpty() }
+        if (segments.any { segment -> directoryPatterns.contains("$segment/") }) {
+            return true
+        }
+        if (directoryPatterns.any { pattern -> normalized.startsWith(pattern) }) {
+            return true
+        }
+        return fileNamePatterns.any { pattern -> matchesFilePattern(normalized, pattern) }
+    }
+
+    private fun matchesFilePattern(path: String, pattern: String): Boolean = when {
+        pattern.startsWith("*.") -> path.substringAfterLast('/').endsWith(pattern.removePrefix("*"))
+        pattern.contains("*") -> Regex(pattern.replace(".", "\\.").replace("*", ".*")).matches(path.substringAfterLast('/'))
+        else -> path == pattern || path.endsWith("/$pattern")
+    }
+
+    companion object {
+        private val BUILT_IN_DIRECTORIES = setOf(".git/", ".idea/", ".gradle/", "build/", "out/", "node_modules/")
+
+        fun load(workspaceRoot: Path): PicklesWorkspaceIgnoreMatcher {
+            val gitignorePatterns = readGitignorePatterns(workspaceRoot)
+            return PicklesWorkspaceIgnoreMatcher(
+                directoryPatterns = BUILT_IN_DIRECTORIES + gitignorePatterns.filter { it.endsWith("/") },
+                fileNamePatterns = gitignorePatterns.filterNot { it.endsWith("/") }.toSet(),
+            )
+        }
+
+        private fun readGitignorePatterns(workspaceRoot: Path): Set<String> {
+            val gitignore = workspaceRoot.resolve(".gitignore")
+            if (!Files.isRegularFile(gitignore)) {
+                return emptySet()
+            }
+
+            return Files.readAllLines(gitignore, StandardCharsets.UTF_8)
+                .asSequence()
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .filterNot { it.startsWith("#") }
+                .filterNot { it.startsWith("!") }
+                .map { it.trimStart('/') }
+                .toSet()
+        }
+    }
+}
+
+object PicklesProblemOrdering {
+    fun sorted(problems: List<PicklesProblem>): List<PicklesProblem> = problems
+        .withIndex()
+        .sortedWith(
+            compareBy<IndexedValue<PicklesProblem>> { severityRank(it.value.severity) }
+                .thenBy { locationRank(it.value) }
+                .thenBy { it.index },
+        )
+        .map { it.value }
+
+    private fun severityRank(severity: String): Int = when (severity) {
+        "ERROR" -> 0
+        "WARN" -> 1
+        else -> 2
+    }
+
+    private fun locationRank(problem: PicklesProblem): Int = if (problem.file != null || problem.position != null) 0 else 1
 }
 
 class NodePicklesRuntimeClient(
@@ -155,6 +278,8 @@ class PicklesProblemBoardState {
 
     fun problems(): List<PicklesProblem> = currentProblems
 
+    fun summary(): PicklesProblemSummary = PicklesProblemSummary.from(currentProblems)
+
     fun replaceProblems(problems: List<PicklesProblem>) {
         currentProblems = problems
     }
@@ -163,3 +288,56 @@ class PicklesProblemBoardState {
         currentProblems = currentProblems.filterNot { it == problem }
     }
 }
+
+enum class PicklesHttpServerStatus {
+    STOPPED,
+    RUNNING,
+}
+
+enum class PicklesRuntimeStatus {
+    UNKNOWN,
+    AVAILABLE,
+    UNAVAILABLE,
+}
+
+enum class PicklesIndexStatus {
+    IDLE,
+    RUNNING,
+    SUCCEEDED,
+    FAILED,
+}
+
+data class PicklesProblemSummary(
+    val totalCount: Int,
+    val errorCount: Int,
+    val warnCount: Int,
+    val text: String,
+) {
+    companion object {
+        fun from(problems: List<PicklesProblem>): PicklesProblemSummary {
+            val errorCount = problems.count { it.severity == "ERROR" }
+            val warnCount = problems.count { it.severity == "WARN" }
+            val totalCount = problems.size
+            val text = when {
+                totalCount == 0 -> "No Pickles governance problems."
+                errorCount > 0 -> "Pickles found $errorCount blocking problem(s) and $warnCount warning(s)."
+                else -> "Pickles found $warnCount warning(s)."
+            }
+
+            return PicklesProblemSummary(
+                totalCount = totalCount,
+                errorCount = errorCount,
+                warnCount = warnCount,
+                text = text,
+            )
+        }
+    }
+}
+
+data class PicklesServiceStatusSnapshot(
+    val httpServerStatus: PicklesHttpServerStatus,
+    val runtimeStatus: PicklesRuntimeStatus,
+    val indexStatus: PicklesIndexStatus,
+    val problemSummary: PicklesProblemSummary,
+    val message: String,
+)

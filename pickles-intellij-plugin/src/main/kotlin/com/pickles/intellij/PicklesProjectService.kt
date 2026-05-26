@@ -32,12 +32,22 @@ class PicklesProjectService(private val project: Project) : Disposable {
         Thread(runnable, "Pickles Project Service").apply { isDaemon = true }
     }
     private val problemBoard = PicklesProblemBoardState()
+    private val indexGate = PicklesWorkspaceIndexGate()
 
     @Volatile
     private var httpServer: HttpServer? = null
 
     @Volatile
     private var runtimeClient: PicklesRuntimeClient? = null
+
+    @Volatile
+    private var httpServerStatus: PicklesHttpServerStatus = PicklesHttpServerStatus.STOPPED
+
+    @Volatile
+    private var runtimeStatus: PicklesRuntimeStatus = PicklesRuntimeStatus.UNKNOWN
+
+    @Volatile
+    private var indexStatus: PicklesIndexStatus = PicklesIndexStatus.IDLE
 
     @Volatile
     var lastStatus: String = "Pickles is idle."
@@ -106,9 +116,32 @@ class PicklesProjectService(private val project: Project) : Disposable {
 
     fun problems(): List<PicklesProblem> = problemBoard.problems()
 
+    fun statusSnapshot(): PicklesServiceStatusSnapshot = PicklesServiceStatusSnapshot(
+        httpServerStatus = httpServerStatus,
+        runtimeStatus = runtimeStatus,
+        indexStatus = indexStatus,
+        problemSummary = problemBoard.summary(),
+        message = lastStatus,
+    )
+
     fun deleteProblem(problem: PicklesProblem) {
         problemBoard.deleteProblem(problem)
         updateStatus("Problem removed from current board.")
+    }
+
+    fun reindexWorkspace() {
+        if (!indexGate.tryStart()) {
+            updateStatus("Workspace indexing is already running.")
+            return
+        }
+
+        executor.execute {
+            try {
+                runWorkspaceInspection()
+            } finally {
+                indexGate.finish()
+            }
+        }
     }
 
     fun openProblem(problem: PicklesProblem) {
@@ -139,8 +172,10 @@ class PicklesProjectService(private val project: Project) : Disposable {
                 server.executor = executor
                 server.start()
                 httpServer = server
+                httpServerStatus = PicklesHttpServerStatus.RUNNING
                 writeServerFile(server.address.port)
                 updateStatus("Local HTTP server started on port ${server.address.port}.")
+                reindexWorkspace()
             }.onFailure {
                 thisLogger().warn("Failed to start Pickles HTTP server", it)
                 showError("Failed to start Pickles local HTTP server: ${it.message}")
@@ -151,6 +186,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
     override fun dispose() {
         runCatching { httpServer?.stop(0) }
         httpServer = null
+        httpServerStatus = PicklesHttpServerStatus.STOPPED
         executor.shutdownNow()
     }
 
@@ -198,14 +234,48 @@ class PicklesProjectService(private val project: Project) : Disposable {
         runtimeClient?.let { return it }
 
         val root = projectRoot ?: return null
-        val runtimeRoot = PicklesRuntimeLocator.find(root) ?: return null
+        val runtimeRoot = PicklesRuntimeLocator.find(root)
+            ?: run {
+                runtimeStatus = PicklesRuntimeStatus.UNAVAILABLE
+                return null
+            }
         val client = NodePicklesRuntimeClient(
             workspaceRoot = root,
             runtimeRoot = runtimeRoot,
             gson = gson,
         )
         runtimeClient = client
+        runtimeStatus = PicklesRuntimeStatus.AVAILABLE
         return client
+    }
+
+    private fun runWorkspaceInspection() {
+        indexStatus = PicklesIndexStatus.RUNNING
+        updateStatus("Workspace indexing is running.")
+
+        val client = runtimeClient()
+        if (client == null) {
+            indexStatus = PicklesIndexStatus.FAILED
+            runtimeStatus = PicklesRuntimeStatus.UNAVAILABLE
+            updateStatus("Pickles Runtime is unavailable.")
+            return
+        }
+
+        runCatching {
+            PicklesWorkspaceInspection.inspect(
+                workspaceRoot = requireProjectRoot(),
+                runtimeClient = client,
+                problemBoard = problemBoard,
+            )
+        }.onSuccess { problems ->
+            runtimeStatus = PicklesRuntimeStatus.AVAILABLE
+            indexStatus = PicklesIndexStatus.SUCCEEDED
+            updateStatus("Workspace indexing completed with ${problems.size} problem(s).")
+        }.onFailure { failure ->
+            runtimeStatus = PicklesRuntimeStatus.UNAVAILABLE
+            indexStatus = PicklesIndexStatus.FAILED
+            updateStatus(failure.message ?: "Pickles Runtime failed.")
+        }
     }
 
     private fun respond(exchange: HttpExchange, result: PicklesHttpResult) {

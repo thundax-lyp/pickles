@@ -56,6 +56,9 @@ export interface PicklesRuntimeConfig {
     hook: {
         protocol: "http";
     };
+    workspace?: {
+        ignore?: string[];
+    };
     rules: PicklesNativeRule[];
     problemBoard: {
         aggregation: "workspace";

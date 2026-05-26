@@ -89,10 +89,214 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun problemBoardSummaryCountsEmptyErrorAndWarnProblems() {
+        val problemBoard = PicklesProblemBoardState()
+
+        assertEquals(
+            PicklesProblemSummary(
+                totalCount = 0,
+                errorCount = 0,
+                warnCount = 0,
+                text = "No Pickles governance problems.",
+            ),
+            problemBoard.summary(),
+        )
+
+        problemBoard.replaceProblems(
+            listOf(
+                PicklesProblem(
+                    title = "Blocking",
+                    type = "architecture",
+                    message = "Blocking problem.",
+                    severity = "ERROR",
+                ),
+                PicklesProblem(
+                    title = "Warning",
+                    type = "maintainability",
+                    message = "Warning problem.",
+                    severity = "WARN",
+                ),
+            ),
+        )
+
+        assertEquals(
+            PicklesProblemSummary(
+                totalCount = 2,
+                errorCount = 1,
+                warnCount = 1,
+                text = "Pickles found 1 blocking problem(s) and 1 warning(s).",
+            ),
+            problemBoard.summary(),
+        )
+    }
+
+    @Test
     fun runtimeChangedFileDerivesRuntimeChangeType() {
         assertEquals("added", RuntimeChangedFile("src/New.java", null, "new").changeType)
         assertEquals("deleted", RuntimeChangedFile("src/Old.java", "old", null).changeType)
         assertEquals("modified", RuntimeChangedFile("src/File.java", "old", "new").changeType)
+    }
+
+    @Test
+    fun workspaceIndexGateRejectsConcurrentRunsUntilFinished() {
+        val gate = PicklesWorkspaceIndexGate()
+
+        assertTrue(gate.tryStart())
+        assertTrue(gate.isRunning())
+        assertEquals(false, gate.tryStart())
+
+        gate.finish()
+
+        assertEquals(false, gate.isRunning())
+        assertTrue(gate.tryStart())
+    }
+
+    @Test
+    fun problemOrderingSortsBySeverityLocationAndRuntimeOrder() {
+        val warnWithLocation = PicklesProblem(
+            title = "Warn with location",
+            type = "maintainability",
+            message = "Warn.",
+            severity = "WARN",
+            file = "src/Warn.java",
+            position = ProblemPosition(line = 1, column = 1),
+        )
+        val errorWithoutLocation = PicklesProblem(
+            title = "Error without location",
+            type = "architecture",
+            message = "Error.",
+            severity = "ERROR",
+        )
+        val errorWithLocation = PicklesProblem(
+            title = "Error with location",
+            type = "architecture",
+            message = "Error.",
+            severity = "ERROR",
+            file = "src/Error.java",
+            position = ProblemPosition(line = 1, column = 1),
+        )
+        val warnWithoutLocation = PicklesProblem(
+            title = "Warn without location",
+            type = "maintainability",
+            message = "Warn.",
+            severity = "WARN",
+        )
+
+        assertEquals(
+            listOf(errorWithLocation, errorWithoutLocation, warnWithLocation, warnWithoutLocation),
+            PicklesProblemOrdering.sorted(
+                listOf(warnWithoutLocation, warnWithLocation, errorWithoutLocation, errorWithLocation),
+            ),
+        )
+    }
+
+    @Test
+    fun workspaceInspectionCollectsRepoRelativeJavaFilesAsModifiedInputs() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        val javaFile = root.resolve("src/main/java/com/example/App.java")
+        val ignoredFile = root.resolve("src/main/resources/app.txt")
+        javaFile.parent.toFile().mkdirs()
+        ignoredFile.parent.toFile().mkdirs()
+        javaFile.toFile().writeText("class App {}\n")
+        ignoredFile.toFile().writeText("ignored")
+
+        val files = PicklesWorkspaceInspection.collectJavaFiles(root)
+
+        assertEquals(1, files.size)
+        assertEquals("src/main/java/com/example/App.java", files.single().fileName)
+        assertEquals(null, files.single().before)
+        assertEquals("class App {}\n", files.single().after)
+        assertEquals("modified", files.single().changeType)
+    }
+
+    @Test
+    fun workspaceInspectionUsesBuiltInAndGitignoreFilters() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        root.resolve(".gitignore").toFile().writeText(
+            """
+            generated/
+            *.generated.java
+            """.trimIndent(),
+        )
+        val included = root.resolve("src/main/java/com/example/App.java")
+        val buildOutput = root.resolve("build/generated/BuildOutput.java")
+        val generatedDirectory = root.resolve("generated/Ignored.java")
+        val generatedFile = root.resolve("src/main/java/com/example/App.generated.java")
+        listOf(included, buildOutput, generatedDirectory, generatedFile).forEach { file ->
+            file.parent.toFile().mkdirs()
+            file.toFile().writeText("class Ignored {}\n")
+        }
+
+        val files = PicklesWorkspaceInspection.collectJavaFiles(root)
+
+        assertEquals(listOf("src/main/java/com/example/App.java"), files.map { it.fileName })
+    }
+
+    @Test
+    fun workspaceInspectionDoesNotParsePicklesConfigIgnore() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        root.resolve("pickles.config.ts").toFile().writeText(
+            """
+            export default {
+                workspace: {
+                    ignore: ["generated/"],
+                },
+            };
+            """.trimIndent(),
+        )
+        val generatedFile = root.resolve("generated/Ignored.java")
+        generatedFile.parent.toFile().mkdirs()
+        generatedFile.toFile().writeText("class Ignored {}\n")
+
+        val files = PicklesWorkspaceInspection.collectJavaFiles(root)
+
+        assertEquals(listOf("generated/Ignored.java"), files.map { it.fileName })
+    }
+
+    @Test
+    fun workspaceInspectionCallsRuntimeAndStoresProblemBoardData() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        val javaFile = root.resolve("src/main/java/com/example/App.java")
+        javaFile.parent.toFile().mkdirs()
+        javaFile.toFile().writeText("class App {}\n")
+        val problem = PicklesProblem(
+            title = "Problem",
+            type = "architecture",
+            message = "Message.",
+            severity = "WARN",
+            file = "src/main/java/com/example/App.java",
+        )
+        val runtime = RecordingRuntimeClient(listOf(problem))
+        val problemBoard = PicklesProblemBoardState()
+
+        val problems = PicklesWorkspaceInspection.inspect(root, runtime, problemBoard)
+
+        assertEquals(listOf(problem), problems)
+        assertEquals(listOf(problem), problemBoard.problems())
+        assertEquals(1, runtime.receivedFiles.size)
+        assertEquals("src/main/java/com/example/App.java", runtime.receivedFiles.single().fileName)
+    }
+
+    @Test
+    fun workspaceInspectionFailureKeepsExistingProblemBoardData() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        val javaFile = root.resolve("src/main/java/com/example/App.java")
+        javaFile.parent.toFile().mkdirs()
+        javaFile.toFile().writeText("class App {}\n")
+        val existingProblem = PicklesProblem(
+            title = "Existing",
+            type = "architecture",
+            message = "Existing problem.",
+            severity = "ERROR",
+        )
+        val problemBoard = PicklesProblemBoardState()
+        problemBoard.replaceProblems(listOf(existingProblem))
+
+        assertThrows(IOException::class.java) {
+            PicklesWorkspaceInspection.inspect(root, FailingRuntimeClient(), problemBoard)
+        }
+
+        assertEquals(listOf(existingProblem), problemBoard.problems())
     }
 
     @Test
