@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesRuntimeFlow.kt`：抽出 Runtime 调用队列模型
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`
-    - 范围对象：`PicklesRuntimeQueue`、`RuntimeQueueRequest`、`RuntimeRunVersion`
-    - 处理动作：新增不依赖 IntelliJ `Project` 的队列对象，负责入队、pending 合并、重叠失效和 next request 选择
-    - 验收点：Kotlin 单元测试覆盖空队列、串行队列、重叠失效和同一路径保留最新 pending 内容
-    - 重要度：10/10
-
 - [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesProjectService.kt`：将 Reindex 接入 Runtime 队列
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`

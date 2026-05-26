@@ -152,6 +152,73 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun runtimeQueueStartsFirstRequestImmediately() {
+        val queue = PicklesRuntimeQueue()
+
+        val run = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))
+
+        assertEquals(1L, run?.version)
+        assertEquals(RuntimeQueueSource.REINDEX, run?.request?.source)
+        assertEquals(
+            RuntimeQueueSnapshot(
+                running = true,
+                pending = false,
+                currentInvalidated = false,
+            ),
+            queue.snapshot(),
+        )
+    }
+
+    @Test
+    fun runtimeQueueQueuesNonOverlappingRequestAfterCurrentRun() {
+        val queue = PicklesRuntimeQueue()
+        val first = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))
+
+        val second = queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/Other.java", "notify")))
+        val completion = queue.complete(first!!.version)
+
+        assertEquals(null, second)
+        assertTrue(completion.shouldApplyResult)
+        assertEquals(2L, completion.nextRun?.version)
+        assertEquals(listOf("src/Other.java"), completion.nextRun?.request?.files?.map { it.fileName })
+    }
+
+    @Test
+    fun runtimeQueueInvalidatesCurrentRunWhenOverlappingRequestArrives() {
+        val queue = PicklesRuntimeQueue()
+        val first = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))
+
+        queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/App.java", "notify")))
+        assertEquals(
+            RuntimeQueueSnapshot(
+                running = true,
+                pending = true,
+                currentInvalidated = true,
+            ),
+            queue.snapshot(),
+        )
+        val completion = queue.complete(first!!.version)
+
+        assertEquals(false, completion.shouldApplyResult)
+        assertEquals(2L, completion.nextRun?.version)
+        assertEquals("notify", completion.nextRun?.request?.files?.single()?.after)
+    }
+
+    @Test
+    fun runtimeQueueKeepsLatestPendingContentForSamePath() {
+        val queue = PicklesRuntimeQueue()
+        queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))
+
+        queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/Other.java", "old")))
+        queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/Other.java", "new")))
+        val completion = queue.complete(1L)
+
+        assertEquals(true, completion.shouldApplyResult)
+        assertEquals(RuntimeQueueSource.NOTIFY, completion.nextRun?.request?.source)
+        assertEquals(listOf("new"), completion.nextRun?.request?.files?.map { it.after })
+    }
+
+    @Test
     fun problemOrderingSortsBySeverityLocationAndRuntimeOrder() {
         val warnWithLocation = PicklesProblem(
             title = "Warn with location",
@@ -462,6 +529,20 @@ class PicklesRuntimeFlowTest {
     private class FailingRuntimeClient : PicklesRuntimeClient {
         override fun inspect(files: List<RuntimeChangedFile>): List<PicklesProblem> = throw IOException("Runtime unavailable.")
     }
+
+    private fun queueRequest(
+        source: RuntimeQueueSource,
+        vararg files: RuntimeChangedFile,
+    ): RuntimeQueueRequest = RuntimeQueueRequest(
+        source = source,
+        files = files.toList(),
+    )
+
+    private fun runtimeFile(path: String, after: String): RuntimeChangedFile = RuntimeChangedFile(
+        fileName = path,
+        before = null,
+        after = after,
+    )
 
     private fun withSystemProperty(name: String, value: String, action: () -> Unit) {
         val previous = System.getProperty(name)
