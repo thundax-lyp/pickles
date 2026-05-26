@@ -138,6 +138,20 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun workspaceIndexGateRejectsConcurrentRunsUntilFinished() {
+        val gate = PicklesWorkspaceIndexGate()
+
+        assertTrue(gate.tryStart())
+        assertTrue(gate.isRunning())
+        assertEquals(false, gate.tryStart())
+
+        gate.finish()
+
+        assertEquals(false, gate.isRunning())
+        assertTrue(gate.tryStart())
+    }
+
+    @Test
     fun workspaceInspectionCollectsRepoRelativeJavaFilesAsModifiedInputs() {
         val root = temporaryFolder.newFolder("workspace").toPath()
         val javaFile = root.resolve("src/main/java/com/example/App.java")

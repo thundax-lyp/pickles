@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesStartupActivity.kt`：接入首次 workspace 检查
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`
-    - 范围对象：`PicklesStartupActivity`、`PicklesProjectService`
-    - 处理动作：在 Plugin 启动 HTTP server 后后台触发一次幂等 workspace 检查
-    - 验收点：测试覆盖首次检查触发路径，重复触发不会并发启动多次同类索引
-    - 重要度：9/10
-
 - [ ] `pickles-intellij-plugin/src/main/kotlin/com/pickles/intellij/PicklesToolWindowPanel.kt`：对齐 Problem Board UI
     - 任务类型：执行任务
     - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-PROBLEM-BOARD.md`

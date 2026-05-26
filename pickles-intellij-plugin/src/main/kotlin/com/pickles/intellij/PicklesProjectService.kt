@@ -32,6 +32,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
         Thread(runnable, "Pickles Project Service").apply { isDaemon = true }
     }
     private val problemBoard = PicklesProblemBoardState()
+    private val indexGate = PicklesWorkspaceIndexGate()
 
     @Volatile
     private var httpServer: HttpServer? = null
@@ -129,8 +130,17 @@ class PicklesProjectService(private val project: Project) : Disposable {
     }
 
     fun reindexWorkspace() {
+        if (!indexGate.tryStart()) {
+            updateStatus("Workspace indexing is already running.")
+            return
+        }
+
         executor.execute {
-            runWorkspaceInspection()
+            try {
+                runWorkspaceInspection()
+            } finally {
+                indexGate.finish()
+            }
         }
     }
 
@@ -165,6 +175,7 @@ class PicklesProjectService(private val project: Project) : Disposable {
                 httpServerStatus = PicklesHttpServerStatus.RUNNING
                 writeServerFile(server.address.port)
                 updateStatus("Local HTTP server started on port ${server.address.port}.")
+                reindexWorkspace()
             }.onFailure {
                 thisLogger().warn("Failed to start Pickles HTTP server", it)
                 showError("Failed to start Pickles local HTTP server: ${it.message}")

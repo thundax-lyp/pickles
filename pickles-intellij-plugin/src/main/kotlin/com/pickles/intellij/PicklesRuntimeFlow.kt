@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.io.path.isRegularFile
 import kotlin.io.path.relativeTo
 
@@ -31,6 +32,18 @@ interface PicklesRuntimeClient {
 
 class EmptyPicklesRuntimeClient : PicklesRuntimeClient {
     override fun inspect(files: List<RuntimeChangedFile>): List<PicklesProblem> = emptyList()
+}
+
+class PicklesWorkspaceIndexGate {
+    private val running = AtomicBoolean(false)
+
+    fun tryStart(): Boolean = running.compareAndSet(false, true)
+
+    fun finish() {
+        running.set(false)
+    }
+
+    fun isRunning(): Boolean = running.get()
 }
 
 object PicklesWorkspaceInspection {
