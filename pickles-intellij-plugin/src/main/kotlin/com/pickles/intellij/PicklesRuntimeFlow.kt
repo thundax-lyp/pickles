@@ -52,11 +52,13 @@ object PicklesWorkspaceInspection {
         if (!Files.isDirectory(normalizedRoot)) {
             return emptyList()
         }
+        val ignoreMatcher = PicklesWorkspaceIgnoreMatcher.load(normalizedRoot)
 
         return Files.walk(normalizedRoot).use { paths ->
             paths
                 .filter { it.isRegularFile() }
                 .filter { it.fileName.toString().endsWith(".java") }
+                .filter { !ignoreMatcher.ignores(it.relativeTo(normalizedRoot).toString()) }
                 .sorted()
                 .map { file ->
                     RuntimeChangedFile(
@@ -78,6 +80,57 @@ object PicklesWorkspaceInspection {
         val problems = runtimeClient.inspect(collectJavaFiles(workspaceRoot))
         problemBoard.replaceProblems(problems)
         return problems
+    }
+}
+
+class PicklesWorkspaceIgnoreMatcher private constructor(
+    private val directoryPatterns: Set<String>,
+    private val fileNamePatterns: Set<String>,
+) {
+    fun ignores(relativePath: String): Boolean {
+        val normalized = relativePath.replace('\\', '/').trimStart('/')
+        val segments = normalized.split('/').filter { it.isNotEmpty() }
+        if (segments.any { segment -> directoryPatterns.contains("$segment/") }) {
+            return true
+        }
+        if (directoryPatterns.any { pattern -> normalized.startsWith(pattern) }) {
+            return true
+        }
+        return fileNamePatterns.any { pattern -> matchesFilePattern(normalized, pattern) }
+    }
+
+    private fun matchesFilePattern(path: String, pattern: String): Boolean = when {
+        pattern.startsWith("*.") -> path.substringAfterLast('/').endsWith(pattern.removePrefix("*"))
+        pattern.contains("*") -> Regex(pattern.replace(".", "\\.").replace("*", ".*")).matches(path.substringAfterLast('/'))
+        else -> path == pattern || path.endsWith("/$pattern")
+    }
+
+    companion object {
+        private val BUILT_IN_DIRECTORIES = setOf(".git/", ".idea/", ".gradle/", "build/", "out/", "node_modules/")
+
+        fun load(workspaceRoot: Path): PicklesWorkspaceIgnoreMatcher {
+            val gitignorePatterns = readGitignorePatterns(workspaceRoot)
+            return PicklesWorkspaceIgnoreMatcher(
+                directoryPatterns = BUILT_IN_DIRECTORIES + gitignorePatterns.filter { it.endsWith("/") },
+                fileNamePatterns = gitignorePatterns.filterNot { it.endsWith("/") }.toSet(),
+            )
+        }
+
+        private fun readGitignorePatterns(workspaceRoot: Path): Set<String> {
+            val gitignore = workspaceRoot.resolve(".gitignore")
+            if (!Files.isRegularFile(gitignore)) {
+                return emptySet()
+            }
+
+            return Files.readAllLines(gitignore, StandardCharsets.UTF_8)
+                .asSequence()
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .filterNot { it.startsWith("#") }
+                .filterNot { it.startsWith("!") }
+                .map { it.trimStart('/') }
+                .toSet()
+        }
     }
 }
 

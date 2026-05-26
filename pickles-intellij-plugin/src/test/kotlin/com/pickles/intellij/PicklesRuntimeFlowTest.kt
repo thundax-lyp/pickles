@@ -210,6 +210,29 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun workspaceInspectionUsesBuiltInAndGitignoreFilters() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        root.resolve(".gitignore").toFile().writeText(
+            """
+            generated/
+            *.generated.java
+            """.trimIndent(),
+        )
+        val included = root.resolve("src/main/java/com/example/App.java")
+        val buildOutput = root.resolve("build/generated/BuildOutput.java")
+        val generatedDirectory = root.resolve("generated/Ignored.java")
+        val generatedFile = root.resolve("src/main/java/com/example/App.generated.java")
+        listOf(included, buildOutput, generatedDirectory, generatedFile).forEach { file ->
+            file.parent.toFile().mkdirs()
+            file.toFile().writeText("class Ignored {}\n")
+        }
+
+        val files = PicklesWorkspaceInspection.collectJavaFiles(root)
+
+        assertEquals(listOf("src/main/java/com/example/App.java"), files.map { it.fileName })
+    }
+
+    @Test
     fun workspaceInspectionCallsRuntimeAndStoresProblemBoardData() {
         val root = temporaryFolder.newFolder("workspace").toPath()
         val javaFile = root.resolve("src/main/java/com/example/App.java")
