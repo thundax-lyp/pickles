@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`：定义 `workspace.ignore` 配置契约
-    - 任务类型：执行任务
-    - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
-    - 范围对象：`PicklesRuntimeConfig`、`WorkspaceConfig`
-    - 处理动作：新增 `workspace.ignore` 字段口径、默认值、pattern 语义和 Plugin / Runtime 职责边界
-    - 验收点：文档明确 Runtime 拥有 ignore 解析与过滤，Plugin 不直接解析 `pickles.config.ts`
-    - 重要度：8/10
-
 - [ ] `pickles-runtime/src/types.ts`：增加 `workspace.ignore` 类型与配置校验
     - 任务类型：执行任务
     - 依据文档：`docs/20-interfaces/PICKLES-CONFIG-CONTRACT.md`
