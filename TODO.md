@@ -11,14 +11,6 @@
 
 ## 待审阅任务项
 
-- [ ] `docs/40-readiness/E2E-TEST-CASES.md`：同步 Reindex / notify 队列验证口径
-    - 任务类型：执行任务
-    - 依据文档：`docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`
-    - 范围对象：`PLUGIN_WORKSPACE_REINDEX`、`PLUGIN_RUNTIME_FLOW`
-    - 处理动作：记录 Reindex 与 notify 共用 Runtime 队列、重叠文件失效补跑和 `/notify` 立即返回的验证断言
-    - 验收点：readiness 文档包含可执行验证命令和防漂移点，不改变 HTTP contract schema
-    - 重要度：7/10
-
 - [ ] `docs/30-designs/RUNBOOK-INTELLIJ-REINDEX-NOTIFY-QUEUE.md`：完成任务收口并清理 RUNBOOK
     - 任务类型：执行任务
     - 依据文档：`docs/00-governance/TODO-RULES.md`
