@@ -16,26 +16,14 @@ class PicklesRuntimeFlowTest {
     private val gson = GsonBuilder().serializeNulls().create()
 
     @Test
-    fun notifyCallsRuntimeAndStoresProblemBoardData() {
+    fun notifyQueuesRuntimeFilesWithoutUpdatingProblemBoard() {
         val root = temporaryFolder.newFolder("workspace").toPath()
-        val runtime = RecordingRuntimeClient(
-            listOf(
-                PicklesProblem(
-                    title = "Controller must not import repository directly",
-                    type = "architecture",
-                    message = "Controller imports repository directly.",
-                    severity = "ERROR",
-                    source = ProblemSource(tool = "pickles-native", rule = "sample-rule"),
-                    file = "src/main/java/com/example/web/OrderController.java",
-                    position = ProblemPosition(line = 3, column = 1),
-                ),
-            ),
-        )
+        var queuedFiles: List<RuntimeChangedFile> = emptyList()
         val problemBoard = PicklesProblemBoardState()
         val handler = PicklesHttpContractHandler(
             gson = gson,
             projectRoot = root,
-            runtimeClient = runtime,
+            notifyQueue = { files -> queuedFiles = files },
             problemBoard = problemBoard,
         )
 
@@ -67,9 +55,9 @@ class PicklesRuntimeFlowTest {
         assertTrue(body.processed)
         assertEquals(
             listOf(RuntimeChangedFile("src/main/java/com/example/web/OrderController.java", "old", "new")),
-            runtime.receivedFiles,
+            queuedFiles,
         )
-        assertEquals(runtime.problemsToReturn, problemBoard.problems())
+        assertEquals(emptyList<PicklesProblem>(), problemBoard.problems())
     }
 
     @Test
@@ -131,6 +119,32 @@ class PicklesRuntimeFlowTest {
     }
 
     @Test
+    fun statusTextShowsRuntimeQueueState() {
+        val text = PicklesStatusText.format(
+            PicklesServiceStatusSnapshot(
+                httpServerStatus = PicklesHttpServerStatus.RUNNING,
+                runtimeStatus = PicklesRuntimeStatus.AVAILABLE,
+                indexStatus = PicklesIndexStatus.RUNNING,
+                runtimeQueue = RuntimeQueueSnapshot(
+                    running = true,
+                    pending = true,
+                    currentInvalidated = true,
+                ),
+                problemSummary = PicklesProblemSummary(
+                    totalCount = 2,
+                    errorCount = 1,
+                    warnCount = 1,
+                    text = "Pickles found 1 blocking problem(s) and 1 warning(s).",
+                ),
+                message = "Workspace indexing is running.",
+            ),
+        )
+
+        assertTrue(text.contains("Queue: stale"))
+        assertTrue(text.contains("Problems: 2 (1 error, 1 warn)"))
+    }
+
+    @Test
     fun runtimeChangedFileDerivesRuntimeChangeType() {
         assertEquals("added", RuntimeChangedFile("src/New.java", null, "new").changeType)
         assertEquals("deleted", RuntimeChangedFile("src/Old.java", "old", null).changeType)
@@ -149,6 +163,131 @@ class PicklesRuntimeFlowTest {
 
         assertEquals(false, gate.isRunning())
         assertTrue(gate.tryStart())
+    }
+
+    @Test
+    fun runtimeQueueStartsFirstRequestImmediately() {
+        val queue = PicklesRuntimeQueue()
+
+        val run = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))
+
+        assertEquals(1L, run?.version)
+        assertEquals(RuntimeQueueSource.REINDEX, run?.request?.source)
+        assertEquals(
+            RuntimeQueueSnapshot(
+                running = true,
+                pending = false,
+                currentInvalidated = false,
+            ),
+            queue.snapshot(),
+        )
+    }
+
+    @Test
+    fun runtimeQueueQueuesNonOverlappingRequestAfterCurrentRun() {
+        val queue = PicklesRuntimeQueue()
+        val first = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))
+
+        val second = queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/Other.java", "notify")))
+        val completion = queue.complete(first!!.version)
+
+        assertEquals(null, second)
+        assertTrue(completion.shouldApplyResult)
+        assertEquals(2L, completion.nextRun?.version)
+        assertEquals(listOf("src/Other.java"), completion.nextRun?.request?.files?.map { it.fileName })
+    }
+
+    @Test
+    fun runtimeQueueInvalidatesCurrentRunWhenOverlappingRequestArrives() {
+        val queue = PicklesRuntimeQueue()
+        val first = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))
+
+        queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/App.java", "notify")))
+        assertEquals(
+            RuntimeQueueSnapshot(
+                running = true,
+                pending = true,
+                currentInvalidated = true,
+            ),
+            queue.snapshot(),
+        )
+        val completion = queue.complete(first!!.version)
+
+        assertEquals(false, completion.shouldApplyResult)
+        assertEquals(2L, completion.nextRun?.version)
+        assertEquals("notify", completion.nextRun?.request?.files?.single()?.after)
+    }
+
+    @Test
+    fun runtimeQueueKeepsLatestPendingContentForSamePath() {
+        val queue = PicklesRuntimeQueue()
+        queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))
+
+        queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/Other.java", "old")))
+        queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/Other.java", "new")))
+        val completion = queue.complete(1L)
+
+        assertEquals(true, completion.shouldApplyResult)
+        assertEquals(RuntimeQueueSource.NOTIFY, completion.nextRun?.request?.source)
+        assertEquals(listOf("new"), completion.nextRun?.request?.files?.map { it.after })
+    }
+
+    @Test
+    fun runtimeQueueRunnerAppliesCurrentResultToProblemBoard() {
+        val queue = PicklesRuntimeQueue()
+        val run = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))!!
+        val problem = PicklesProblem(
+            title = "Reindex",
+            type = "architecture",
+            message = "Reindex problem.",
+            severity = "WARN",
+        )
+        val problemBoard = PicklesProblemBoardState()
+
+        val result = PicklesRuntimeQueueRunner.run(
+            queue = queue,
+            run = run,
+            runtimeClient = RecordingRuntimeClient(listOf(problem)),
+            problemBoard = problemBoard,
+        )
+
+        assertTrue(result.completion.shouldApplyResult)
+        assertEquals(listOf(problem), problemBoard.problems())
+    }
+
+    @Test
+    fun runtimeQueueRunnerDoesNotApplyInvalidatedResultToProblemBoard() {
+        val queue = PicklesRuntimeQueue()
+        val run = queue.enqueue(queueRequest(RuntimeQueueSource.REINDEX, runtimeFile("src/App.java", "reindex")))!!
+        queue.enqueue(queueRequest(RuntimeQueueSource.NOTIFY, runtimeFile("src/App.java", "notify")))
+        val existingProblem = PicklesProblem(
+            title = "Existing",
+            type = "architecture",
+            message = "Existing problem.",
+            severity = "ERROR",
+        )
+        val problemBoard = PicklesProblemBoardState()
+        problemBoard.replaceProblems(listOf(existingProblem))
+
+        val result = PicklesRuntimeQueueRunner.run(
+            queue = queue,
+            run = run,
+            runtimeClient = RecordingRuntimeClient(
+                listOf(
+                    PicklesProblem(
+                        title = "Stale",
+                        type = "architecture",
+                        message = "Stale problem.",
+                        severity = "WARN",
+                    ),
+                ),
+            ),
+            problemBoard = problemBoard,
+        )
+
+        assertEquals(false, result.completion.shouldApplyResult)
+        assertEquals(listOf(existingProblem), problemBoard.problems())
+        assertEquals("notify", result.completion.nextRun?.request?.files?.single()?.after)
     }
 
     @Test
@@ -398,55 +537,6 @@ class PicklesRuntimeFlowTest {
         assertEquals("Pickles Runtime returned an empty response.", error.message)
     }
 
-    @Test
-    fun notifyReturnsInternalErrorWhenRuntimeFailsWithoutClearingProblemBoard() {
-        val root = temporaryFolder.newFolder("workspace").toPath()
-        val existingProblem = PicklesProblem(
-            title = "Existing",
-            type = "architecture",
-            message = "Existing problem.",
-            severity = "ERROR",
-        )
-        val problemBoard = PicklesProblemBoardState()
-        problemBoard.replaceProblems(listOf(existingProblem))
-        val handler = PicklesHttpContractHandler(
-            gson = gson,
-            projectRoot = root,
-            runtimeClient = FailingRuntimeClient(),
-            problemBoard = problemBoard,
-        )
-
-        val result = handler.notify(
-            """
-            {
-              "schemaVersion": 1,
-              "requestId": "req-runtime-error",
-              "event": {
-                "sessionId": "session-1",
-                "turnId": "turn-1",
-                "hookEventName": "PostToolUse",
-                "workspace": "${root.toAbsolutePath()}",
-                "idempotencyKey": "session-1:turn-1:PostToolUse:src/main/java/com/example/web/OrderController.java"
-              },
-              "files": [
-                {
-                  "fileName": "src/main/java/com/example/web/OrderController.java",
-                  "before": "old",
-                  "after": "new"
-                }
-              ]
-            }
-            """.trimIndent(),
-        )
-        val body = result.body as ApiErrorResponse
-
-        assertEquals(500, result.status)
-        assertEquals("req-runtime-error", body.requestId)
-        assertEquals("INTERNAL_ERROR", body.error.code)
-        assertEquals("Runtime unavailable.", body.error.message)
-        assertEquals(listOf(existingProblem), problemBoard.problems())
-    }
-
     private class RecordingRuntimeClient(
         val problemsToReturn: List<PicklesProblem>,
     ) : PicklesRuntimeClient {
@@ -462,6 +552,20 @@ class PicklesRuntimeFlowTest {
     private class FailingRuntimeClient : PicklesRuntimeClient {
         override fun inspect(files: List<RuntimeChangedFile>): List<PicklesProblem> = throw IOException("Runtime unavailable.")
     }
+
+    private fun queueRequest(
+        source: RuntimeQueueSource,
+        vararg files: RuntimeChangedFile,
+    ): RuntimeQueueRequest = RuntimeQueueRequest(
+        source = source,
+        files = files.toList(),
+    )
+
+    private fun runtimeFile(path: String, after: String): RuntimeChangedFile = RuntimeChangedFile(
+        fileName = path,
+        before = null,
+        after = after,
+    )
 
     private fun withSystemProperty(name: String, value: String, action: () -> Unit) {
         val previous = System.getProperty(name)

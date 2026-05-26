@@ -61,6 +61,43 @@ class PicklesHttpContractTest {
     }
 
     @Test
+    fun notifyReturnsProcessedWhenRequestIsQueued() {
+        val root = temporaryFolder.newFolder("workspace").toPath()
+        var queuedFiles: List<RuntimeChangedFile> = emptyList()
+        val result = PicklesHttpContractHandler(
+            gson = gson,
+            projectRoot = root,
+            notifyQueue = { files -> queuedFiles = files },
+        ).notify(
+            """
+            {
+              "schemaVersion": 1,
+              "requestId": "req-queued",
+              "event": {
+                "sessionId": "session-1",
+                "turnId": "turn-1",
+                "hookEventName": "PostToolUse",
+                "workspace": "${root.toAbsolutePath()}",
+                "idempotencyKey": "session-1:turn-1:PostToolUse:src/File.kt"
+              },
+              "files": [
+                {
+                  "fileName": "src/File.kt",
+                  "before": "old",
+                  "after": "new"
+                }
+              ]
+            }
+            """.trimIndent(),
+        )
+        val body = result.body as NotifyResponse
+
+        assertEquals(202, result.status)
+        assertTrue(body.processed)
+        assertEquals(listOf(RuntimeChangedFile("src/File.kt", "old", "new")), queuedFiles)
+    }
+
+    @Test
     fun notifyRejectsMissingSessionId() {
         val root = temporaryFolder.newFolder("workspace").toPath()
         val result = handler(root).notify(

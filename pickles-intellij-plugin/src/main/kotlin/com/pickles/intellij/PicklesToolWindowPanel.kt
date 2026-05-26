@@ -114,7 +114,7 @@ class PicklesToolWindowPanel(
                 unbindButton.isEnabled = bindStatus.bound
                 val statusSnapshot = service.statusSnapshot()
                 reindexButton.isEnabled = statusSnapshot.indexStatus != PicklesIndexStatus.RUNNING
-                statusLabel.text = formatStatus(statusSnapshot)
+                statusLabel.text = PicklesStatusText.format(statusSnapshot)
 
                 configText.text = configTextValue
 
@@ -170,11 +170,6 @@ class PicklesToolWindowPanel(
     private fun saveConfig() {
         runAndRefresh("Save failed") { service.saveConfigText(configText.text) }
     }
-
-    private fun formatStatus(status: PicklesServiceStatusSnapshot): String = "HTTP: ${status.httpServerStatus}  Runtime: ${status.runtimeStatus}  " +
-        "Index: ${status.indexStatus}  Problems: ${status.problemSummary.totalCount} " +
-        "(${status.problemSummary.errorCount} error, ${status.problemSummary.warnCount} warn)  " +
-        status.message
 
     private fun formatLocation(problem: PicklesProblem): String {
         val file = problem.file ?: "workspace"

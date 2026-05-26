@@ -339,7 +339,9 @@ scripts/verify-intellij-plugin.sh
 固定断言：
 
 - Plugin 接收合法 `NotifyRequest`。
-- Plugin 调用 Runtime。
+- Plugin 将合法 `/notify` changed files 入 Runtime 队列。
+- `/notify` 校验成功后返回 `202 accepted`，不等待 Runtime 队列清空。
+- Plugin 通过 Runtime 队列调用 Runtime。
 - Runtime 返回 Problem array。
 - Plugin 保存当前 workspace Problem Board 数据。
 - UI 删除问题只影响当前展示，不修改用户代码。
@@ -349,6 +351,7 @@ scripts/verify-intellij-plugin.sh
 - Plugin 不执行 native rules。
 - Plugin 不把 Problem Board 按 task 单独保存。
 - Plugin 不从 Runtime 内部状态读取临时数据。
+- `/notify` 不得同步等待 Runtime 执行完成后才响应。
 
 ### 7.7 PLUGIN_WORKSPACE_REINDEX
 
@@ -385,8 +388,12 @@ cd pickles-intellij-plugin
 - Runtime 负责统一应用 Pickles runtime config 中的 `workspace.ignore`。
 - Runtime 成功返回后 Problem Board 被替换为最新 Problems。
 - Runtime 失败时旧 Problem Board 不被清空。
-- Problem Board Header 展示 HTTP server、Runtime、Index 和 Problem summary 状态。
+- Problem Board Header 展示 HTTP server、Runtime、Index、Runtime queue 和 Problem summary 状态。
 - Problem row 按 `ERROR`、`WARN`、有 file / position、Runtime 返回顺序排序。
+- Reindex 与 `/notify` 共用 Runtime 队列。
+- Reindex 运行时同一文件的 `/notify` 会让 Reindex 结果失效并补跑最新 notify 输入。
+- Reindex 运行时不同文件的 `/notify` 会排队，并在 Reindex 后继续执行。
+- 多个 `/notify` 修改同一路径时，pending request 固定保留最新文件内容。
 
 防漂移点：
 
@@ -395,6 +402,7 @@ cd pickles-intellij-plugin
 - Plugin 不修改用户业务代码。
 - Plugin 不直接解析 Pickles runtime config 的可执行 TS 入口。
 - Reindex 不改变 Hook HTTP contract。
+- Runtime queue 不改变 Hook HTTP contract schema。
 
 ### 7.8 E2E_FULL_FLOW
 

@@ -46,6 +46,155 @@ class PicklesWorkspaceIndexGate {
     fun isRunning(): Boolean = running.get()
 }
 
+enum class RuntimeQueueSource {
+    REINDEX,
+    NOTIFY,
+    MIXED,
+}
+
+data class RuntimeQueueRequest(
+    val source: RuntimeQueueSource,
+    val files: List<RuntimeChangedFile>,
+) {
+    val affectedFiles: Set<String> = files.map { it.fileName }.toSet()
+}
+
+data class RuntimeQueueRun(
+    val version: Long,
+    val request: RuntimeQueueRequest,
+    val invalidated: Boolean,
+)
+
+data class RuntimeQueueCompletion(
+    val shouldApplyResult: Boolean,
+    val nextRun: RuntimeQueueRun?,
+)
+
+data class RuntimeQueueRunResult(
+    val problems: List<PicklesProblem>,
+    val completion: RuntimeQueueCompletion,
+)
+
+data class RuntimeQueueSnapshot(
+    val running: Boolean,
+    val pending: Boolean,
+    val currentInvalidated: Boolean,
+)
+
+class PicklesRuntimeQueue {
+    private var currentRun: MutableRuntimeQueueRun? = null
+    private var pendingRequest: RuntimeQueueRequest? = null
+    private var nextVersion: Long = 1
+
+    @Synchronized
+    fun enqueue(request: RuntimeQueueRequest): RuntimeQueueRun? {
+        val current = currentRun
+        if (current == null) {
+            return start(request)
+        }
+
+        if (overlaps(current.request, request)) {
+            current.invalidated = true
+        }
+        pendingRequest = merge(pendingRequest, request)
+        return null
+    }
+
+    @Synchronized
+    fun complete(version: Long): RuntimeQueueCompletion {
+        val current = currentRun ?: return RuntimeQueueCompletion(
+            shouldApplyResult = false,
+            nextRun = null,
+        )
+        if (current.version != version) {
+            return RuntimeQueueCompletion(
+                shouldApplyResult = false,
+                nextRun = null,
+            )
+        }
+
+        val shouldApply = !current.invalidated
+        currentRun = null
+        val nextRun = pendingRequest?.let { pending ->
+            pendingRequest = null
+            start(pending)
+        }
+
+        return RuntimeQueueCompletion(
+            shouldApplyResult = shouldApply,
+            nextRun = nextRun,
+        )
+    }
+
+    @Synchronized
+    fun snapshot(): RuntimeQueueSnapshot = RuntimeQueueSnapshot(
+        running = currentRun != null,
+        pending = pendingRequest != null,
+        currentInvalidated = currentRun?.invalidated == true,
+    )
+
+    private fun start(request: RuntimeQueueRequest): RuntimeQueueRun {
+        val run = MutableRuntimeQueueRun(
+            version = nextVersion++,
+            request = request,
+        )
+        currentRun = run
+        return run.toRun()
+    }
+
+    private fun overlaps(first: RuntimeQueueRequest, second: RuntimeQueueRequest): Boolean = first.affectedFiles.intersect(second.affectedFiles).isNotEmpty()
+
+    private fun merge(
+        existing: RuntimeQueueRequest?,
+        incoming: RuntimeQueueRequest,
+    ): RuntimeQueueRequest {
+        if (existing == null) {
+            return incoming
+        }
+
+        val filesByPath = linkedMapOf<String, RuntimeChangedFile>()
+        existing.files.forEach { file -> filesByPath[file.fileName] = file }
+        incoming.files.forEach { file -> filesByPath[file.fileName] = file }
+        val source = if (existing.source == incoming.source) existing.source else RuntimeQueueSource.MIXED
+
+        return RuntimeQueueRequest(
+            source = source,
+            files = filesByPath.values.toList(),
+        )
+    }
+
+    private data class MutableRuntimeQueueRun(
+        val version: Long,
+        val request: RuntimeQueueRequest,
+        var invalidated: Boolean = false,
+    ) {
+        fun toRun(): RuntimeQueueRun = RuntimeQueueRun(
+            version = version,
+            request = request,
+            invalidated = invalidated,
+        )
+    }
+}
+
+object PicklesRuntimeQueueRunner {
+    fun run(
+        queue: PicklesRuntimeQueue,
+        run: RuntimeQueueRun,
+        runtimeClient: PicklesRuntimeClient,
+        problemBoard: PicklesProblemBoardState,
+    ): RuntimeQueueRunResult {
+        val problems = runtimeClient.inspect(run.request.files)
+        val completion = queue.complete(run.version)
+        if (completion.shouldApplyResult) {
+            problemBoard.replaceProblems(problems)
+        }
+        return RuntimeQueueRunResult(
+            problems = problems,
+            completion = completion,
+        )
+    }
+}
+
 object PicklesWorkspaceInspection {
     fun collectJavaFiles(workspaceRoot: Path): List<RuntimeChangedFile> {
         val normalizedRoot = workspaceRoot.toAbsolutePath().normalize()
@@ -338,6 +487,24 @@ data class PicklesServiceStatusSnapshot(
     val httpServerStatus: PicklesHttpServerStatus,
     val runtimeStatus: PicklesRuntimeStatus,
     val indexStatus: PicklesIndexStatus,
+    val runtimeQueue: RuntimeQueueSnapshot,
     val problemSummary: PicklesProblemSummary,
     val message: String,
 )
+
+object PicklesStatusText {
+    fun format(status: PicklesServiceStatusSnapshot): String {
+        val queueText = when {
+            status.runtimeQueue.currentInvalidated -> "stale"
+            status.runtimeQueue.pending -> "pending"
+            status.runtimeQueue.running -> "running"
+            else -> "idle"
+        }
+
+        return "HTTP: ${status.httpServerStatus}  Runtime: ${status.runtimeStatus}  " +
+            "Index: ${status.indexStatus}  Queue: $queueText  " +
+            "Problems: ${status.problemSummary.totalCount} " +
+            "(${status.problemSummary.errorCount} error, ${status.problemSummary.warnCount} warn)  " +
+            status.message
+    }
+}
